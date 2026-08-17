@@ -1,404 +1,585 @@
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import { useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Spacing } from '@/constants/theme';
+import { LearningScreenLayout, TodayScreenLayout } from "@/components/today";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Status Modes & Data Definitions ──────────────────────────────────────────
+
+export type TodayStatusMode =
+  | "fd-empty"
+  | "fd-wearable"
+  | "steady"
+  | "caution"
+  | "rest";
+
+interface StatusConfig {
+  headline1: string;
+  headline2: string;
+  indicatorText: string;
+  indicatorDotColor: string;
+  whyText?: string;
+  microText?: string;
+  noteText?: string;
+  ctaText: string;
+  footerNote?: string;
+  isFirstDay?: boolean;
+  orbSize?: number;
+  waterState: "empty" | "wearableRead" | "steady" | "caution" | "rest";
+  forecast?: {
+    dayLabel: string;
+    value: string;
+    dotColor: string;
+  }[];
+}
 
 const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  cardBg: 'rgba(255, 251, 248, 0.75)',
-  cardBorder: 'rgba(212, 184, 174, 0.35)',
-  settingsBg: 'rgba(255, 251, 248, 0.65)',
-  settingsBorder: 'rgba(212, 184, 174, 0.3)',
-  settingsIcon: '#9E8578',
-  greenDot: '#8BA888',
-  cautionDot: '#D4A545',
-  divider: 'rgba(212, 184, 174, 0.4)',
+  accent: "#B0532F",
+  buttonFill: "#D9735A",
+  greenDot: "#7E9B6A",
+  cautionDot: "#D99843",
+  restDot: "#E0735F",
 };
 
-// ─── Dynamic date ─────────────────────────────────────────────────────────────
+const STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
+  "fd-empty": {
+    headline1: "Still learning ",
+    headline2: "you.",
+    indicatorText: "LEARNING",
+    indicatorDotColor: "#7E9B6A",
+    microText: "Getting to know your patterns.",
+    noteText:
+      "Your forecast appears once I've learned your rhythm — usually a few days.",
+    ctaText: "Start your first check-in",
+    footerNote: "You can do this lying down.",
+    isFirstDay: true,
+    waterState: "empty",
+  },
+  "fd-wearable": {
+    headline1: "An early ",
+    headline2: "read.",
+    indicatorText: "LEARNING",
+    indicatorDotColor: "#7E9B6A",
+    microText: "A first read from your wearable.",
+    noteText: "These get sharper as I learn you.",
+    ctaText: "How is it going?",
+    isFirstDay: true,
+    waterState: "wearableRead",
+    forecast: [
+      { dayLabel: "TODAY", value: "Steady", dotColor: COLORS.greenDot },
+      { dayLabel: "TOMORROW", value: "Steady", dotColor: COLORS.greenDot },
+      { dayLabel: "DAY AFTER", value: "Steady", dotColor: COLORS.greenDot },
+    ],
+  },
+  steady: {
+    headline1: "Today, you have\n",
+    headline2: "good reserves.",
+    indicatorText: "holding steady",
+    indicatorDotColor: COLORS.greenDot,
+    ctaText: "How is it going?",
+    footerNote: "Planning something this week?",
+    waterState: "steady",
+    forecast: [
+      { dayLabel: "TODAY", value: "Steady", dotColor: COLORS.greenDot },
+      { dayLabel: "TOMORROW", value: "Steady", dotColor: COLORS.greenDot },
+      { dayLabel: "DAY AFTER", value: "Caution", dotColor: COLORS.cautionDot },
+    ],
+  },
+  caution: {
+    headline1: "Today asks for\n",
+    headline2: "a slower pace.",
+    indicatorText: "caution today",
+    indicatorDotColor: COLORS.cautionDot,
+    whyText: "Why caution today?",
+    ctaText: "How is it going?",
+    footerNote: "Planning something this week?",
+    waterState: "caution",
+    forecast: [
+      { dayLabel: "TODAY", value: "Caution", dotColor: COLORS.cautionDot },
+      { dayLabel: "TOMORROW", value: "Steady", dotColor: COLORS.greenDot },
+      { dayLabel: "DAY AFTER", value: "Steady", dotColor: COLORS.greenDot },
+    ],
+  },
+  rest: {
+    headline1: "Today is\n",
+    headline2: "one for resting.",
+    indicatorText: "resting today",
+    indicatorDotColor: COLORS.restDot,
+    whyText: "Why a rest day?",
+    ctaText: "How is it going?",
+    footerNote: "Planning something this week?",
+    waterState: "rest",
+    forecast: [
+      { dayLabel: "TODAY", value: "Rest day", dotColor: COLORS.restDot },
+      { dayLabel: "TOMORROW", value: "Caution", dotColor: COLORS.cautionDot },
+      { dayLabel: "DAY AFTER", value: "Steady", dotColor: COLORS.greenDot },
+    ],
+  },
+};
 
-const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-const MONTHS = [
-  'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
-];
-
-function getFormattedDate(): string {
-  const now = new Date();
-  const day = DAYS[now.getDay()];
-  const date = now.getDate();
-  const month = MONTHS[now.getMonth()];
-  return `${day} · ${date} ${month}`;
+interface WhyModalData {
+  badgeLabel: string;
+  badgeBg: string;
+  badgeDotColor: string;
+  badgeTextColor: string;
+  headingPrefix: string;
+  headingAccent: string;
+  subtitleText: string;
+  reassuranceText: string;
+  items: {
+    id: string;
+    icon: string;
+    title: string;
+    description: string;
+  }[];
 }
+
+const WHY_MODAL_CONFIGS: Record<"caution" | "rest", WhyModalData> = {
+  caution: {
+    badgeLabel: "Caution",
+    badgeBg: "#F4E2C7",
+    badgeDotColor: "#D4A545",
+    badgeTextColor: "#B57E32",
+    headingPrefix: "Why caution ",
+    headingAccent: "today?",
+    subtitleText:
+      "Today asks for a slower pace. Here's what we've been seeing:",
+    reassuranceText:
+      "Nothing you did wrong — today just calls for a gentler pace. We'll keep an eye on it with you.",
+    items: [
+      {
+        id: "c1",
+        icon: "square.stack.3d.up",
+        title: "A heavier couple of days",
+        description: "Your tank hasn't fully refilled since the weekend.",
+      },
+      {
+        id: "c2",
+        icon: "waveform.path.ecg",
+        title: "Your overnight heart rate ran a little high",
+        description:
+          "Often an early sign your body's working harder to recover.",
+      },
+      {
+        id: "c3",
+        icon: "moon.fill",
+        title: "A short night this week",
+        description:
+          "Shorter sleep tends to catch up with you a day or two later.",
+      },
+    ],
+  },
+  rest: {
+    badgeLabel: "Rest day",
+    badgeBg: "#FCE4E6",
+    badgeDotColor: "#DC6B76",
+    badgeTextColor: "#DC6B76",
+    headingPrefix: "Why a ",
+    headingAccent: "rest day?",
+    subtitleText:
+      "Tomorrow looks like a day to go easy. Here's what we've been seeing:",
+    reassuranceText:
+      "Nothing you did wrong — a body like yours just needs the recovery. We'll keep tomorrow light for you.",
+    items: [
+      {
+        id: "r1",
+        icon: "square.stack.3d.up",
+        title: "Three heavier days in a row",
+        description: "Your tank hasn't had a chance to refill since Tuesday.",
+      },
+      {
+        id: "r2",
+        icon: "waveform.path.ecg",
+        title: "Your overnight heart rate stayed high",
+        description:
+          "Often an early sign your body's working harder to recover.",
+      },
+      {
+        id: "r3",
+        icon: "moon.fill",
+        title: "Two late nights this week",
+        description:
+          "Shorter sleep tends to catch up with you a day or two later.",
+      },
+    ],
+  },
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TodayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ mode?: string }>();
+
+  const initialMode: TodayStatusMode =
+    params.mode === "fd-empty" ||
+    params.mode === "fd-wearable" ||
+    params.mode === "steady" ||
+    params.mode === "caution" ||
+    params.mode === "rest"
+      ? (params.mode as TodayStatusMode)
+      : "fd-empty";
+
+  const [statusMode, setStatusMode] = useState<TodayStatusMode>(initialMode);
+  const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
+  const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
+    "caution",
+  );
+
+  const currentConfig = STATUS_CONFIGS[statusMode];
+  const activeWhyData = WHY_MODAL_CONFIGS[whyModalType];
+
+  const cycleStatusMode = () => {
+    const modes: TodayStatusMode[] = [
+      "fd-empty",
+      "fd-wearable",
+      "steady",
+      "caution",
+      "rest",
+    ];
+    const idx = modes.indexOf(statusMode);
+    const nextMode = modes[(idx + 1) % modes.length];
+    setStatusMode(nextMode);
+  };
+
+  const handleCtaPress = () => {
+    if (statusMode === 'fd-empty') {
+      setStatusMode('fd-wearable');
+    } else if (statusMode === 'fd-wearable') {
+      router.push({
+        pathname: '/(check-in)/energy',
+        params: { isFirstTime: 'true' },
+      });
+    } else {
+      router.push('/(check-in)/yesterday');
+    }
+  };
+
+  const handleOpenWhyModal = () => {
+    if (statusMode === "rest") {
+      setWhyModalType("rest");
+    } else {
+      setWhyModalType("caution");
+    }
+    setIsWhyModalOpen(true);
+  };
+
+  const handleFooterPress = () => {
+    if (currentConfig.footerNote === "Planning something this week?") {
+      router.push("/(check-in)/plan" as any);
+    }
+  };
+
+  const isLearningState =
+    statusMode === "fd-empty" || statusMode === "fd-wearable";
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric glow — matching onboarding screens */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {isLearningState ? (
+        <LearningScreenLayout
+          dateText="TUESDAY · 10 JUNE"
+          greeting="Hello, Sam."
+          onSettingsPress={() => router.push("/(tabs)/settings" as any)}
+          orbState={currentConfig.waterState}
+          orbSize={currentConfig.orbSize}
+          headline1={currentConfig.headline1}
+          headline2={currentConfig.headline2}
+          isHeadlineAccent={true}
+          isFirstDay={currentConfig.isFirstDay}
+          indicatorText={currentConfig.indicatorText}
+          indicatorDotColor={currentConfig.indicatorDotColor}
+          onBadgePress={cycleStatusMode}
+          supportingText={currentConfig.microText}
+          forecast={
+            statusMode === "fd-wearable" ? currentConfig.forecast : undefined
+          }
+          learningNote={
+            statusMode === "fd-empty" ? currentConfig.noteText : undefined
+          }
+          secondaryText={
+            statusMode === "fd-wearable" ? currentConfig.noteText : undefined
+          }
+          ctaLabel={currentConfig.ctaText}
+          onCtaPress={handleCtaPress}
+          footerNote={currentConfig.footerNote}
+          onFooterPress={handleFooterPress}
+        />
+      ) : (
+        <TodayScreenLayout
+          dateText="TUESDAY · 10 JUNE"
+          greeting="Hello, Sam."
+          onSettingsPress={() => router.push("/(tabs)/settings" as any)}
+          orbState={currentConfig.waterState}
+          headline1={currentConfig.headline1}
+          headline2={currentConfig.headline2}
+          isHeadlineAccent={true}
+          isFirstDay={currentConfig.isFirstDay}
+          indicatorText={currentConfig.indicatorText}
+          indicatorDotColor={currentConfig.indicatorDotColor}
+          onBadgePress={cycleStatusMode}
+          supportingText={currentConfig.microText}
+          forecast={currentConfig.forecast}
+          learningNote={undefined}
+          secondaryText={currentConfig.whyText}
+          isSecondaryLink={Boolean(currentConfig.whyText)}
+          onSecondaryPress={handleOpenWhyModal}
+          ctaLabel={currentConfig.ctaText}
+          onCtaPress={handleCtaPress}
+          footerNote={currentConfig.footerNote}
+          onFooterPress={handleFooterPress}
+        />
+      )}
 
-      <View
-        style={[
-          styles.contentArea,
-          { paddingTop: insets.top + 8 },
-        ]}>
-
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <View style={styles.headerRow}>
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.dateText}>{getFormattedDate()}</Text>
-            <Text style={styles.greeting}>
-              <Text style={styles.greetingBold}>Hello, </Text>
-              <Text style={styles.greetingRegular}>Sam.</Text>
-            </Text>
-          </View>
-
-          {/* Settings button */}
-          <View style={styles.settingsButton}>
-            <SymbolView
-              name="gearshape"
-              size={22}
-              tintColor={COLORS.settingsIcon}
-            />
-          </View>
-        </View>
-
-        {/* ── Today orb ──────────────────────────────────────────────────── */}
-        <View style={styles.orbContainer}>
-          <Image
-            source={require('@/assets/images/today-orb.png')}
-            style={styles.orb}
-            contentFit="contain"
+      {/* ── Bottom Sheet Modal ─────────────────────────────────────────── */}
+      <Modal
+        visible={isWhyModalOpen}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsWhyModalOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable
+            style={styles.modalOverlayDismiss}
+            onPress={() => setIsWhyModalOpen(false)}
           />
-        </View>
 
-        {/* ── Main status ────────────────────────────────────────────────── */}
-        <View style={styles.statusBlock}>
-          <Text style={styles.statusHeading}>
-            <Text style={styles.statusDark}>Today, you have{'\n'}</Text>
-            <Text style={styles.statusAccent}>good reserves.</Text>
-          </Text>
+          <View
+            style={[
+              styles.modalSheetContainer,
+              { paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24 },
+            ]}
+          >
+            <View style={styles.modalHandle} />
 
-          {/* Holding steady indicator */}
-          <View style={styles.holdingRow}>
-            <View style={styles.greenDot} />
-            <Text style={styles.holdingText}>holding steady</Text>
-          </View>
-        </View>
-
-        {/* ── Forecast card ──────────────────────────────────────────────── */}
-        <View style={styles.forecastCard}>
-          {/* Today column */}
-          <View style={styles.forecastColumn}>
-            <Text style={styles.forecastLabel}>TODAY</Text>
-            <View style={styles.forecastStatusRow}>
-              <View style={[styles.forecastDot, { backgroundColor: COLORS.greenDot }]} />
-              <Text style={styles.forecastValue}>Steady</Text>
+            <View
+              style={[
+                styles.modalBadge,
+                { backgroundColor: activeWhyData.badgeBg },
+              ]}
+            >
+              <View
+                style={[
+                  styles.modalBadgeDot,
+                  { backgroundColor: activeWhyData.badgeDotColor },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.modalBadgeText,
+                  { color: activeWhyData.badgeTextColor },
+                ]}
+              >
+                {activeWhyData.badgeLabel}
+              </Text>
             </View>
-          </View>
 
-          <View style={styles.forecastDivider} />
+            <Text style={styles.modalHeading}>
+              <Text style={styles.modalHeadingDark}>
+                {activeWhyData.headingPrefix}
+              </Text>
+              <Text style={styles.modalHeadingAccent}>
+                {activeWhyData.headingAccent}
+              </Text>
+            </Text>
 
-          {/* Tomorrow column */}
-          <View style={styles.forecastColumn}>
-            <Text style={styles.forecastLabel}>TOMORROW</Text>
-            <View style={styles.forecastStatusRow}>
-              <View style={[styles.forecastDot, { backgroundColor: COLORS.greenDot }]} />
-              <Text style={styles.forecastValue}>Steady</Text>
+            <Text style={styles.modalSubtitle}>
+              {activeWhyData.subtitleText}
+            </Text>
+
+            <View style={styles.modalItemsList}>
+              {activeWhyData.items.map((item) => (
+                <View key={item.id} style={styles.modalItemRow}>
+                  <View style={styles.modalIconBadge}>
+                    <SymbolView
+                      name={item.icon as any}
+                      size={18}
+                      tintColor="#785344"
+                    />
+                  </View>
+                  <View style={styles.modalItemTextBlock}>
+                    <Text style={styles.modalItemTitle}>{item.title}</Text>
+                    <Text style={styles.modalItemDesc}>{item.description}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
-          </View>
 
-          <View style={styles.forecastDivider} />
+            <Text style={styles.modalReassurance}>
+              {activeWhyData.reassuranceText}
+            </Text>
 
-          {/* Day After column */}
-          <View style={styles.forecastColumn}>
-            <Text style={styles.forecastLabel}>DAY AFTER</Text>
-            <View style={styles.forecastStatusRow}>
-              <View style={[styles.forecastDot, { backgroundColor: COLORS.cautionDot }]} />
-              <Text style={styles.forecastValue}>Caution</Text>
-            </View>
+            <Pressable
+              style={({ pressed }) => [
+                styles.modalOkayBtn,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => setIsWhyModalOpen(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Okay"
+            >
+              <Text style={styles.modalOkayBtnText}>Okay</Text>
+            </Pressable>
           </View>
         </View>
-
-        {/* ── Primary button ─────────────────────────────────────────────── */}
-        <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={() => router.push('/(check-in)/energy')}
-          accessibilityRole="button"
-          accessibilityLabel="How is it going?">
-          <Text style={styles.buttonText}>How is it going?</Text>
-        </Pressable>
-
-        {/* ── Planning link ──────────────────────────────────────────────── */}
-        <Pressable
-          style={styles.planningContainer}
-          accessibilityRole="button"
-          accessibilityLabel="Planning something this week?">
-          <Text style={styles.planningText}>Planning something this week?</Text>
-        </Pressable>
-
-      </View>
+      </Modal>
     </View>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Modal Styles ─────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    overflow: 'hidden',
+    backgroundColor: "transparent",
   },
 
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
+  pressed: {
+    opacity: 0.85,
   },
 
-  contentArea: {
+  modalBackdrop: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "flex-end",
   },
 
-  // ── Header ──────────────────────────────────────────────────────────────
-
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.two,
-  },
-
-  headerTextBlock: {
+  modalOverlayDismiss: {
     flex: 1,
-    gap: 2,
   },
 
-  dateText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
+  modalSheetContainer: {
+    backgroundColor: "rgba(255, 252, 249, 0.98)",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 12,
+    paddingHorizontal: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
   },
 
-  greeting: {
-    fontSize: 32,
-    lineHeight: 40,
+  modalHandle: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(180, 160, 150, 0.4)",
+    alignSelf: "center",
+    marginBottom: 18,
   },
 
-  greetingBold: {
-    fontFamily: 'AvenirNext-DemiBold',
-    color: COLORS.headingDark,
+  modalBadge: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginBottom: 14,
   },
 
-  greetingRegular: {
-    fontFamily: 'AvenirNext-Regular',
-    color: COLORS.headingDark,
+  modalBadgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
-  settingsButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.settingsBg,
-    borderWidth: 1,
-    borderColor: COLORS.settingsBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 14,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+  modalBadgeText: {
+    fontFamily: "AvenirNext-DemiBold",
+    fontSize: 13,
   },
 
-  // ── Orb ──────────────────────────────────────────────────────────────────
-
-  orbContainer: {
-    width: '120%',
-    aspectRatio: 1,
-    alignSelf: 'center',
-    marginBottom: 0,
-    top: -60
-  },
-
-  orb: {
-    width: '100%',
-    height: '100%',
-  },
-
-  // ── Status ───────────────────────────────────────────────────────────────
-
-  statusBlock: {
-    alignItems: 'center',
-    marginBottom: Spacing.three,
-    top: -150,
-
-  },
-
-  statusHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 32,
-    lineHeight: 42,
-    textAlign: 'center',
+  modalHeading: {
+    fontSize: 28,
+    lineHeight: 36,
     marginBottom: 10,
   },
 
-  statusDark: {
-    color: COLORS.headingDark,
+  modalHeadingDark: {
+    fontFamily: "AvenirNext-Regular",
+    color: "#2C1810",
   },
 
-  statusAccent: {
+  modalHeadingAccent: {
+    fontFamily: "AvenirNext-Regular",
     color: COLORS.accent,
   },
 
-  holdingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  modalSubtitle: {
+    fontFamily: "AvenirNext-Regular",
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#785344",
+    marginBottom: 20,
   },
 
-  greenDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.greenDot,
+  modalItemsList: {
+    gap: 18,
+    marginBottom: 22,
   },
 
-  holdingText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    color: COLORS.bodyText,
+  modalItemRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
   },
 
-  // ── Forecast card ────────────────────────────────────────────────────────
-
-  forecastCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 18,
-    paddingHorizontal: 8,
-    marginBottom: 32,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-    top: -140,
-
+  modalIconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#F3E3D6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
   },
 
-  forecastColumn: {
+  modalItemTextBlock: {
     flex: 1,
-    alignItems: 'center',
-    gap: 8,
+    gap: 3,
   },
 
-  forecastDivider: {
-    width: 1,
-    backgroundColor: COLORS.divider,
-    alignSelf: 'stretch',
-  },
-
-  forecastLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 11,
-    color: COLORS.mutedText,
-    letterSpacing: 1.5,
-  },
-
-  forecastStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-
-  forecastDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-
-  forecastValue: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 14,
-    color: COLORS.headingDark,
-  },
-
-  // ── Button ───────────────────────────────────────────────────────────────
-
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingHorizontal: Spacing.four,
-    alignSelf: 'stretch',
-    marginBottom: Spacing.four,
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    top: -130,
-    elevation: 5,
-  },
-
-  buttonPressed: {
-    opacity: 0.86,
-  },
-
-  buttonText: {
-    color: COLORS.buttonText,
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: 0.1,
-
-  },
-
-  // ── Planning link ────────────────────────────────────────────────────────
-
-  planningContainer: {
-    alignSelf: 'center',
-    marginBottom: 36,
-    top: -130,
-
-  },
-
-  planningText: {
-    fontFamily: 'AvenirNext-Regular',
+  modalItemTitle: {
+    fontFamily: "AvenirNext-DemiBold",
     fontSize: 15,
-    color: COLORS.accent,
-    textDecorationLine: 'underline',
+    lineHeight: 20,
+    color: "#2C1810",
+  },
+
+  modalItemDesc: {
+    fontFamily: "AvenirNext-Regular",
+    fontSize: 13.5,
+    lineHeight: 18,
+    color: "#785344",
+  },
+
+  modalReassurance: {
+    fontFamily: "AvenirNext-Regular",
+    fontSize: 13.5,
+    lineHeight: 19,
+    color: "rgba(120, 83, 68, 0.8)",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+
+  modalOkayBtn: {
+    backgroundColor: COLORS.buttonFill,
+    borderRadius: 28,
+    height: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "stretch",
+  },
+
+  modalOkayBtnText: {
+    fontFamily: "AvenirNext-DemiBold",
+    fontSize: 16,
+    color: "#FFFFFF",
   },
 });

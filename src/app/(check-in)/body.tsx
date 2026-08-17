@@ -3,16 +3,17 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
+  headingDark: '#463332',
+  accent: '#b05334',
+  bodyText: '#463332',
+  mutedText: '#6B4C3E',
   buttonFill: '#D9735A',
   buttonText: '#FFFFFF',
   progressInactive: '#E5C4B7',
@@ -41,7 +42,13 @@ const BODY_LEVELS: BodyLevel[] = [
 
 export default function BodyScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ energyIndex?: string; energyLabel?: string }>();
+  const params = useLocalSearchParams<{
+    yesterdayIndex?: string;
+    yesterdayLabel?: string;
+    energyIndex?: string;
+    energyLabel?: string;
+    isFirstTime?: string;
+  }>();
   const [selectedIndex, setSelectedIndex] = useState<number>(2); // Default: tender (index 2)
   const [isCrash, setIsCrash] = useState<boolean>(false);
 
@@ -68,25 +75,37 @@ export default function BodyScreen() {
   };
 
   const handleSkip = () => {
-    router.replace('/(tabs)');
+    router.push({
+      pathname: '/(check-in)/noting',
+      params: {
+        yesterdayIndex: params.yesterdayIndex,
+        yesterdayLabel: params.yesterdayLabel,
+        energyIndex: params.energyIndex,
+        energyLabel: params.energyLabel,
+        isFirstTime: params.isFirstTime,
+      },
+    });
   };
 
   const handleNext = () => {
     router.push({
       pathname: '/(check-in)/noting',
       params: {
+        yesterdayIndex: params.yesterdayIndex,
+        yesterdayLabel: params.yesterdayLabel,
         energyIndex: params.energyIndex ?? '2',
         energyLabel: params.energyLabel ?? 'middling',
         bodyIndex: selectedIndex,
         bodyLabel: selectedLevel.label,
+        isFirstTime: params.isFirstTime,
       },
     });
   };
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric background glow */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {/* Exact Aubade Dawn Atmosphere Background */}
+      <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
         {/* ── Top navigation bar ───────────────────────────────────────── */}
@@ -229,7 +248,7 @@ export default function BodyScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 
@@ -258,14 +277,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 20,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
     height: 44,
   },
 
   navButton: {
-    padding: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
@@ -281,7 +301,11 @@ const styles = StyleSheet.create({
   skipText: {
     fontFamily: 'AvenirNext-Regular',
     fontSize: 16,
+    lineHeight: 22,
     color: COLORS.mutedText,
+    paddingBottom: 4,
+    paddingRight: 6,
+    paddingLeft: 2,
   },
 
   // ── Progress Bar ─────────────────────────────────────────────────────────
@@ -347,9 +371,9 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORS.bodyText,
+    fontSize: 16.5,
+    lineHeight: 23,
+    color: '#463332',
     marginBottom: Spacing.five,
     maxWidth: '90%',
   },
@@ -510,9 +534,9 @@ const styles = StyleSheet.create({
   },
 
   bottomHelperText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13,
-    color: COLORS.mutedText,
+    fontFamily: 'AvenirNext-DemiBold',
+    fontSize: 13.5,
+    color: '#6B4C3E',
     textAlign: 'center',
   },
 });

@@ -1,23 +1,13 @@
-import { Tabs } from 'expo-router';
-import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs } from "expo-router";
+import { SymbolView, type SymbolViewProps } from "expo-symbols";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Spacing } from '@/constants/theme';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  barBg: 'rgba(255, 251, 248, 0.82)',
-  barBorder: 'rgba(212, 184, 174, 0.35)',
-  selectedPill: 'rgba(255, 255, 255, 0.7)',
-  selectedText: '#C0634A',
-  unselectedText: '#a38778',
-};
+import { useTheme } from "@/constants/themes";
 
 // ─── Tab configuration ────────────────────────────────────────────────────────
 
-type SymbolName = SymbolViewProps['name'];
+type SymbolName = SymbolViewProps["name"];
 
 type TabConfig = {
   name: string;
@@ -27,61 +17,115 @@ type TabConfig = {
 };
 
 const TABS: TabConfig[] = [
-  { name: 'index', label: 'Today', icon: 'house' as SymbolName, iconFocused: 'house.fill' as SymbolName },
-  { name: 'patterns', label: 'Patterns', icon: 'waveform.path.ecg' as SymbolName, iconFocused: 'waveform.path.ecg' as SymbolName },
-  { name: 'notes', label: 'Notes', icon: 'doc.text' as SymbolName, iconFocused: 'doc.text.fill' as SymbolName },
+  {
+    name: "index",
+    label: "Today",
+    icon: "house" as SymbolName,
+    iconFocused: "house.fill" as SymbolName,
+  },
+  {
+    name: "patterns",
+    label: "Patterns",
+    icon: "waveform.path.ecg" as SymbolName,
+    iconFocused: "waveform.path.ecg" as SymbolName,
+  },
+  {
+    name: "notes",
+    label: "Notes",
+    icon: "doc.text" as SymbolName,
+    iconFocused: "doc.text.fill" as SymbolName,
+  },
 ];
 
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 
 function HeedlyTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
 
   return (
-    <View style={[styles.tabBarOuter, { paddingBottom: insets.bottom > 0 ? insets.bottom - 8 : 8 }]}>
-      <View style={styles.tabBarContainer}>
-        {state.routes.map((route: { key: string; name: string }, index: number) => {
-          const tabConfig = TABS.find((t) => t.name === route.name);
-          if (!tabConfig) return null;
+    <View
+      style={[
+        styles.tabBarOuter,
+        { bottom: insets.bottom > 0 ? insets.bottom + 6 : 16 },
+      ]}
+      pointerEvents="box-none"
+    >
+      <View
+        style={[
+          styles.tabBarContainer,
+          {
+            backgroundColor: theme.components.tabBar.background,
+            borderColor: theme.components.tabBar.border,
+            shadowColor: theme.components.tabBar.shadowColor,
+          },
+        ]}
+      >
+        {state.routes.map(
+          (route: { key: string; name: string }, index: number) => {
+            const tabConfig = TABS.find((t) => t.name === route.name);
+            if (!tabConfig) return null;
 
-          const isFocused = state.index === index;
-          const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+            const { options } = descriptors[route.key];
 
-          const handlePress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+            const handlePress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          return (
-            <Pressable
-              key={route.key}
-              style={[styles.tabItem, isFocused && styles.tabItemFocused]}
-              onPress={handlePress}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isFocused }}
-              accessibilityLabel={options.tabBarAccessibilityLabel ?? tabConfig.label}>
-              <SymbolView
-                name={isFocused ? tabConfig.iconFocused : tabConfig.icon}
-                size={22}
-                tintColor={isFocused ? COLORS.selectedText : COLORS.unselectedText}
-              />
-              <Text
+            return (
+              <Pressable
+                key={route.key}
                 style={[
-                  styles.tabLabel,
-                  { color: isFocused ? COLORS.selectedText : COLORS.unselectedText },
-                  isFocused && styles.tabLabelFocused,
-                ]}>
-                {tabConfig.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+                  styles.tabItem,
+                  isFocused && [
+                    styles.tabItemFocused,
+                    {
+                      backgroundColor: theme.components.tabBar.selectedPill,
+                      borderColor: theme.components.tabBar.selectedPill,
+                    },
+                  ],
+                ]}
+                onPress={handlePress}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isFocused }}
+                accessibilityLabel={
+                  options.tabBarAccessibilityLabel ?? tabConfig.label
+                }
+              >
+                <SymbolView
+                  name={isFocused ? tabConfig.iconFocused : tabConfig.icon}
+                  size={22}
+                  tintColor={
+                    isFocused
+                      ? theme.components.tabBar.selectedText
+                      : theme.components.tabBar.unselectedText
+                  }
+                />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: isFocused
+                        ? theme.components.tabBar.selectedText
+                        : theme.components.tabBar.unselectedText,
+                    },
+                    isFocused && styles.tabLabelFocused,
+                  ]}
+                >
+                  {tabConfig.label}
+                </Text>
+              </Pressable>
+            );
+          },
+        )}
       </View>
     </View>
   );
@@ -93,10 +137,12 @@ export default function AppTabs() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props: any) => <HeedlyTabBar {...props} />}>
-      <Tabs.Screen name="index" options={{ title: 'Today' }} />
-      <Tabs.Screen name="patterns" options={{ title: 'Patterns' }} />
-      <Tabs.Screen name="notes" options={{ title: 'Notes' }} />
+      tabBar={(props: any) => <HeedlyTabBar {...props} />}
+    >
+      <Tabs.Screen name="index" options={{ title: "Today" }} />
+      <Tabs.Screen name="patterns" options={{ title: "Patterns" }} />
+      <Tabs.Screen name="notes" options={{ title: "Notes" }} />
+      <Tabs.Screen name="settings" options={{ title: "Settings" }} />
       <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );
@@ -106,49 +152,54 @@ export default function AppTabs() {
 
 const styles = StyleSheet.create({
   tabBarOuter: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.four,
-    paddingTop: 8,
+    position: "absolute",
+    left: 18,
+    right: 18,
+    zIndex: 100,
+    alignItems: "center",
   },
 
   tabBarContainer: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.barBg,
-    borderRadius: 28,
+    width: "100%",
+    maxWidth: 420,
+    flexDirection: "row",
+    alignSelf: "center",
+    borderRadius: 32,
     borderWidth: 1,
-    borderColor: COLORS.barBorder,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    padding: 8,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.14,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 4,
   },
 
   tabItem: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    paddingVertical: 17,
+    paddingHorizontal: 14,
     borderRadius: 26,
   },
 
   tabItemFocused: {
-    backgroundColor: COLORS.selectedPill,
+    borderWidth: 1,
+    shadowColor: "#8C6E66",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
   tabLabel: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16,
+    fontFamily: "AvenirNext-Regular",
+    fontSize: 17,
+    lineHeight: 20,
   },
 
   tabLabelFocused: {
-    fontFamily: 'AvenirNext-DemiBold',
+    fontFamily: "AvenirNext-DemiBold",
   },
 });

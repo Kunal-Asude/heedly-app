@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#866452ff',
+  headingDark: '#463332',
+  accent: '#b05334',
+  bodyText: '#463332',
+  mutedText: '#6B4C3E',
   chipBg: '#FFFBF8',
   chipSelectedBg: '#F0D5C8',
   chipSelectedBorder: '#D4917E',
@@ -57,8 +58,8 @@ export default function ConditionsScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric glow — matching Welcome & Connect screens */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {/* Exact Aubade Dawn Atmosphere Background */}
+      <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
 
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 
@@ -232,9 +233,9 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORS.bodyText,
+    fontSize: 16.5,
+    lineHeight: 23,
+    color: '#463332',
     marginBottom: Spacing.four,
   },
 

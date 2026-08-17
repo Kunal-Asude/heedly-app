@@ -4,22 +4,23 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
+  headingDark: '#463332',
+  accent: '#b05334',
+  bodyText: '#463332',
+  mutedText: '#6B4C3E',
   cardBg: '#FFFBF8',
   cardSelectedBg: '#F0D5C8',
   cardSelectedBorder: '#D4917E',
   iconCircleBg: '#F2DDD4',
   iconTint: '#B07A68',
-  skipMuted: '#a38778',
+  skipMuted: '#6B4C3E',
   skipAccent: '#9E5E48',
   buttonFill: '#D9735A',
   buttonText: '#FFFFFF',
@@ -68,8 +69,8 @@ export default function ConnectWearableScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric glow — same technique as Welcome screen */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {/* Exact Aubade Dawn Atmosphere Background */}
+      <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -139,6 +140,18 @@ export default function ConnectWearableScreen() {
             })}
           </View>
 
+          {/* ── Skip text (placed before Continue button) ──────────────── */}
+          <Pressable
+            style={styles.skipContainer}
+            onPress={() => router.push('/(onboarding)/conditions')}
+            accessibilityRole="button"
+            accessibilityLabel="Skip for now">
+            <Text style={styles.skipText}>
+              Skip for now — {' '}
+              <Text style={styles.skipLink}>you can connect later</Text>
+            </Text>
+          </Pressable>
+
           {/* ── Continue button (always reserves layout space so UI does not shift) ── */}
           <Pressable
             style={({ pressed }) => [
@@ -154,18 +167,6 @@ export default function ConnectWearableScreen() {
             <Text style={styles.continueArrow}>›</Text>
           </Pressable>
 
-          {/* ── Skip text ───────────────────────────────────────────────── */}
-          <Pressable
-            style={styles.skipContainer}
-            onPress={() => router.push('/(onboarding)/conditions')}
-            accessibilityRole="button"
-            accessibilityLabel="Skip for now">
-            <Text style={styles.skipText}>
-              Skip for now —{' '}
-              <Text style={styles.skipLink}>you can connect later</Text>
-            </Text>
-          </Pressable>
-
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
 
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 
@@ -253,9 +254,9 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORS.bodyText,
+    fontSize: 16.5,
+    lineHeight: 23,
+    color: '#463332',
     marginBottom: Spacing.four,
   },
 
@@ -380,11 +381,12 @@ const styles = StyleSheet.create({
 
   skipContainer: {
     alignSelf: 'center',
+    marginBottom: 20,
   },
 
   skipText: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.skipMuted,
     textAlign: 'center',
     lineHeight: 20,
@@ -393,5 +395,8 @@ const styles = StyleSheet.create({
   skipLink: {
     color: COLORS.skipAccent,
     textDecorationLine: 'underline',
+    fontFamily: 'AvenirNext-Demibold',
+    fontSize: 14,
+
   },
 });

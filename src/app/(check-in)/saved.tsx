@@ -3,16 +3,17 @@ import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
+  headingDark: '#463332',
+  accent: '#b05334',
+  bodyText: '#463332',
+  mutedText: '#6B4C3E',
   buttonBg: 'rgba(255, 251, 248, 0.95)',
   buttonBorder: 'rgba(212, 184, 174, 0.35)',
   cardBg: 'rgba(255, 251, 248, 0.85)',
@@ -47,27 +48,33 @@ function FiveDotRating({ value }: { value: number }) {
 export default function CheckInSavedScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
+    yesterdayIndex?: string;
+    yesterdayLabel?: string;
     energyIndex?: string;
     energyLabel?: string;
     bodyIndex?: string;
     bodyLabel?: string;
     tags?: string;
+    periodInfo?: string;
   }>();
 
+  const yesterdayLabel = params.yesterdayLabel;
+  const yesterdayRating = params.yesterdayIndex ? Number(params.yesterdayIndex) + 1 : undefined;
   const energyLabel = params.energyLabel ?? 'middling';
   const energyRating = params.energyIndex ? Number(params.energyIndex) + 1 : 3;
   const bodyLabel = params.bodyLabel ?? 'tender';
   const bodyRating = params.bodyIndex ? Number(params.bodyIndex) + 1 : 3;
   const tagsText = params.tags && params.tags.length > 0 ? params.tags : 'social · screens · warm room';
+  const periodInfo = params.periodInfo;
 
   const handleBackToToday = () => {
-    router.replace('/(tabs)');
+    router.replace('/(tabs)?mode=steady' as any);
   };
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric background glow */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {/* Exact Aubade Dawn Atmosphere Background */}
+      <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
         {/* ── Fixed Viewport Content (Non-scrollable) ──────────────────── */}
@@ -97,6 +104,20 @@ export default function CheckInSavedScreen() {
 
           {/* Summary Card */}
           <View style={styles.summaryCard}>
+            {/* YESTERDAY Row (if recorded) */}
+            {yesterdayLabel && yesterdayRating !== undefined && (
+              <>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.rowLabel}>YESTERDAY</Text>
+                  <View style={styles.rowValueBlock}>
+                    <Text style={styles.rowValueText}>{yesterdayLabel}</Text>
+                    <FiveDotRating value={yesterdayRating} />
+                  </View>
+                </View>
+                <View style={styles.divider} />
+              </>
+            )}
+
             {/* ENERGY Row */}
             <View style={styles.summaryRow}>
               <Text style={styles.rowLabel}>ENERGY</Text>
@@ -126,6 +147,19 @@ export default function CheckInSavedScreen() {
                 {tagsText}
               </Text>
             </View>
+
+            {/* CYCLE / PERIOD Row (if recorded) */}
+            {periodInfo && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.summaryRowTopAligned}>
+                  <Text style={styles.rowLabelTop}>CYCLE</Text>
+                  <Text style={styles.rowValueTextNotable}>
+                    {periodInfo}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
 
         </View>
@@ -151,7 +185,7 @@ export default function CheckInSavedScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 
@@ -226,9 +260,9 @@ const styles = StyleSheet.create({
 
   description: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.bodyText,
+    fontSize: 16.5,
+    lineHeight: 23,
+    color: '#463332',
     textAlign: 'center',
     marginBottom: 32,
     paddingHorizontal: Spacing.two,

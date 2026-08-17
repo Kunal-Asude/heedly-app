@@ -1,18 +1,19 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
+  headingDark: '#463332',
+  accent: '#b05334',
+  bodyText: '#463332',
+  mutedText: '#6B4C3E',
   buttonFill: '#D9735A',
   buttonText: '#FFFFFF',
   progressInactive: '#E5C4B7',
@@ -29,7 +30,7 @@ type EnergyLevel = {
   glowColor: string;
 };
 
-const ENERGY_LEVELS: EnergyLevel[] = [
+const RECURRING_LEVELS: EnergyLevel[] = [
   { id: 0, label: 'drained', color: '#DC6B76', glowColor: 'rgba(220, 107, 118, 0.3)' },
   { id: 1, label: 'low', color: '#E08568', glowColor: 'rgba(224, 133, 104, 0.3)' },
   { id: 2, label: 'middling', color: '#E7B874', glowColor: 'rgba(231, 184, 116, 0.35)' },
@@ -37,14 +38,30 @@ const ENERGY_LEVELS: EnergyLevel[] = [
   { id: 4, label: 'high', color: '#7BA98B', glowColor: 'rgba(123, 169, 139, 0.35)' },
 ];
 
+const FIRST_TIME_LEVELS: EnergyLevel[] = [
+  { id: 0, label: 'awful', color: '#DC6B76', glowColor: 'rgba(220, 107, 118, 0.3)' },
+  { id: 1, label: 'poor', color: '#E08568', glowColor: 'rgba(224, 133, 104, 0.3)' },
+  { id: 2, label: 'okay', color: '#E7B874', glowColor: 'rgba(231, 184, 116, 0.35)' },
+  { id: 3, label: 'good', color: '#A5C49F', glowColor: 'rgba(165, 196, 159, 0.35)' },
+  { id: 4, label: 'great', color: '#7BA98B', glowColor: 'rgba(123, 169, 139, 0.35)' },
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EnergyScreen() {
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState<number>(2); // Default: middling (index 2)
+  const params = useLocalSearchParams<{
+    yesterdayIndex?: string;
+    yesterdayLabel?: string;
+    isFirstTime?: string;
+  }>();
+
+  const isFirstTime = params.isFirstTime === 'true';
+  const levels = isFirstTime ? FIRST_TIME_LEVELS : RECURRING_LEVELS;
+  const [selectedIndex, setSelectedIndex] = useState<number>(2); // Default: okay / middling
   const [isCrash, setIsCrash] = useState<boolean>(false);
 
-  const selectedLevel = ENERGY_LEVELS[selectedIndex];
+  const selectedLevel = levels[selectedIndex];
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
@@ -54,7 +71,7 @@ export default function EnergyScreen() {
   const handleCrashPress = () => {
     setIsCrash(!isCrash);
     if (!isCrash) {
-      setSelectedIndex(0); // Set to drained when crash is selected
+      setSelectedIndex(0); // Set to awful / drained when crash is selected
     }
   };
 
@@ -67,23 +84,51 @@ export default function EnergyScreen() {
   };
 
   const handleSkip = () => {
-    router.replace('/(tabs)');
+    if (isFirstTime) {
+      router.push({
+        pathname: '/(check-in)/yesterday',
+        params: {
+          isFirstTime: 'true',
+        },
+      });
+    } else {
+      router.push({
+        pathname: '/(check-in)/body',
+        params: {
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+        },
+      });
+    }
   };
 
   const handleNext = () => {
-    router.push({
-      pathname: '/(check-in)/body',
-      params: {
-        energyIndex: selectedIndex,
-        energyLabel: selectedLevel.label,
-      },
-    });
+    if (isFirstTime) {
+      router.push({
+        pathname: '/(check-in)/yesterday',
+        params: {
+          energyIndex: selectedIndex,
+          energyLabel: selectedLevel.label,
+          isFirstTime: 'true',
+        },
+      });
+    } else {
+      router.push({
+        pathname: '/(check-in)/body',
+        params: {
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+          energyIndex: selectedIndex,
+          energyLabel: selectedLevel.label,
+        },
+      });
+    }
   };
 
   return (
     <View style={styles.root}>
-      {/* Atmospheric background glow */}
-      <View style={styles.glowInner} pointerEvents="none" />
+      {/* Exact Aubade Dawn Atmosphere Background */}
+      <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
         {/* ── Top navigation bar ───────────────────────────────────────── */}
@@ -121,19 +166,30 @@ export default function EnergyScreen() {
 
           {/* ── Question Heading ───────────────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={styles.headingDark}>{"How's your"}{'\n'}</Text>
-            <Text style={styles.headingAccent}>energy right now?</Text>
+            {isFirstTime ? (
+              <>
+                <Text style={styles.headingDark}>{'How are you\n'}</Text>
+                <Text style={styles.headingAccent}>feeling?</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.headingDark}>{"How's your\n"}</Text>
+                <Text style={styles.headingAccent}>energy right now?</Text>
+              </>
+            )}
           </Text>
 
           {/* ── Supporting Text ────────────────────────────────────────── */}
           <Text style={styles.supportingText}>
-            No need to think hard — go with your gut.
+            {isFirstTime
+              ? 'No need to think hard — go with your gut.'
+              : 'No need to think hard — go with your gut.'}
           </Text>
 
           {/* ── 5-Level Energy Selector ────────────────────────────────── */}
           <View style={styles.selectorContainer}>
             <View style={styles.circlesRow}>
-              {ENERGY_LEVELS.map((level, idx) => {
+              {levels.map((level, idx) => {
                 const isSelected = selectedIndex === idx;
                 return (
                   <Pressable
@@ -166,9 +222,9 @@ export default function EnergyScreen() {
               })}
             </View>
 
-            {/* ── Labels Row (drained, selected pill, high) ─────────────── */}
+            {/* ── Labels Row (awful/drained, selected pill, great/high) ──── */}
             <View style={styles.labelsRow}>
-              <Text style={styles.endpointLabel}>drained</Text>
+              <Text style={styles.endpointLabel}>{levels[0].label}</Text>
 
               {/* Center selected pill */}
               <View style={styles.selectedPill}>
@@ -181,7 +237,7 @@ export default function EnergyScreen() {
                 <Text style={styles.pillText}>{selectedLevel.label}</Text>
               </View>
 
-              <Text style={styles.endpointLabel}>high</Text>
+              <Text style={styles.endpointLabel}>{levels[4].label}</Text>
             </View>
           </View>
 
@@ -227,7 +283,7 @@ export default function EnergyScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 
@@ -256,14 +312,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 20,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
     height: 44,
   },
 
   navButton: {
-    padding: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
@@ -279,7 +336,11 @@ const styles = StyleSheet.create({
   skipText: {
     fontFamily: 'AvenirNext-Regular',
     fontSize: 16,
+    lineHeight: 22,
     color: COLORS.mutedText,
+    paddingBottom: 4,
+    paddingRight: 6,
+    paddingLeft: 2,
   },
 
   // ── Progress Bar ─────────────────────────────────────────────────────────
@@ -345,9 +406,9 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORS.bodyText,
+    fontSize: 16.5,
+    lineHeight: 23,
+    color: '#463332',
     marginBottom: Spacing.five,
     maxWidth: '90%',
   },
@@ -513,9 +574,9 @@ const styles = StyleSheet.create({
   },
 
   bottomHelperText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13,
-    color: COLORS.mutedText,
+    fontFamily: 'AvenirNext-DemiBold',
+    fontSize: 13.5,
+    color: '#6B4C3E',
     textAlign: 'center',
   },
 });
