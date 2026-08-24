@@ -1,27 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 import { useCheckInConfig } from '@/hooks/data';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b05334',
-  bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  chipBg: 'rgba(255, 251, 248, 0.85)',
-  chipBorder: 'rgba(212, 184, 174, 0.35)',
-  chipSelectedBg: '#D9735A',
-  chipSelectedText: '#FFFFFF',
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -89,7 +75,7 @@ export default function PlanScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
 
-          {/* ── Top Header ────────────────────────────────────────────────── */}
+          {/* ── Top Header (.sx-nav & .pl-*) ───────────────────────────────── */}
           <View style={styles.headerBlock}>
             <Pressable
               onPress={() => router.back()}
@@ -99,20 +85,23 @@ export default function PlanScreen() {
               <Text style={styles.backChevron}>‹</Text>
             </Pressable>
 
+            {/* .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
             <Text style={styles.sectionLabel}>PLAN AHEAD</Text>
 
+            {/* .pl-title: Comfortaa 400, 31px, lineHeight 36px, #463332 */}
             <Text style={styles.mainHeading}>Planning something?</Text>
 
+            {/* .pl-sub: 14.5px, 1.5, rgba(74,58,57,0.78) */}
             <Text style={styles.subtitleText}>
               {"See what it might cost you — before you\nsay yes."}
             </Text>
           </View>
 
-          {/* ── PICK A DAY Section ────────────────────────────────────────── */}
+          {/* ── PICK A DAY Section (.pl-sec) ─────────────────────────────── */}
           <View style={styles.sectionBlock}>
             <Text style={styles.groupLabel}>PICK A DAY</Text>
 
-            {/* Presets Row */}
+            {/* Presets Row (.pl-quick) */}
             <View style={styles.presetsRow}>
               <Pressable
                 style={({ pressed }) => [
@@ -151,7 +140,7 @@ export default function PlanScreen() {
               </Pressable>
             </View>
 
-            {/* Date Cards Row */}
+            {/* Date Cards Row (.pl-dates) */}
             <View style={styles.dateCardsRow}>
               {planningDays.map((item) => {
                 const isSelected = selectedDayId === item.id;
@@ -159,41 +148,49 @@ export default function PlanScreen() {
                   <Pressable
                     key={item.id}
                     style={({ pressed }) => [
-                      styles.dateCard,
-                      isSelected && styles.dateCardSelected,
+                      styles.dateCardWrapper,
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleSelectDay(item.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`${item.day} ${item.date}`}>
-                    <Text
-                      style={[
-                        styles.dateCardDayLabel,
-                        isSelected && styles.dateCardDayLabelSelected,
-                      ]}>
-                      {item.day}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.dateCardNumber,
-                        isSelected && styles.dateCardNumberSelected,
-                      ]}>
-                      {item.date}
-                    </Text>
+                    {isSelected ? (
+                      <LinearGradient
+                        colors={[CORAL.light, CORAL.primary]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.dateCardSelectedGradient}>
+                        <Text style={styles.dateCardDayLabelSelected}>
+                          {item.day}
+                        </Text>
+                        <Text style={styles.dateCardNumberSelected}>
+                          {item.date}
+                        </Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={styles.dateCardInactive}>
+                        <Text style={styles.dateCardDayLabel}>
+                          {item.day}
+                        </Text>
+                        <Text style={styles.dateCardNumber}>
+                          {item.date}
+                        </Text>
+                      </View>
+                    )}
                   </Pressable>
                 );
               })}
             </View>
           </View>
 
-          {/* ── WHAT KIND OF THING? Section ──────────────────────────────── */}
+          {/* ── WHAT KIND OF THING? Section (.pl-sec) ────────────────────── */}
           <View style={styles.sectionBlock}>
             <View style={styles.groupLabelRow}>
               <Text style={styles.groupLabel}>WHAT KIND OF THING?</Text>
               <Text style={styles.optionalLabel}> (optional)</Text>
             </View>
 
-            {/* Activity Type Chips Wrap */}
+            {/* Activity Type Chips Wrap (.pl-kinds) */}
             <View style={styles.activityWrap}>
               {planningActivities.map((activity) => {
                 const isSelected = selectedActivities.includes(activity);
@@ -201,38 +198,61 @@ export default function PlanScreen() {
                   <Pressable
                     key={activity}
                     style={({ pressed }) => [
-                      styles.activityChip,
-                      isSelected && styles.activityChipSelected,
+                      styles.activityChipWrapper,
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleToggleActivity(activity)}
                     accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
                     accessibilityLabel={activity}>
-                    <Text
-                      style={[
-                        styles.activityChipText,
-                        isSelected && styles.activityChipTextSelected,
-                      ]}>
-                      {activity}
-                    </Text>
+                    {isSelected ? (
+                      <LinearGradient
+                        colors={[CORAL.light, CORAL.primary]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.activityChipSelectedGradient}>
+                        <Text style={styles.activityChipTextSelected}>
+                          {activity}
+                        </Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={styles.activityChipInactive}>
+                        <Text style={styles.activityChipText}>
+                          {activity}
+                        </Text>
+                      </View>
+                    )}
                   </Pressable>
                 );
               })}
             </View>
           </View>
 
-          {/* Spacer to push CTA button to bottom */}
           <View style={styles.flexSpacer} />
 
-          {/* ── Bottom Action Button ─────────────────────────────────────── */}
+          {/* ── Bottom Action Button (.pl-cta gradient) ─────────────────── */}
           <Pressable
-            style={({ pressed }) => [styles.ctaButton, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [styles.ctaButtonWrapper, pressed && styles.buttonPressed]}
             onPress={handleCheckCost}
             accessibilityRole="button"
             accessibilityLabel="Check the cost">
-            <Text style={styles.ctaButtonText}>Check the cost</Text>
-            <Text style={styles.ctaArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.ctaButtonGradient}>
+              <Text style={styles.ctaButtonText}>Check the cost</Text>
+              <View style={styles.ctaArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
         </View>
@@ -250,34 +270,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
-  },
-
   safeArea: {
     flex: 1,
   },
 
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: Spacing.four,
+    paddingBottom: 24,
   },
 
   pressed: {
-    opacity: 0.85,
+    opacity: 0.8,
   },
 
   buttonPressed: {
-    opacity: 0.88,
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
   },
 
   flexSpacer: {
@@ -287,169 +297,192 @@ const styles = StyleSheet.create({
   // ── Header ──────────────────────────────────────────────────────────────
 
   headerBlock: {
-    marginBottom: Spacing.three,
+    marginBottom: 18,
   },
 
   backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-
-  backChevron: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 28,
-    lineHeight: 28,
-    color: COLORS.bodyText,
-  },
-
-  sectionLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
-
-  mainHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 34,
-    lineHeight: 42,
-    color: COLORS.headingDark,
+    width: 36,
+    height: 36,
+    marginLeft: -6,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
   },
 
-  subtitleText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: '#463332',
+  backChevron: {
+    fontSize: 30,
+    lineHeight: 30,
+    color: 'rgba(74, 58, 57, 0.62)',
   },
 
-  // ── Section & Group Labels ─────────────────────────────────────────────
+  // .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
+    marginBottom: 7,
+  },
+
+  // .pl-title: Comfortaa 400, 31px, lineHeight 36px, #463332
+  mainHeading: {
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    color: INK.display,
+    marginBottom: 8,
+  },
+
+  // .pl-sub: 14.5px, 1.5, rgba(74,58,57,0.78)
+  subtitleText: {
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: 'rgba(74, 58, 57, 0.78)',
+  },
+
+  // ── Sections ────────────────────────────────────────────────────────────
 
   sectionBlock: {
-    marginTop: Spacing.three,
+    marginBottom: 20,
   },
 
   groupLabelRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 10,
   },
 
+  // .pl-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
   groupLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 11,
-    letterSpacing: 1.5,
-    color: COLORS.mutedText,
+    fontWeight: '600',
+    letterSpacing: 1.76,
+    color: 'rgba(74, 58, 57, 0.5)',
     textTransform: 'uppercase',
-    marginBottom: 12,
   },
 
   optionalLabel: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    textTransform: 'lowercase',
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(74, 58, 57, 0.4)',
   },
 
-  // ── Presets ─────────────────────────────────────────────────────────────
+  // ── Presets (.pl-quick) ──────────────────────────────────────────────────
 
   presetsRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
-    marginBottom: 14,
+    marginBottom: 12,
   },
 
+  // .pl-chip: padding 10px 17px, radius 999px, bg #fffdfa, border 1.5px rgba(120,90,80,0.16)
   presetChip: {
-    backgroundColor: COLORS.chipBg,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: COLORS.chipBorder,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 17,
+    borderRadius: 999,
+    backgroundColor: '#fffdfa',
+    borderWidth: 1.5,
+    borderColor: 'rgba(120, 90, 80, 0.16)',
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 9,
+    elevation: 1,
   },
 
+  // .pl-chip.sel: bg linear-gradient(135deg, rgba(244,164,126,0.2), rgba(224,115,95,0.16)), border rgba(224,115,95,0.42)
   presetChipActive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(212, 184, 174, 0.45)',
+    backgroundColor: 'rgba(244, 164, 126, 0.2)',
+    borderColor: 'rgba(224, 115, 95, 0.42)',
   },
 
   presetText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 15,
-    color: COLORS.headingDark,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4f3c3a',
   },
 
   presetTextActive: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 15,
-    color: COLORS.headingDark,
+    color: '#4f3c3a',
   },
 
-  // ── Date Cards ──────────────────────────────────────────────────────────
+  // ── Dates Grid (.pl-dates) ───────────────────────────────────────────────
 
   dateCardsRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 6,
   },
 
-  dateCard: {
+  dateCardWrapper: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.chipBg,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.chipBorder,
-    paddingVertical: 12,
-    gap: 4,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 2,
   },
 
-  dateCardSelected: {
-    backgroundColor: COLORS.chipSelectedBg,
-    borderColor: COLORS.chipSelectedBg,
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.26,
-    shadowRadius: 8,
-    elevation: 5,
+  dateCardInactive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 16,
+    backgroundColor: '#fffdfa',
+    borderWidth: 1.5,
+    borderColor: 'rgba(120, 90, 80, 0.13)',
+    gap: 3,
   },
 
+  dateCardSelectedGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 16,
+    gap: 3,
+    shadowColor: '#E0735F',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+
+  // .dow: 9.5px, 700, 0.1em, uppercase, rgba(74,58,57,0.46)
   dateCardDayLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 10,
-    letterSpacing: 0.8,
-    color: COLORS.mutedText,
+    fontSize: 9.5,
+    fontWeight: '700',
+    letterSpacing: 0.95,
+    textTransform: 'uppercase',
+    color: 'rgba(74, 58, 57, 0.46)',
   },
 
   dateCardDayLabelSelected: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 9.5,
+    fontWeight: '700',
+    letterSpacing: 0.95,
+    textTransform: 'uppercase',
+    color: '#fff8f4',
   },
 
+  // .num: 17px, 600, #463332
   dateCardNumber: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 18,
-    color: COLORS.headingDark,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#463332',
   },
 
   dateCardNumberSelected: {
-    color: COLORS.chipSelectedText,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#fff8f4',
   },
 
-  // ── Activity Chips ──────────────────────────────────────────────────────
+  // ── Activity Chips (.pl-kinds) ───────────────────────────────────────────
 
   activityWrap: {
     flexDirection: 'row',
@@ -457,67 +490,86 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  activityChip: {
-    backgroundColor: COLORS.chipBg,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: COLORS.chipBorder,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+  activityChipWrapper: {
+    borderRadius: 999,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 9,
+    elevation: 1,
   },
 
-  activityChipSelected: {
-    backgroundColor: COLORS.chipSelectedBg,
-    borderColor: COLORS.chipSelectedBg,
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
+  activityChipInactive: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: '#fffdfa',
+    borderWidth: 1.5,
+    borderColor: 'rgba(120, 90, 80, 0.16)',
+  },
+
+  activityChipSelectedGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    shadowColor: '#E0735F',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.26,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowRadius: 18,
+    elevation: 4,
   },
 
+  // .pl-kind: 13.5px, 600, #4f3c3a
   activityChipText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 15,
-    color: COLORS.headingDark,
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: '#4f3c3a',
   },
 
   activityChipTextSelected: {
-    color: COLORS.chipSelectedText,
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: '#fff8f4',
   },
 
-  // ── Bottom Action Button ────────────────────────────────────────────────
+  // ── Primary CTA Button (.pl-cta) ─────────────────────────────────────────
 
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingHorizontal: Spacing.four,
-    gap: 8,
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
+  ctaButtonWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     elevation: 5,
   },
 
-  ctaButtonText: {
-    color: COLORS.buttonText,
-    fontSize: 17,
-    fontWeight: '600',
+  ctaButtonGradient: {
+    flex: 1,
+    borderRadius: 29,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
-  ctaArrow: {
-    color: COLORS.buttonText,
-    fontSize: 20,
+  ctaButtonText: {
+    color: '#fff8f4',
+    fontSize: 16.5,
     fontWeight: '600',
+    letterSpacing: -0.15,
+    textAlign: 'center',
+  },
+
+  ctaArrowContainer: {
+    position: 'absolute',
+    right: 22,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

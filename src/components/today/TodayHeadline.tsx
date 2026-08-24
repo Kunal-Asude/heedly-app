@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from "@/constants/themes";
+import { CORAL, Fonts, INK } from "@/constants/theme";
 
 interface TodayHeadlineProps {
   headline1: string;
@@ -13,21 +13,14 @@ export function TodayHeadline({
   headline2,
   isAccent = true,
 }: TodayHeadlineProps) {
-  const theme = useTheme();
-
   return (
     <View style={styles.headlineSlot}>
       <Text style={styles.headingText} numberOfLines={2}>
-        <Text style={[styles.darkText, { color: theme.ink.display }]}>
+        <Text style={styles.darkText}>
           {headline1}
         </Text>
         <Text
-          style={[
-            isAccent ? styles.accentText : styles.darkText,
-            {
-              color: isAccent ? theme.coral.terracotta : theme.ink.display,
-            },
-          ]}
+          style={isAccent ? styles.accentText : styles.darkText}
         >
           {headline2}
         </Text>
@@ -38,26 +31,28 @@ export function TodayHeadline({
 
 const styles = StyleSheet.create({
   headlineSlot: {
-    minHeight: 66,
+    minHeight: 60,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
+  // .editorial: Comfortaa 400, 33px, line-height 38px (1.16), letter-spacing -0.01em (-0.33), color #463332
   headingText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 34,
-    lineHeight: 42,
+    fontFamily: Fonts.display.regular,
+    fontSize: 33,
+    lineHeight: 38,
     textAlign: "center",
-    letterSpacing: -1.0,
+    letterSpacing: -0.33,
   },
 
   darkText: {
-    // Color applied dynamically in component
+    color: INK.display,
   },
 
+  // .editorial em: #b0532f (CORAL.terracottaDeep)
   accentText: {
-    // Color applied dynamically in component
+    color: CORAL.terracottaDeep,
   },
 });

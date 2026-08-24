@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
 import { useCheckInConfig } from '@/hooks/data';
 import type { YesterdayOption } from '@/types/checkin';
 
@@ -13,12 +13,11 @@ import type { YesterdayOption } from '@/types/checkin';
 const COLORS = {
   background: '#F5DDD5',
   headingDark: '#463332',
-  accent: '#b05334',
+  accent: '#b0532f',
   bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  progressInactive: '#E5C4B7',
+  mutedText: 'rgba(74, 58, 57, 0.5)',
+  skipLink: '#b05334',
+  progressInactive: 'rgba(74, 58, 57, 0.18)',
 };
 
 export default function YesterdayScreen() {
@@ -267,6 +266,7 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
+    paddingTop: 12,
   },
 
   pressed: {
@@ -284,8 +284,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     height: 52,
+    marginBottom: 10,
   },
 
   navButton: {
@@ -293,14 +294,12 @@ const styles = StyleSheet.create({
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
   },
 
   backChevron: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 28,
-    lineHeight: 28,
-    color: COLORS.bodyText,
+    fontSize: 30,
+    lineHeight: 30,
+    color: 'rgba(74, 58, 57, 0.6)',
   },
 
   progressRow: {
@@ -313,14 +312,14 @@ const styles = StyleSheet.create({
   progressDot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
+    borderRadius: 3.5,
     backgroundColor: COLORS.progressInactive,
   },
 
   skipText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '500',
     color: COLORS.mutedText,
   },
 
@@ -328,16 +327,17 @@ const styles = StyleSheet.create({
 
   contentArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.four,
+    paddingHorizontal: 24,
+    paddingTop: 12,
     alignItems: 'flex-start',
   },
 
   questionHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 38,
-    lineHeight: 46,
-    marginBottom: Spacing.two,
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    marginBottom: 12,
     textAlign: 'left',
   },
 
@@ -350,11 +350,11 @@ const styles = StyleSheet.create({
   },
 
   supportingText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: '#463332',
-    marginBottom: Spacing.five,
+    fontSize: 14.5,
+    lineHeight: 22,
+    fontWeight: '400',
+    color: 'rgba(74, 58, 57, 0.66)',
+    marginBottom: 24,
     maxWidth: '92%',
     textAlign: 'left',
   },
@@ -364,55 +364,57 @@ const styles = StyleSheet.create({
   optionsList: {
     width: '100%',
     gap: 12,
-    marginBottom: 28,
+    marginBottom: 22,
   },
 
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    height: 62,
-    borderRadius: 24,
-    borderWidth: 1,
+    gap: 13,
+    paddingVertical: 18,
     paddingHorizontal: 20,
-    shadowColor: '#8C6A6A',
-    shadowOffset: { width: 0, height: 4 },
+    borderRadius: 18,
+    borderWidth: 1,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowRadius: 9,
     elevation: 2,
   },
 
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
   },
 
   cardText: {
-    fontSize: 16.5,
-    color: COLORS.headingDark,
+    fontSize: 16,
+    color: '#4f3c3a',
+    lineHeight: 20,
   },
 
   cardTextRegular: {
-    fontFamily: 'AvenirNext-Regular',
+    fontWeight: '600',
   },
 
   cardTextBold: {
-    fontFamily: 'AvenirNext-DemiBold',
+    fontWeight: '600',
   },
 
   // ── Secondary Skip Link ──────────────────────────────────────────────────
 
   secondarySkipBtn: {
     alignSelf: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginTop: 10,
   },
 
   secondarySkipText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 14.5,
-    color: COLORS.accent,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.skipLink,
     textDecorationLine: 'underline',
     textAlign: 'center',
   },
@@ -420,15 +422,16 @@ const styles = StyleSheet.create({
   // ── Bottom Footnote ──────────────────────────────────────────────────────
 
   bottomSection: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
     paddingBottom: 24,
     alignItems: 'center',
   },
 
   bottomHelperText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 13.5,
-    color: '#6B4C3E',
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '400',
+    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 });

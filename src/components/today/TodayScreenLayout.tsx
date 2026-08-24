@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: Spacing.four,
-    paddingBottom: 88, // Clearance for absolute positioned bottom tab bar
+    paddingBottom: 90, // Clearance for absolute positioned bottom tab bar, shifted up 2px
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -288,13 +288,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   headlineSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 6,
     marginBottom: 8,
   },
 
@@ -309,22 +310,22 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 2,
+    marginBottom: 4,
   },
 
   forecastSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 0,
-    marginBottom: 0,
+    marginTop: 14,
+    marginBottom: 2,
   },
 
   secondarySlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 12,
     marginBottom: 0,
   },
 
@@ -342,6 +343,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 0,
+    marginBottom: 2,
   },
 });

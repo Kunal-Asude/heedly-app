@@ -1,4 +1,3 @@
-import { useTheme } from "@/constants/themes";
 import { SymbolView } from "expo-symbols";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -13,17 +12,11 @@ export function TodayHeader({
   greeting = "Hello, Sam.",
   onSettingsPress,
 }: TodayHeaderProps) {
-  const theme = useTheme();
-
   return (
     <View style={styles.headerRow}>
       <View style={styles.headerTextBlock}>
-        <Text style={[styles.dateText, { color: theme.ink.muted }]}>
-          {dateText}
-        </Text>
-        <Text style={[styles.greeting, { color: theme.ink.display }]}>
-          {greeting}
-        </Text>
+        <Text style={styles.dateText}>{dateText}</Text>
+        <Text style={styles.greeting}>{greeting}</Text>
       </View>
 
       <Pressable
@@ -36,7 +29,7 @@ export function TodayHeader({
         accessibilityRole="button"
         accessibilityLabel="Settings"
       >
-        <SymbolView name="gearshape" size={22} tintColor={theme.ink.display} />
+        <SymbolView name="gearshape" size={20} tintColor="rgba(74, 58, 57, 0.62)" />
       </Pressable>
     </View>
   );
@@ -48,9 +41,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     alignSelf: "stretch",
-    height: 64,
-    marginTop: 16,
-    marginBottom: 6,
+    height: 56,
+    marginTop: 8,
+    marginBottom: 4,
     zIndex: 10,
   },
 
@@ -58,34 +51,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  // .date: 11.5px, letter-spacing 0.18em, uppercase, 600, rgba(74,58,57,0.5), margin: 0 0 7px
   dateText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 14,
-    letterSpacing: 1.6,
+    fontSize: 11.5,
+    fontWeight: "600",
+    letterSpacing: 2.07,
     textTransform: "uppercase",
+    color: "rgba(74, 58, 57, 0.5)",
     marginBottom: 5,
   },
 
+  // .hello: 25px, 600, letter-spacing -0.01em, #4a3736
   greeting: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 32,
-    lineHeight: 42,
+    fontSize: 25,
+    fontWeight: "600",
+    letterSpacing: -0.25,
+    lineHeight: 30,
+    color: "#4a3736",
   },
 
+  // .settings: 40x40, radius 20, bg rgba(255,255,255,0.38), border 1px rgba(255,255,255,0.55)
   settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.65)",
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.85)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.38)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.55)",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
-    shadowColor: "#8C6A6A",
+    shadowColor: "#BE8C8C",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
     elevation: 2,
   },
 

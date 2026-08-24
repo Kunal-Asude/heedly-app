@@ -25,7 +25,6 @@ export function Footnote({ children, style, ...rest }: FootnoteProps) {
 
 const styles = StyleSheet.create({
   footnote: {
-    fontFamily: "AvenirNext-Regular",
     fontSize: 14,
     lineHeight: 21,
     fontWeight: "500",

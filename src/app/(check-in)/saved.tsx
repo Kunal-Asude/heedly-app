@@ -5,26 +5,26 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
 
 const COLORS = {
   background: '#F5DDD5',
   headingDark: '#463332',
-  accent: '#b05334',
+  accent: '#b0532f',
   bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  helperText: '#8A6A5E',
-  buttonBg: 'rgba(255, 251, 248, 0.95)',
-  buttonBorder: 'rgba(212, 184, 174, 0.35)',
-  cardBg: 'rgba(255, 251, 248, 0.85)',
-  cardBorder: 'rgba(212, 184, 174, 0.4)',
-  divider: 'rgba(212, 184, 174, 0.35)',
-  checkBg: '#C8E3D0',
-  checkIcon: '#2E5A3E',
-  activeDot: '#E08568',
-  inactiveDot: '#E5C4B7',
+  mutedText: 'rgba(74, 58, 57, 0.5)',
+  helperText: 'rgba(74, 58, 57, 0.5)',
+  buttonBg: 'rgba(255, 255, 255, 0.7)',
+  buttonBorder: 'rgba(255, 255, 255, 0.85)',
+  cardBg: 'rgba(255, 252, 248, 0.72)',
+  cardBorder: 'rgba(255, 255, 255, 0.8)',
+  divider: 'rgba(120, 90, 90, 0.1)',
+  checkBg: '#c1dac8',
+  checkIcon: '#4f7359',
+  activeDot: '#ec7d5e',
+  inactiveDot: 'rgba(120, 90, 90, 0.18)',
 };
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
@@ -132,10 +132,10 @@ export default function CheckInSavedScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Fixed Viewport Content (Non-scrollable) ──────────────────── */}
+        {/* ── Fixed Viewport Content (.ci-done) ───────────────────────── */}
         <View style={styles.contentArea}>
 
-          {/* Green Check Icon Badge */}
+          {/* Green Check Icon Badge (.ci-done-icon.check) */}
           <View style={styles.iconContainer}>
             <View style={styles.checkBadge}>
               <SymbolView
@@ -146,7 +146,7 @@ export default function CheckInSavedScreen() {
             </View>
           </View>
 
-          {/* Conditional Heading */}
+          {/* Conditional Heading (.ci-done .ob-h: 32px, Comfortaa 400) */}
           {isFirstTime ? (
             <Text style={styles.headingFirstTime}>
               <Text style={styles.headingDark}>Thank you, </Text>
@@ -159,7 +159,7 @@ export default function CheckInSavedScreen() {
             </Text>
           )}
 
-          {/* Conditional Description */}
+          {/* Conditional Description (.lead: 15px, line-height 23px) */}
           {isFirstTime ? (
             <Text style={styles.description}>
               {"That's your first piece of the picture.\nEach check-in teaches heedly a little\nmore about you."}
@@ -170,7 +170,7 @@ export default function CheckInSavedScreen() {
             </Text>
           )}
 
-          {/* Summary Card with Tappable Rows */}
+          {/* Summary Card with Tappable Rows (.ci-summary) */}
           <View style={styles.summaryCard}>
             {/* FIRST ROW: FEELING (First Time) vs ENERGY (Recurring) */}
             <Pressable
@@ -252,14 +252,14 @@ export default function CheckInSavedScreen() {
             )}
           </View>
 
-          {/* Helper Text below card */}
+          {/* Helper Text below card (.ci-edit-hint: 12px, rgba(74,58,57,0.5)) */}
           <Text style={styles.helperText}>
             Tap any line to edit before you go.
           </Text>
 
         </View>
 
-        {/* ── Bottom Section: Back to Today Button ───────────────────── */}
+        {/* ── Bottom Section: Back to Today Button (.ci-secondary) ─────── */}
         <View style={styles.bottomSection}>
           <Pressable
             style={({ pressed }) => [styles.button, pressed && styles.pressed]}
@@ -285,6 +285,7 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
+    paddingTop: 12,
   },
 
   pressed: {
@@ -300,83 +301,84 @@ const styles = StyleSheet.create({
 
   contentArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 26,
     justifyContent: 'center',
-    paddingBottom: Spacing.two,
+    paddingBottom: 8,
   },
 
-  // ── Icon Badge ───────────────────────────────────────────────────────────
+  // ── Icon Badge (.ci-done-icon.check: 56x56) ──────────────────────────────
 
   iconContainer: {
     alignItems: 'center',
-    marginBottom: Spacing.four,
+    marginBottom: 20,
   },
 
   checkBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.checkBg,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#7AAB89',
+    shadowColor: '#BE968C',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
-  // ── Headings ─────────────────────────────────────────────────────────────
+  // ── Headings (.ci-done .ob-h: 32px, Comfortaa 400) ───────────────────────
 
   headingFirstTime: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 36,
-    lineHeight: 44,
+    fontFamily: Fonts.display.regular,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.3,
     textAlign: 'center',
     marginBottom: 12,
   },
 
   headingRegular: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 34,
-    lineHeight: 42,
+    fontFamily: Fonts.display.regular,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.3,
     textAlign: 'center',
     marginBottom: 12,
   },
 
   headingDark: {
-    color: COLORS.headingDark,
+    color: INK.display,
   },
 
   headingAccent: {
-    color: COLORS.accent,
+    color: CORAL.terracottaDeep,
   },
 
-  // ── Description ──────────────────────────────────────────────────────────
+  // ── Description (.lead: 15px, line-height 23px) ──────────────────────────
 
   description: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 23,
-    color: '#463332',
+    color: INK.soft,
     textAlign: 'center',
-    marginBottom: 28,
-    paddingHorizontal: Spacing.three,
+    marginBottom: 24,
+    paddingHorizontal: 12,
   },
 
-  // ── Summary Card ─────────────────────────────────────────────────────────
+  // ── Summary Card (.ci-summary: radius 20, shadow, padding 4px 18px) ──────
 
   summaryCard: {
     backgroundColor: COLORS.cardBg,
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 4 },
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: 18,
     elevation: 3,
   },
 
@@ -384,29 +386,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 14,
   },
 
   summaryRowTopAligned: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 14,
   },
 
+  // .ci-skey: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
   rowLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 11,
-    color: COLORS.mutedText,
-    letterSpacing: 1.5,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 1.76,
     textTransform: 'uppercase',
   },
 
   rowLabelTop: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 11,
-    color: COLORS.mutedText,
-    letterSpacing: 1.5,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 1.76,
     textTransform: 'uppercase',
     paddingTop: 2,
   },
@@ -414,48 +417,48 @@ const styles = StyleSheet.create({
   rowValueBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
 
+  // .ci-sval: 14px, 600, #4f3c3a
   rowValueText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 15,
-    color: COLORS.headingDark,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4f3c3a',
   },
 
+  // .ci-snote: 13px, 600, #5a4644
   rowValueTextNotable: {
     flex: 1,
     textAlign: 'right',
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.headingDark,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+    color: '#5a4644',
     marginLeft: 16,
   },
 
   divider: {
     height: 1,
     backgroundColor: COLORS.divider,
-    marginVertical: 14,
   },
 
-  // ── Helper Text ──────────────────────────────────────────────────────────
+  // ── Helper Text (.ci-edit-hint: 12px, rgba(74,58,57,0.5)) ────────────────
 
   helperText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13.5,
+    fontSize: 12,
     lineHeight: 18,
-    color: COLORS.helperText,
+    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
     marginTop: 16,
   },
 
-  // ── Dot Rating ───────────────────────────────────────────────────────────
+  // ── Dot Rating (.ci-sdots) ───────────────────────────────────────────────
 
   dotRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
 
   ratingDot: {
@@ -464,31 +467,31 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
-  // ── Bottom Section ───────────────────────────────────────────────────────
+  // ── Bottom Section (.ci-secondary: height 54, radius 27, 16px 600 #5a4644) ─
 
   bottomSection: {
-    paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.four,
+    paddingHorizontal: 26,
+    paddingBottom: 26,
   },
 
   button: {
     backgroundColor: COLORS.buttonBg,
-    borderRadius: 50,
-    height: 56,
+    borderRadius: 27,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.buttonBorder,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 2,
   },
 
   buttonText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 17,
-    color: COLORS.headingDark,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#5a4644',
   },
 });

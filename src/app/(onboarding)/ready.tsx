@@ -1,10 +1,12 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { CORAL, INK, Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 
 export default function ReadyScreen() {
   const router = useRouter();
@@ -19,18 +21,14 @@ export default function ReadyScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Top spacer */}
-        <View style={styles.topSpacer} />
+        <View style={styles.content}>
 
-        {/* ── Signature Animated Glass Orb (Pure glass, no waves, scaled down) ──── */}
-        <View style={styles.orbContainer}>
-          <EnergyOrb state="empty" size={152} />
-        </View>
+          {/* ── Signature Animated Glass Orb (152px, same as Welcome) ──── */}
+          <View style={styles.orbContainer}>
+            <EnergyOrb state="empty" size={152} />
+          </View>
 
-        {/* ── Content block ────────────────────────────────────────────── */}
-        <View style={styles.contentBlock}>
-
-          {/* Heading — "heedly is ready." matching onboarding.jsx */}
+          {/* ── Heading — "heedly is ready." (.ob-h.center-h: Comfortaa, 30px) ── */}
           <View style={styles.headingRow}>
             <Image
               source={require('@/assets/images/heedly-warm-ink.png')}
@@ -41,30 +39,39 @@ export default function ReadyScreen() {
             <Text style={styles.headingAccent}>ready.</Text>
           </View>
 
-          {/* Supporting description */}
+          {/* ── Lead description (.lead: 15px, ink-soft) ──────────────── */}
           <Text style={styles.description}>
             The more days you check in, the clearer your patterns become.
             {" We'll do the rest quietly."}
           </Text>
 
-          {/* Go to today button */}
+          {/* ── Primary CTA (.ob-cta gradient, height 58, radius 29) ──── */}
           <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [styles.buttonWrapper, pressed && styles.buttonPressed]}
             onPress={handleGoToToday}
             accessibilityRole="button"
             accessibilityLabel="Go to today">
-            <Text style={styles.buttonText}>Go to today</Text>
-            <Text style={styles.buttonArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}>
+              <Text style={styles.buttonText}>Go to today</Text>
+              <View style={styles.buttonArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
-          {/* Matching bottom balance area to ensure identical CTA positioning */}
-          <View style={styles.bottomBalance} />
-
         </View>
-
-        {/* Bottom spacer */}
-        <View style={styles.bottomSpacer} />
-
       </SafeAreaView>
     </View>
   );
@@ -76,122 +83,115 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 
+  // .ob.center: justify-content center, align-items center, text-align center
   safeArea: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 26,
   },
 
-  // ── Vertical Rhythm Spacers (Identical to Welcome Screen) ───────────────
-
-  topSpacer: {
-    flex: 1,
+  content: {
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  bottomSpacer: {
-    flex: 1,
-  },
-
-  // ── Orb Container ────────────────────────────────────────────────────────
-
+  // ── Orb Container (.ob-orb: margin 0 0 26px) ──────────────────────────────
   orbContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 26,
   },
 
-  // ── Content block ────────────────────────────────────────────────────────
-
-  contentBlock: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-  },
-
-  // ── Heading ──────────────────────────────────────────────────────────────
-
+  // ── Heading (.ob-h.center-h: margin-top 22px, font-size 30px, nowrap) ──────
   headingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 14,
+    marginTop: 22,
+    marginBottom: 0,
   },
 
+  // .wordmark-inline: height 1.15em, inline
   wordmarkInline: {
-    width: 108,
-    height: 36,
+    width: 128,
+    height: 46,
     tintColor: INK.display,
     marginRight: -20,
   },
 
+  // .ob-h.center-h text: Comfortaa 400, 30px, #463332
   headingIs: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 26,
+    fontFamily: Fonts.display.regular,
+    fontSize: 30,
     color: INK.display,
   },
 
+  // .ob-h em: color #b0532f
   headingAccent: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 26,
-    color: CORAL.terracotta,
+    fontFamily: Fonts.display.regular,
+    fontSize: 30,
+    color: CORAL.terracottaDeep,
   },
 
-  // ── Description ──────────────────────────────────────────────────────────
-
+  // ── Lead description (.lead: 15px, line-height 1.55, ink-soft, max-width 30ch) ──
   description: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    color: '#463332',
+    fontSize: 15,
+    lineHeight: 23,
+    color: INK.soft,
     textAlign: 'center',
-    lineHeight: 24,
-    marginTop: 2,
-    marginBottom: 24,
-    maxWidth: 320,
+    marginTop: 18,
+    maxWidth: 300,
   },
 
-  // ── Button ───────────────────────────────────────────────────────────────
+  // ── Primary CTA (.ob.center .ob-cta: margin-top 30px, height 58, radius 29, gradient) ──
+  buttonWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    marginTop: 30,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 5,
+  },
 
-  button: {
+  buttonGradient: {
+    flex: 1,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CORAL.primary,
-    borderRadius: 30,
-    height: 56,
-    paddingLeft: Spacing.four + 12,
-    paddingRight: Spacing.three,
-    alignSelf: 'stretch',
-    shadowColor: '#6E5656',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 5,
-    marginTop: 0,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   buttonPressed: {
-    opacity: 0.88,
     transform: [{ scale: 0.985 }],
+    opacity: 0.94,
   },
 
+  // .ob-cta text: 16.5px, 600, #fff8f4
   buttonText: {
-    flex: 1,
-    textAlign: 'center',
-    color: '#FFF8F4',
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 17,
+    color: '#fff8f4',
+    fontSize: 16.5,
+    fontWeight: '600',
     letterSpacing: -0.15,
+    textAlign: 'center',
   },
 
-  buttonArrow: {
-    color: '#FFF8F4',
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    opacity: 0.9,
-  },
-
-  bottomBalance: {
-    height: 40,
-    marginTop: 20,
+  // .ob-cta .arr: position absolute, right 20px
+  buttonArrowContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

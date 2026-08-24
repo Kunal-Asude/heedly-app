@@ -12,30 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DawnBackground } from "@/components/core";
-import { Spacing } from "@/constants/theme";
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: "#F5DDD5",
-  headingDark: "#463332",
-  accent: "#C0634A",
-  bodyText: "#785344",
-  mutedText: "#a38778",
-  helperText: "#8A6A5E",
-  deleteText: "#C0533C",
-  buttonFill: "#D9735A",
-  cardBg: "rgba(255, 251, 248, 0.85)",
-  cardBorder: "rgba(212, 184, 174, 0.35)",
-  divider: "rgba(212, 184, 174, 0.35)",
-  coralBadgeBg: "#F09A85",
-  greenBadgeBg: "#C8E3D0",
-  greenBadgeIcon: "#2E5A3E",
-  modalBg: "#FFFBF8",
-  modalBorder: "rgba(212, 184, 174, 0.4)",
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import { CORAL, Fonts, INK } from "@/constants/theme";
 
 export default function YourDataScreen() {
   const router = useRouter();
@@ -70,7 +47,7 @@ export default function YourDataScreen() {
         showsVerticalScrollIndicator={false}
         bounces={true}
       >
-        {/* ── Top Header Navigation ────────────────────────────────────── */}
+        {/* ── Top Header Navigation (.sx-nav) ──────────────────────────── */}
         <View style={[styles.topRow, isDeleteModalVisible && styles.bgDimmed]}>
           <Pressable
             onPress={handleBack}
@@ -84,13 +61,18 @@ export default function YourDataScreen() {
 
         {/* ── Screen Title Header ──────────────────────────────────────── */}
         <View style={isDeleteModalVisible && styles.bgDimmed}>
+          {/* .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
           <Text style={styles.sectionLabel}>PRIVACY</Text>
+
+          {/* .sx-title: Comfortaa 400, 31px, lineHeight 36px, #463332 */}
           <Text style={styles.mainHeading}>Your data</Text>
+
+          {/* .sx-intro: 14.5px, 1.5, rgba(74,58,57,0.7) */}
           <Text style={styles.supportingSubtitle}>
-            {"Here's everything heedly keeps, in plain\nEnglish."}
+            {"Here's everything heedly keeps, in plain English."}
           </Text>
 
-          {/* ── 1. WHAT HEEDLY KEEPS ───────────────────────────────────── */}
+          {/* ── 1. WHAT HEEDLY KEEPS (.sx-sec) ─────────────────────────── */}
           <Text style={styles.groupHeaderLabel}>WHAT HEEDLY KEEPS</Text>
 
           <View style={styles.card}>
@@ -99,8 +81,8 @@ export default function YourDataScreen() {
               <View style={styles.coralBadge}>
                 <SymbolView
                   name="waveform.path.ecg"
-                  size={18}
-                  tintColor="#FFFFFF"
+                  size={16}
+                  tintColor={CORAL.terracottaDeep}
                 />
               </View>
               <View style={styles.itemTextContainer}>
@@ -118,8 +100,8 @@ export default function YourDataScreen() {
               <View style={styles.coralBadge}>
                 <SymbolView
                   name="list.clipboard"
-                  size={18}
-                  tintColor="#FFFFFF"
+                  size={16}
+                  tintColor={CORAL.terracottaDeep}
                 />
               </View>
               <View style={styles.itemTextContainer}>
@@ -135,7 +117,7 @@ export default function YourDataScreen() {
             {/* Conditions */}
             <View style={styles.itemRow}>
               <View style={styles.coralBadge}>
-                <SymbolView name="heart" size={18} tintColor="#FFFFFF" />
+                <SymbolView name="heart" size={16} tintColor={CORAL.terracottaDeep} />
               </View>
               <View style={styles.itemTextContainer}>
                 <Text style={styles.itemTitle}>Conditions</Text>
@@ -150,7 +132,7 @@ export default function YourDataScreen() {
             {/* Period days */}
             <View style={styles.itemRow}>
               <View style={styles.coralBadge}>
-                <SymbolView name="moon" size={18} tintColor="#FFFFFF" />
+                <SymbolView name="moon" size={16} tintColor={CORAL.terracottaDeep} />
               </View>
               <View style={styles.itemTextContainer}>
                 <Text style={styles.itemTitle}>Period days</Text>
@@ -161,7 +143,7 @@ export default function YourDataScreen() {
             </View>
           </View>
 
-          {/* ── 2. WHERE IT LIVES ──────────────────────────────────────── */}
+          {/* ── 2. WHERE IT LIVES (.sx-sec) ────────────────────────────── */}
           <Text style={styles.groupHeaderLabelSpacing}>WHERE IT LIVES</Text>
 
           {/* On your device */}
@@ -170,8 +152,8 @@ export default function YourDataScreen() {
               <View style={styles.greenBadge}>
                 <SymbolView
                   name="iphone"
-                  size={18}
-                  tintColor={COLORS.greenBadgeIcon}
+                  size={16}
+                  tintColor="#5d7a52"
                 />
               </View>
               <View style={styles.itemTextContainer}>
@@ -189,8 +171,8 @@ export default function YourDataScreen() {
               <View style={styles.greenBadge}>
                 <SymbolView
                   name="lock"
-                  size={18}
-                  tintColor={COLORS.greenBadgeIcon}
+                  size={16}
+                  tintColor="#5d7a52"
                 />
               </View>
               <View style={styles.itemTextContainer}>
@@ -202,10 +184,10 @@ export default function YourDataScreen() {
             </View>
           </View>
 
-          {/* ── 3. WHO ELSE SEES IT ────────────────────────────────────── */}
+          {/* ── 3. WHO ELSE SEES IT (.sx-sec) ──────────────────────────── */}
           <Text style={styles.groupHeaderLabelSpacing}>WHO ELSE SEES IT</Text>
 
-          <View style={styles.card}>
+          <View style={styles.cardPadding}>
             <Text style={styles.itemTitle}>Private by default.</Text>
             <Text style={styles.paragraphDescription}>
               {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
@@ -264,31 +246,29 @@ export default function YourDataScreen() {
         onRequestClose={() => setIsDeleteModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          {/* Dismiss backdrop */}
           <Pressable
             style={styles.modalDismissArea}
             onPress={() => setIsDeleteModalVisible(false)}
           />
 
-          {/* Sheet Container */}
-          <View style={styles.sheetContainer}>
-            {/* Handle bar */}
+          <View
+            style={[
+              styles.sheetContainer,
+              { paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28 },
+            ]}
+          >
             <View style={styles.handleBar} />
 
-            {/* Title */}
             <Text style={styles.sheetTitle}>Delete everything?</Text>
 
-            {/* Paragraph 1 */}
             <Text style={styles.sheetBodyText}>
               {"This erases everything heedly keeps — every check-in and all your patterns, on this phone and in your iCloud backup. It can't be undone."}
             </Text>
 
-            {/* Paragraph 2 */}
             <Text style={styles.sheetHelperText}>
               {"If you have a subscription, cancel it separately in the App Store. Deleting here won't stop billing."}
             </Text>
 
-            {/* Outlined "Delete everything" Button */}
             <Pressable
               style={({ pressed }) => [
                 styles.deleteOutlineButton,
@@ -303,7 +283,6 @@ export default function YourDataScreen() {
               </Text>
             </Pressable>
 
-            {/* Filled "Keep my data" Button */}
             <Pressable
               style={({ pressed }) => [
                 styles.keepDataButton,
@@ -335,7 +314,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
   },
 
   pressed: {
@@ -351,204 +330,228 @@ const styles = StyleSheet.create({
     opacity: 0.12,
   },
 
-  // ── Header Navigation ────────────────────────────────────────────────────
+  // ── Header Navigation (.sx-nav) ──────────────────────────────────────────
 
   topRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    marginBottom: 4,
+    height: 36,
+    marginBottom: 12,
   },
 
   backButton: {
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
+    marginLeft: -6,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "flex-start",
   },
 
   backChevron: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 32,
-    lineHeight: 34,
-    color: COLORS.headingDark,
+    fontSize: 30,
+    lineHeight: 30,
+    color: "rgba(74, 58, 57, 0.62)",
   },
 
+  // .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
   sectionLabel: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
+    fontSize: 11,
+    fontWeight: "600",
+    color: "rgba(74, 58, 57, 0.5)",
+    letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
+  // .sx-title: Comfortaa 400, 31px, lineHeight 36px, #463332
   mainHeading: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 36,
-    lineHeight: 44,
-    color: COLORS.headingDark,
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    color: INK.display,
     marginBottom: 8,
   },
 
+  // .sx-intro: 14.5px, 1.5, rgba(74,58,57,0.7)
   supportingSubtitle: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16,
-    lineHeight: 23,
-    color: COLORS.bodyText,
-    marginBottom: 24,
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: "rgba(74, 58, 57, 0.7)",
+    marginBottom: 20,
   },
 
+  // .sx-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
   groupHeaderLabel: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 11,
-    color: COLORS.mutedText,
-    letterSpacing: 1.5,
+    fontWeight: "600",
+    letterSpacing: 1.76,
+    color: "rgba(74, 58, 57, 0.5)",
     textTransform: "uppercase",
     marginBottom: 8,
   },
 
   groupHeaderLabelSpacing: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 11,
-    color: COLORS.mutedText,
-    letterSpacing: 1.5,
+    fontWeight: "600",
+    letterSpacing: 1.76,
+    color: "rgba(74, 58, 57, 0.5)",
     textTransform: "uppercase",
     marginBottom: 8,
     marginTop: 24,
   },
 
-  // ── Cards ────────────────────────────────────────────────────────────────
+  // ── Cards (.sx-card) ─────────────────────────────────────────────────────
 
   card: {
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 22,
+    backgroundColor: "rgba(255, 252, 248, 0.82)",
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
-    shadowColor: "#8C6A6A",
+    borderColor: "rgba(255, 255, 255, 0.85)",
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    shadowColor: "#BE968C",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 10,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+
+  cardPadding: {
+    backgroundColor: "rgba(255, 252, 248, 0.82)",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.85)",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    shadowColor: "#BE968C",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 2,
   },
 
   cardSeparate: {
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 22,
+    backgroundColor: "rgba(255, 252, 248, 0.82)",
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    borderColor: "rgba(255, 255, 255, 0.85)",
+    paddingVertical: 4,
+    paddingHorizontal: 16,
     marginBottom: 10,
-    shadowColor: "#8C6A6A",
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: "#BE968C",
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 2,
   },
 
+  // .sx-keep: padding 14px 0
   itemRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 14,
+    gap: 13,
+    paddingVertical: 14,
   },
 
   coralBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLORS.coralBadgeBg,
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: "rgba(244, 164, 126, 0.18)",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
+    marginTop: 1,
   },
 
   greenBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLORS.greenBadgeBg,
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: "rgba(126, 155, 106, 0.18)",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
+    marginTop: 1,
   },
 
   itemTextContainer: {
     flex: 1,
+    gap: 3,
   },
 
+  // .sx-row-title: 14.5px, 600, #4f3c3a
   itemTitle: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.headingDark,
-    marginBottom: 3,
+    fontSize: 14.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: "#4f3c3a",
+    lineHeight: 20,
   },
 
+  // .sx-row-desc: 12.5px, 450, color rgba(74,58,57,0.62)
   itemDescription: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 14,
-    lineHeight: 19.5,
-    color: COLORS.bodyText,
+    fontSize: 12.5,
+    fontWeight: "400",
+    lineHeight: 18,
+    color: "rgba(74, 58, 57, 0.62)",
   },
 
   paragraphDescription: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 14,
-    lineHeight: 20.5,
-    color: COLORS.bodyText,
+    fontSize: 12.5,
+    fontWeight: "400",
+    lineHeight: 19,
+    color: "rgba(74, 58, 57, 0.62)",
+    marginTop: 6,
   },
 
   divider: {
     height: 1,
-    backgroundColor: COLORS.divider,
-    marginVertical: 14,
+    backgroundColor: "rgba(120, 90, 80, 0.1)",
   },
 
-  // ── Actions ──────────────────────────────────────────────────────────────
+  // ── Actions Card ─────────────────────────────────────────────────────────
 
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 4,
+    paddingVertical: 14,
   },
 
   actionText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16,
-    color: COLORS.headingDark,
+    fontSize: 14.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: "#4f3c3a",
   },
 
   actionDeleteText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16,
-    color: COLORS.deleteText,
+    fontSize: 14.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: "#c0533c",
   },
 
   actionChevron: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 22,
-    lineHeight: 22,
-    color: COLORS.mutedText,
+    fontSize: 17,
+    fontWeight: "600",
+    color: "rgba(74, 58, 57, 0.34)",
   },
 
   footnoteText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 13.5,
-    lineHeight: 19,
-    color: COLORS.helperText,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: "rgba(74, 58, 57, 0.55)",
     marginTop: 12,
-    paddingHorizontal: 4,
+    textAlign: "center",
   },
 
-  // ── Bottom Sheet Modal ───────────────────────────────────────────────────
+  // ── Modal Styles ─────────────────────────────────────────────────────────
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(45, 25, 20, 0.52)",
+    backgroundColor: "rgba(74, 58, 57, 0.34)",
     justifyContent: "flex-end",
   },
 
@@ -557,92 +560,77 @@ const styles = StyleSheet.create({
   },
 
   sheetContainer: {
-    backgroundColor: COLORS.modalBg,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
+    backgroundColor: "#fbf3ec",
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     paddingTop: 14,
-    paddingBottom: 36,
-    borderWidth: 1,
-    borderColor: COLORS.modalBorder,
-    shadowColor: "#301510",
+    paddingHorizontal: 24,
+    shadowColor: "#785A5A",
     shadowOffset: { width: 0, height: -12 },
     shadowOpacity: 0.22,
-    shadowRadius: 28,
+    shadowRadius: 34,
     elevation: 16,
   },
 
   handleBar: {
     width: 38,
-    height: 4.5,
-    borderRadius: 2.5,
-    backgroundColor: "rgba(180, 150, 140, 0.55)",
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(120, 90, 90, 0.2)",
     alignSelf: "center",
-    marginBottom: 18,
+    marginBottom: 16,
   },
 
   sheetTitle: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 28,
-    lineHeight: 34,
-    color: COLORS.headingDark,
-    marginBottom: 12,
+    fontFamily: Fonts.display.regular,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.2,
+    color: INK.display,
+    marginBottom: 10,
   },
 
   sheetBodyText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 14.5,
+    fontSize: 14,
     lineHeight: 21,
-    color: "rgba(74, 58, 57, 0.78)",
-    marginBottom: 14,
+    color: "rgba(74, 58, 57, 0.72)",
+    marginBottom: 12,
   },
 
   sheetHelperText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 13.5,
-    lineHeight: 19.5,
-    color: "rgba(110, 80, 70, 0.72)",
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: "rgba(74, 58, 57, 0.55)",
     marginBottom: 24,
   },
 
   deleteOutlineButton: {
-    height: 54,
-    borderRadius: 27,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 1.5,
-    borderColor: COLORS.buttonFill,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderColor: "#c0533c",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
-    shadowColor: "#8C6A6A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
   },
 
   deleteOutlineButtonText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16.5,
-    color: COLORS.deleteText,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#c0533c",
   },
 
   keepDataButton: {
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: COLORS.buttonFill,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(120, 90, 80, 0.12)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#6E5656",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 4,
   },
 
   keepDataButtonText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16.5,
-    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#4f3c3a",
   },
 });

@@ -1,4 +1,3 @@
-import { useTheme } from "@/constants/themes";
 import { StyleSheet, Text, View } from "react-native";
 
 export interface ForecastDay {
@@ -16,8 +15,6 @@ export function TodayForecastCard({
   forecast,
   learningNote,
 }: TodayForecastCardProps) {
-  const theme = useTheme();
-
   if (!forecast && !learningNote) {
     return null;
   }
@@ -25,35 +22,14 @@ export function TodayForecastCard({
   return (
     <View style={forecast ? styles.forecastSlot : styles.learningNoteSlot}>
       {forecast ? (
-        <View
-          style={[
-            styles.forecastCard,
-            {
-              backgroundColor: theme.components.forecastCard.background,
-              borderColor: theme.components.forecastCard.border,
-              shadowColor: theme.components.forecastCard.shadowColor,
-            },
-          ]}
-        >
+        <View style={styles.forecastCard}>
           {forecast.map((item, idx) => (
             <View key={item.dayLabel} style={styles.forecastColumnGroup}>
               {idx > 0 && (
-                <View
-                  style={[
-                    styles.forecastDivider,
-                    {
-                      backgroundColor: theme.components.forecastCard.divider,
-                    },
-                  ]}
-                />
+                <View style={styles.forecastDivider} />
               )}
               <View style={styles.forecastColumn}>
-                <Text
-                  style={[
-                    styles.forecastLabel,
-                    { color: theme.components.forecastCard.labelColor },
-                  ]}
-                >
+                <Text style={styles.forecastLabel}>
                   {item.dayLabel}
                 </Text>
                 <View style={styles.forecastStatusRow}>
@@ -80,7 +56,7 @@ export function TodayForecastCard({
 
 const styles = StyleSheet.create({
   forecastSlot: {
-    height: 66,
+    height: 80,
     justifyContent: "center",
     alignSelf: "stretch",
     marginTop: 0,
@@ -95,18 +71,22 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
 
+  // .outlook: bg rgba(255,255,255,0.42), border 1px rgba(255,255,255,0.6), radius 22px, padding 16px 6px, shadow
   forecastCard: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 22,
     borderWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 2,
+    borderColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: "rgba(255, 255, 255, 0.42)",
+    paddingVertical: 16,
+    paddingHorizontal: 6,
+    shadowColor: "#BE8C8C",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 24,
+    elevation: 3,
   },
 
   forecastColumnGroup: {
@@ -119,21 +99,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 8,
   },
 
   forecastDivider: {
     width: 1,
-    height: 30,
+    height: 36,
+    backgroundColor: "rgba(120, 90, 90, 0.12)",
     alignSelf: "center",
   },
 
+  // .day .dlabel: 10.5px, 600, letter-spacing 0.07em, color rgba(74,58,57,0.55), uppercase
   forecastLabel: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 11.5,
-    lineHeight: 14,
-    letterSpacing: 1.2,
+    fontSize: 10.5,
+    fontWeight: "600",
+    letterSpacing: 0.73,
     textTransform: "uppercase",
+    color: "rgba(74, 58, 57, 0.55)",
   },
 
   forecastStatusRow: {
@@ -142,32 +124,35 @@ const styles = StyleSheet.create({
     gap: 6,
   },
 
+  // .ddot: 9x9, radius 50%
   forecastDot: {
     width: 9,
     height: 9,
     borderRadius: 4.5,
   },
 
+  // .day .dword: 13.5px, 600, color #4f3c3a, letter-spacing -0.01em
   forecastValue: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 17,
-    lineHeight: 20,
-    color: "#4F3C3A",
+    fontSize: 13.5,
+    fontWeight: "600",
+    letterSpacing: -0.13,
+    color: "#4f3c3a",
   },
 
   learningNoteContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 4,
+    paddingHorizontal: 12,
     width: "100%",
   },
 
+  // .fd-note: 14px, line-height 1.55 (21.7px), 500, color rgba(74,58,57,0.66)
   learningNoteText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 15.5,
-    lineHeight: 23,
-    color: "rgba(55, 40, 39, 0.72)",
+    fontSize: 14,
+    lineHeight: 21.7,
+    fontWeight: "500",
+    color: "rgba(74, 58, 57, 0.66)",
     textAlign: "center",
-    maxWidth: 360,
+    maxWidth: 320,
   },
 });

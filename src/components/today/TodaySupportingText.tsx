@@ -1,4 +1,3 @@
-import { useTheme } from "@/constants/themes";
 import { StyleSheet, Text, View } from "react-native";
 
 interface TodaySupportingTextProps {
@@ -6,12 +5,10 @@ interface TodaySupportingTextProps {
 }
 
 export function TodaySupportingText({ text }: TodaySupportingTextProps) {
-  const theme = useTheme();
-
   return (
     <View style={styles.supportingSlot}>
       {text ? (
-        <Text style={[styles.supportingText, { color: theme.ink.soft }]}>
+        <Text style={styles.supportingText}>
           {text}
         </Text>
       ) : null}
@@ -24,13 +21,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
+  // .fd-micro: 14px, 500, color rgba(74,58,57,0.7), letter-spacing -0.005em, text-align center
   supportingText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    lineHeight: 26,
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 20,
+    letterSpacing: -0.07,
+    color: "rgba(74, 58, 57, 0.7)",
     textAlign: "center",
   },
 });

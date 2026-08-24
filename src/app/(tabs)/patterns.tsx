@@ -5,24 +5,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 import { usePatterns } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#2C1810',
-  accent: '#C0634A',
-  bodyText: '#785344',
-  mutedText: '#a38778',
-  cardBg: 'rgba(255, 251, 248, 0.85)',
-  cardBorder: 'rgba(212, 184, 174, 0.35)',
-  steadyGreen: '#85B58E',
-  cautionYellow: '#E5B87E',
-  restPink: '#DC6B76',
-  helpBadge: '#A8C7A5',
-  costBadge: '#E08568',
+const STATE_COLORS = {
+  steady: '#94b094',
+  caution: '#f0c59e',
+  rest: '#da6d82',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -50,58 +41,64 @@ export default function PatternsScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 100 },
+          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 112 },
         ]}
         showsVerticalScrollIndicator={false}
         bounces={true}>
 
-        {/* ── Back Chevron / Top Spacing ─────────────────────────────────── */}
-        <Pressable
-          onPress={() => router.replace('/(tabs)')}
-          style={({ pressed }) => [styles.topRow, pressed && styles.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Go back to Today">
-          <Text style={styles.backChevron}>‹</Text>
-        </Pressable>
+        {/* ── Back Chevron / Top Spacing (.sx-nav) ─────────────────────── */}
+        <View style={styles.topRow}>
+          <Pressable
+            onPress={() => router.replace('/(tabs)')}
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back to Today">
+            <Text style={styles.backChevron}>‹</Text>
+          </Pressable>
+        </View>
 
-        {/* ── Section Label & Heading ────────────────────────────────────── */}
+        {/* ── Section Label & Heading (.sx-eyebrow & .sx-title) ────────── */}
         <Text style={styles.sectionLabel}>PATTERNS</Text>
 
         <Text style={styles.mainHeading}>
           {"What we've noticed"}
         </Text>
 
-        {/* ── Subtitle Block ─────────────────────────────────────────────── */}
+        {/* ── Subtitle Block (.pt-sub) ─────────────────────────────────── */}
         <View style={styles.subtitleRow}>
           <Text style={styles.subtitleLeft}>{subtitleLeftText}</Text>
           <Text style={styles.subtitleRight}>{learningSinceText}</Text>
         </View>
 
-        {/* ── "This week" 7-Day Card ─────────────────────────────────────── */}
+        {/* ── "This week" 7-Day Card (.pt-week) ────────────────────────── */}
         <View style={styles.thisWeekCard}>
           {/* Card Header */}
           <View style={styles.cardHeaderRow}>
             <Text style={styles.thisWeekTitle}>This week</Text>
-            <Pressable
-              onPress={() => setIsTankTooltipVisible(!isTankTooltipVisible)}
-              style={({ pressed }) => [
-                styles.thisWeekRightHeader,
-                pressed && styles.pressed,
-              ]}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="How is the tank measured?"
-            >
+            <View style={styles.thisWeekRightHeader}>
               <Text style={styles.sevenDaysText}>7 DAYS</Text>
-              <SymbolView
-                name="info.circle"
-                size={18}
-                tintColor={isTankTooltipVisible ? COLORS.accent : COLORS.mutedText}
-              />
-            </Pressable>
+              <Pressable
+                onPress={() => setIsTankTooltipVisible(!isTankTooltipVisible)}
+                style={({ pressed }) => [
+                  styles.infoCircleButton,
+                  isTankTooltipVisible && styles.infoCircleButtonActive,
+                  pressed && styles.pressed,
+                ]}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="How is the tank measured?">
+                <Text
+                  style={[
+                    styles.infoCircleText,
+                    isTankTooltipVisible && styles.infoCircleTextActive,
+                  ]}>
+                  i
+                </Text>
+              </Pressable>
+            </View>
           </View>
 
-          {/* Popover Tooltip when Info Icon is Pressed */}
+          {/* Popover Tooltip when Info Icon is Pressed (.pt-popover) */}
           {isTankTooltipVisible && (
             <View style={styles.tankTooltipPopover}>
               <View style={styles.tankTooltipHeader}>
@@ -114,8 +111,7 @@ export default function PatternsScreen() {
                   ]}
                   hitSlop={8}
                   accessibilityRole="button"
-                  accessibilityLabel="Close tooltip"
-                >
+                  accessibilityLabel="Close tooltip">
                   <Text style={styles.tankTooltipCloseText}>✕</Text>
                 </Pressable>
               </View>
@@ -124,40 +120,49 @@ export default function PatternsScreen() {
             </View>
           )}
 
-          {/* 7-Day Circles Row */}
+          {/* 7-Day Circles Row (.pt-chart) */}
           <View style={styles.daysRow}>
-            {thisWeekDays.map((dayItem, index) => (
-              <View key={index} style={styles.dayColumn}>
-                <View style={styles.dayDotContainer}>
-                  <View
-                    style={[
-                      styles.dayDot,
-                      {
-                        width: dayItem.size,
-                        height: dayItem.size,
-                        borderRadius: dayItem.size / 2,
-                        backgroundColor: dayItem.color,
-                      },
-                    ]}
-                  />
+            {thisWeekDays.map((dayItem, index) => {
+              const dotColor =
+                dayItem.color.includes('Green') || dayItem.color === '#85B58E' || dayItem.color === '#7E9B6A'
+                  ? STATE_COLORS.steady
+                  : dayItem.color.includes('Yellow') || dayItem.color === '#E5B87E' || dayItem.color === '#D99843'
+                  ? STATE_COLORS.caution
+                  : STATE_COLORS.rest;
+
+              return (
+                <View key={index} style={styles.dayColumn}>
+                  <View style={styles.dayDotContainer}>
+                    <View
+                      style={[
+                        styles.dayDot,
+                        {
+                          width: dayItem.size,
+                          height: dayItem.size,
+                          borderRadius: dayItem.size / 2,
+                          backgroundColor: dotColor,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.dayLabel}>{dayItem.day}</Text>
                 </View>
-                <Text style={styles.dayLabel}>{dayItem.day}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
 
-          {/* Legend Row */}
+          {/* Legend Row (.pt-legend) */}
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: COLORS.steadyGreen }]} />
+              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.steady }]} />
               <Text style={styles.legendText}>Steady</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: COLORS.cautionYellow }]} />
+              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.caution }]} />
               <Text style={styles.legendText}>Caution</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: COLORS.restPink }]} />
+              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.rest }]} />
               <Text style={styles.legendText}>Rest day</Text>
             </View>
           </View>
@@ -168,20 +173,18 @@ export default function PatternsScreen() {
           </Text>
         </View>
 
-        {/* ── "WHAT SEEMS TO HELP" Section ──────────────────────────────── */}
-        <View style={styles.sectionHeaderBlock}>
-          <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO HELP</Text>
-        </View>
+        {/* ── "WHAT SEEMS TO HELP" Section (.pt-sec) ───────────────────── */}
+        <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO HELP</Text>
 
         {helpPatterns.map((pattern) => (
           <Pressable
             key={pattern.id}
             style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
-            <View style={[styles.cardIconBadge, { backgroundColor: pattern.badgeColor }]}>
+            <View style={styles.helpBadge}>
               <SymbolView
                 name={pattern.icon}
-                size={20}
-                tintColor="#FFFFFF"
+                size={16}
+                tintColor="#5d7a52"
               />
             </View>
             <View style={styles.cardTextBlock}>
@@ -191,20 +194,18 @@ export default function PatternsScreen() {
           </Pressable>
         ))}
 
-        {/* ── "WHAT SEEMS TO COST YOU" Section ─────────────────────────── */}
-        <View style={styles.sectionHeaderBlock}>
-          <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO COST YOU</Text>
-        </View>
+        {/* ── "WHAT SEEMS TO COST YOU" Section (.pt-sec) ───────────────── */}
+        <Text style={styles.groupHeaderLabelSpacing}>WHAT SEEMS TO COST YOU</Text>
 
         {costPatterns.map((pattern) => (
           <Pressable
             key={pattern.id}
             style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
-            <View style={[styles.cardIconBadge, { backgroundColor: pattern.badgeColor }]}>
+            <View style={styles.costBadge}>
               <SymbolView
                 name={pattern.icon}
-                size={20}
-                tintColor="#FFFFFF"
+                size={16}
+                tintColor={CORAL.terracottaDeep}
               />
             </View>
             <View style={styles.cardTextBlock}>
@@ -214,7 +215,7 @@ export default function PatternsScreen() {
           </Pressable>
         ))}
 
-        {/* ── Bottom Explanatory Text ────────────────────────────────────── */}
+        {/* ── Bottom Explanatory Text (.pt-foot) ───────────────────────── */}
         <Text style={styles.bottomExplanatoryText}>
           {"We only share patterns we're reasonably sure about. Tap a card to see the days behind it."}
         </Text>
@@ -230,18 +231,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
-  },
-
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
   },
 
   scrollView: {
@@ -249,126 +238,175 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
   },
 
   pressed: {
-    opacity: 0.85,
+    opacity: 0.75,
   },
 
-  // ── Header ──────────────────────────────────────────────────────────────
+  // ── Header (.sx-nav) ────────────────────────────────────────────────────
 
   topRow: {
-    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    height: 36,
+    marginBottom: 12,
+  },
+
+  backButton: {
+    width: 36,
+    height: 36,
+    marginLeft: -6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   backChevron: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 26,
-    color: COLORS.bodyText,
+    fontSize: 30,
+    lineHeight: 30,
+    color: 'rgba(74, 58, 57, 0.62)',
   },
 
+  // .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
   sectionLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
+  // .sx-title: Comfortaa 400, 30px, lineHeight 36px, #463332
   mainHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 36,
-    lineHeight: 44,
-    color: '#463332',
-    marginBottom: 10,
+    fontFamily: Fonts.display.regular,
+    fontSize: 30,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    color: INK.display,
+    marginBottom: 8,
   },
 
+  // .pt-sub: flex, gap 18px, margin-top 12px
   subtitleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: Spacing.four,
+    gap: 16,
+    marginBottom: 20,
   },
 
+  // .pt-sub-text: 14.5px, 1.45, rgba(74,58,57,0.8)
   subtitleLeft: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: '#463332',
+    fontSize: 14.5,
+    lineHeight: 21,
+    color: 'rgba(74, 58, 57, 0.8)',
     flex: 1,
   },
 
+  // .pt-since: 10.5px, 600, 0.13em, uppercase, rgba(74,58,57,0.5)
   subtitleRight: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 11,
-    lineHeight: 16,
-    letterSpacing: 1.2,
-    color: COLORS.mutedText,
+    fontSize: 10.5,
+    fontWeight: '600',
+    letterSpacing: 1.37,
+    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'right',
     textTransform: 'uppercase',
+    marginTop: 2,
   },
 
-  // ── "This week" Card ─────────────────────────────────────────────────────
+  // ── "This week" Card (.pt-week) ──────────────────────────────────────────
 
   thisWeekCard: {
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 22,
+    backgroundColor: 'rgba(255, 252, 248, 0.82)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 20,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 16,
     paddingHorizontal: 18,
-    marginBottom: Spacing.four,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    marginBottom: 20,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
   },
 
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
+  // .pt-week-title: Comfortaa 500, 20px, #463332
   thisWeekTitle: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 24,
-    color: COLORS.headingDark,
+    fontFamily: Fonts.display.regular,
+    fontSize: 20,
+    color: INK.display,
   },
 
   thisWeekRightHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
 
+  // .pt-week-days: 10.5px, 600, uppercase, rgba(74,58,57,0.5)
   sevenDaysText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    color: COLORS.mutedText,
+    fontSize: 10.5,
+    fontWeight: '600',
+    letterSpacing: 1.37,
+    color: 'rgba(74, 58, 57, 0.5)',
+    textTransform: 'uppercase',
+  },
+
+  // .pt-info: 22x22, radius 11, border 1px rgba(74,58,57,0.28)
+  infoCircleButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 58, 57, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  infoCircleButtonActive: {
+    borderColor: 'rgba(224, 115, 95, 0.6)',
+    backgroundColor: 'rgba(224, 115, 95, 0.1)',
+  },
+
+  infoCircleText: {
+    fontFamily: Fonts.display.regular,
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.55)',
+    lineHeight: 15,
+  },
+
+  infoCircleTextActive: {
+    color: '#c9603f',
   },
 
   tankTooltipPopover: {
     position: 'absolute',
-    top: 14,
+    top: 44,
     right: 14,
-    width: 275,
-    backgroundColor: '#FFFFFF',
+    width: 260,
+    backgroundColor: '#fffefb',
     borderRadius: 18,
-    paddingHorizontal: 16,
+    paddingHorizontal: 15,
     paddingTop: 14,
-    paddingBottom: 16,
+    paddingBottom: 15,
     borderWidth: 1,
-    borderColor: 'rgba(212, 184, 174, 0.4)',
-    shadowColor: '#4A2820',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#785A5A',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.28,
+    shadowRadius: 40,
     elevation: 12,
     zIndex: 100,
   },
@@ -381,42 +419,39 @@ const styles = StyleSheet.create({
   },
 
   tankTooltipTitle: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    letterSpacing: 1.1,
-    color: '#785344',
+    fontSize: 10.5,
+    fontWeight: '700',
+    letterSpacing: 1.26,
+    color: 'rgba(74, 58, 57, 0.7)',
     textTransform: 'uppercase',
     flex: 1,
-    marginRight: 8,
   },
 
   tankTooltipCloseBtn: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   tankTooltipCloseText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 14,
-    lineHeight: 16,
-    color: '#A38778',
+    color: 'rgba(74, 58, 57, 0.5)',
   },
 
   tankTooltipBody: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13.5,
+    fontSize: 13,
     lineHeight: 19.5,
-    color: '#6B4C3E',
+    color: 'rgba(74, 58, 57, 0.8)',
   },
 
+  // .pt-chart: grid 7 cols
   daysRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingHorizontal: 4,
-    marginBottom: 18,
+    marginBottom: 16,
     height: 48,
   },
 
@@ -433,23 +468,26 @@ const styles = StyleSheet.create({
   },
 
   dayDot: {
-    shadowColor: '#888',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowColor: '#785046',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
   },
 
+  // .pt-day: 11.5px, 600, rgba(74,58,57,0.5)
   dayLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 13,
-    color: COLORS.bodyText,
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
   },
 
+  // .pt-legend: 12px, 600, rgba(74,58,57,0.7)
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    marginBottom: 14,
+    marginTop: 6,
+    marginBottom: 8,
   },
 
   legendItem: {
@@ -459,92 +497,110 @@ const styles = StyleSheet.create({
   },
 
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
   },
 
   legendText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13,
-    color: COLORS.bodyText,
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.7)',
   },
 
   cardFooterNote: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 13,
-    color: COLORS.bodyText,
-  },
-
-  // ── Group Headers ────────────────────────────────────────────────────────
-
-  sectionHeaderBlock: {
-    marginTop: Spacing.two,
-    marginBottom: Spacing.two,
-  },
-
-  groupHeaderLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 12,
-    letterSpacing: 1.5,
-    color: COLORS.mutedText,
-    textTransform: 'uppercase',
+    fontWeight: '500',
+    color: 'rgba(74, 58, 57, 0.55)',
+    marginTop: 4,
   },
 
-  // ── Pattern Cards ────────────────────────────────────────────────────────
+  // ── Insight Cards (.pt-card3) ────────────────────────────────────────────
+
+  // .pt-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
+  groupHeaderLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.76,
+    color: 'rgba(74, 58, 57, 0.5)',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+
+  groupHeaderLabelSpacing: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.76,
+    color: 'rgba(74, 58, 57, 0.5)',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    marginTop: 24,
+  },
 
   patternCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.cardBg,
+    alignItems: 'flex-start',
+    gap: 13,
+    backgroundColor: 'rgba(255, 252, 248, 0.82)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 18,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 15,
     paddingHorizontal: 16,
-    marginBottom: Spacing.three,
-    gap: 14,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
+    marginBottom: 10,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 2,
   },
 
-  cardIconBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  helpBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: 'rgba(126, 155, 106, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 1,
+  },
+
+  costBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: 'rgba(244, 164, 126, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
   },
 
   cardTextBlock: {
     flex: 1,
-    gap: 6,
+    gap: 5,
   },
 
+  // .pt-card3-text: 14px, 1.5, #463332
   cardBodyText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORS.headingDark,
-  },
-
-  cardSubtitleText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 13,
-    color: COLORS.mutedText,
-  },
-
-  // ── Bottom Explanatory Text ──────────────────────────────────────────────
-
-  bottomExplanatoryText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.bodyText,
-    marginTop: Spacing.two,
-    marginBottom: Spacing.four,
+    lineHeight: 21,
+    color: INK.display,
+    fontWeight: '400',
+  },
+
+  // .pt-card3-ev: 12.5px, 1.45, rgba(74,58,57,0.66)
+  cardSubtitleText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: 'rgba(74, 58, 57, 0.66)',
+  },
+
+  // .pt-foot: 13px, 1.5, rgba(74,58,57,0.78)
+  bottomExplanatoryText: {
+    fontSize: 13,
+    lineHeight: 19.5,
+    color: 'rgba(74, 58, 57, 0.78)',
+    marginTop: 14,
+    paddingHorizontal: 2,
   },
 });

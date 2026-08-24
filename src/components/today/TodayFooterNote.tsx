@@ -1,14 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from "@/constants/themes";
-
 interface TodayFooterNoteProps {
   text?: string;
   onPress?: () => void;
 }
 
 export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
-  const theme = useTheme();
   const isPlanningLink = text === "Planning something this week?";
 
   return (
@@ -22,34 +19,14 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
             accessibilityLabel={text}
           >
             <Text
-              style={[
-                isPlanningLink ? styles.planningText : styles.neutralText,
-                {
-                  color: isPlanningLink
-                    ? theme.coral.terracotta
-                    : theme.ink.muted,
-                  textDecorationColor: isPlanningLink
-                    ? theme.coral.terracotta
-                    : "transparent",
-                },
-              ]}
+              style={isPlanningLink ? styles.planningText : styles.neutralText}
             >
               {text}
             </Text>
           </Pressable>
         ) : (
           <Text
-            style={[
-              isPlanningLink ? styles.planningText : styles.neutralText,
-              {
-                color: isPlanningLink
-                  ? theme.coral.terracotta
-                  : theme.ink.muted,
-                textDecorationColor: isPlanningLink
-                  ? theme.coral.terracotta
-                  : "transparent",
-              },
-            ]}
+            style={isPlanningLink ? styles.planningText : styles.neutralText}
           >
             {text}
           </Text>
@@ -61,32 +38,35 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
 
 const styles = StyleSheet.create({
   footerSlot: {
-    height: 40,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
     marginTop: 2,
-    marginBottom: 8,
-    paddingBottom: 1,
+    marginBottom: 4,
   },
 
+  // .qlink.below: 13px, 500, color rgba(176,83,52,0.85), underline
   planningText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 18,
+    color: "rgba(176, 83, 52, 0.85)",
     textAlign: "center",
     textDecorationLine: "underline",
+    letterSpacing: 0.13,
   },
 
   neutralText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 18,
+    color: "rgba(74, 58, 57, 0.6)",
     textAlign: "center",
     textDecorationLine: "none",
   },
 
   pressed: {
-    opacity: 0.8,
+    opacity: 0.75,
   },
 });

@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 13.5,
+    fontWeight: '600',
     color: INK.subtle,
     letterSpacing: -0.15,
   },

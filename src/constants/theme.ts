@@ -52,26 +52,47 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-export const Fonts = Platform.select({
-  ios: {
-    sans: "system-ui",
-    serif: "ui-serif",
-    rounded: "ui-rounded",
-    mono: "ui-monospace",
+export const Fonts = {
+  // Display typography (Comfortaa) - for screen titles, headings, editorial lines
+  display: {
+    regular: "Comfortaa-Regular",
+    medium: "Comfortaa-Medium",
+    semiBold: "Comfortaa-SemiBold",
+    bold: "Comfortaa-Bold",
   },
-  default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
-    mono: "monospace",
+  // Wordmark typography (Hanken Grotesk) - lowercase "heedly" brand wordmark only
+  wordmark: {
+    medium: "HankenGrotesk-Medium",
+    semiBold: "HankenGrotesk-SemiBold",
+    bold: "HankenGrotesk-Bold",
   },
-  web: {
-    sans: "var(--font-display)",
-    serif: "var(--font-serif)",
-    rounded: "var(--font-rounded)",
-    mono: "var(--font-mono)",
-  },
-});
+  // Native system SF Pro stack for body, labels, buttons, tabs, footnotes and UI
+  body: Platform.select({
+    ios: "System",
+    default: "sans-serif",
+  }),
+  // Platform system fallbacks
+  sans: Platform.select({
+    ios: "system-ui",
+    web: "var(--font-display)",
+    default: "normal",
+  }),
+  serif: Platform.select({
+    ios: "ui-serif",
+    web: "var(--font-serif)",
+    default: "serif",
+  }),
+  rounded: Platform.select({
+    ios: "ui-rounded",
+    web: "var(--font-rounded)",
+    default: "normal",
+  }),
+  mono: Platform.select({
+    ios: "ui-monospace",
+    web: "var(--font-mono)",
+    default: "monospace",
+  }),
+};
 
 export const Spacing = {
   half: 2,

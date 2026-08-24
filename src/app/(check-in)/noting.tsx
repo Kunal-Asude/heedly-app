@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import React, { useState } from "react";
@@ -11,33 +12,32 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
 import { DawnBackground } from "@/components/core";
-import { Spacing } from "@/constants/theme";
+import { CORAL, Fonts, INK } from "@/constants/theme";
 import { useCheckInConfig } from "@/hooks/data";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
 
 const COLORS = {
   background: "#F5DDD5",
   headingDark: "#463332",
-  accent: "#b05334",
+  accent: "#b0532f",
   bodyText: "#463332",
-  mutedText: "#6B4C3E",
-  buttonFill: "#D9735A",
-  buttonText: "#FFFFFF",
-  progressInactive: "#E5C4B7",
-  inputBg: "rgba(255, 251, 248, 0.85)",
-  inputBorder: "rgba(212, 184, 174, 0.35)",
-  drawerBg: "rgba(255, 251, 248, 0.75)",
-  drawerBorder: "rgba(212, 184, 174, 0.45)",
-  tagSelectedBg: "#E07860",
-  tagSelectedText: "#FFFFFF",
-  tagUnselectedBg: "rgba(255, 251, 248, 0.85)",
-  tagUnselectedText: "#2C1810",
-  tagUnselectedBorder: "rgba(212, 184, 174, 0.4)",
-  modalBg: "#FFFBF8",
-  sheetBorder: "rgba(255, 255, 255, 0.85)",
+  mutedText: "rgba(74, 58, 57, 0.5)",
+  progressInactive: "rgba(74, 58, 57, 0.18)",
+  inputBg: "rgba(255, 252, 248, 0.82)",
+  inputBorder: "rgba(255, 255, 255, 0.8)",
+  drawerBg: "rgba(255, 252, 248, 0.7)",
+  drawerBorder: "rgba(255, 255, 255, 0.8)",
+  tagUnselectedBg: "rgba(255, 252, 248, 0.76)",
+  tagUnselectedBorder: "rgba(255, 255, 255, 0.8)",
+  tagUnselectedText: "#5a4644",
+  tagSelectedBg: "rgba(244, 164, 126, 0.2)",
+  tagSelectedBorder: "rgba(224, 115, 95, 0.42)",
+  tagSelectedText: "#4f3c3a",
+  modalBg: "#fbf3ec",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -129,7 +129,6 @@ export default function NotingScreen() {
     handleOpenPeriodSheet();
   };
 
-  // Opens period bottom sheet modal
   const handleOpenPeriodSheet = () => {
     setIsPeriodModalVisible(true);
   };
@@ -184,7 +183,7 @@ export default function NotingScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Top navigation bar ───────────────────────────────────────── */}
+        {/* ── Top navigation bar (.ci-head) ────────────────────────────── */}
         <View style={[styles.topNav, isPeriodModalVisible && styles.bgDimmed]}>
           {/* Back button */}
           <Pressable
@@ -203,7 +202,12 @@ export default function NotingScreen() {
           <View style={styles.progressRow}>
             <View style={styles.progressDot} />
             <View style={styles.progressDot} />
-            <View style={styles.progressActive} />
+            <LinearGradient
+              colors={['#f0a07e', '#e0735f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.progressActive}
+            />
           </View>
 
           {/* Skip link */}
@@ -222,23 +226,23 @@ export default function NotingScreen() {
 
         {/* ── Fixed Viewport Content ──────────────────────────────────── */}
         <View style={[styles.contentArea, isPeriodModalVisible && styles.bgDimmed]}>
-          {/* ── Question Label ─────────────────────────────────────────── */}
+          {/* ── Question Label (.ci-eyebrow) ───────────────────────────── */}
           <Text style={styles.questionLabel}>QUESTION 3 OF 3</Text>
 
-          {/* ── Question Heading ───────────────────────────────────────── */}
+          {/* ── Question Heading (.ob-h: 31px, Comfortaa 400) ──────────── */}
           <Text style={styles.questionHeading}>
             <Text style={styles.headingDark}>Anything from{"\n"}</Text>
             <Text style={styles.headingAccent}>today worth noting?</Text>
           </Text>
 
-          {/* ── Supporting Subtitle ────────────────────────────────────── */}
+          {/* ── Supporting Subtitle (.ob-sub: 14.5px) ──────────────────── */}
           <Text style={styles.supportingText}>
             Tap any that apply. Skip if nothing fits.
           </Text>
 
-          {/* ── Search & Filter Row ────────────────────────────────────── */}
+          {/* ── Search & Filter Row (.ci-find: .ci-filter-btn + .ci-search) ── */}
           <View style={styles.searchRow}>
-            {/* Filter icon button */}
+            {/* Filter icon button (.ci-filter-btn) */}
             <Pressable
               onPress={handleToggleCategoryDrawer}
               style={({ pressed }) => [
@@ -252,21 +256,21 @@ export default function NotingScreen() {
               <SymbolView
                 name="slider.horizontal.3"
                 size={20}
-                tintColor={isCategoryDrawerOpen ? COLORS.accent : COLORS.headingDark}
+                tintColor={isCategoryDrawerOpen ? "#c9603f" : "rgba(74, 58, 57, 0.6)"}
               />
             </Pressable>
 
-            {/* Search Input bar */}
+            {/* Search Input bar (.ci-search) */}
             <View style={styles.searchBar}>
               <SymbolView
                 name="magnifyingglass"
-                size={18}
-                tintColor={COLORS.mutedText}
+                size={17}
+                tintColor="rgba(74, 58, 57, 0.42)"
               />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search tags..."
-                placeholderTextColor={COLORS.mutedText}
+                placeholderTextColor="rgba(74, 58, 57, 0.4)"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCorrect={false}
@@ -275,7 +279,7 @@ export default function NotingScreen() {
             </View>
           </View>
 
-          {/* ── Browse by Category Drawer ─────────────────────────────── */}
+          {/* ── Browse by Category Drawer (.ci-browse) ────────────────── */}
           {isCategoryDrawerOpen && (
             <View style={styles.categoryDrawer}>
               <Text style={styles.categoryDrawerTitle}>BROWSE BY CATEGORY</Text>
@@ -310,7 +314,7 @@ export default function NotingScreen() {
             </View>
           )}
 
-          {/* ── Tag Chips Cloud ────────────────────────────────────────── */}
+          {/* ── Tag Chips Cloud (.ci-tags) ─────────────────────────────── */}
           <ScrollView
             style={styles.tagsScrollView}
             contentContainerStyle={styles.tagsContainer}
@@ -333,6 +337,9 @@ export default function NotingScreen() {
                   accessibilityState={{ checked: isSelected }}
                   accessibilityLabel={tag}
                 >
+                  {isSelected && (
+                    <Text style={styles.tagCheckIcon}>✓ </Text>
+                  )}
                   <Text
                     style={[
                       styles.tagText,
@@ -341,7 +348,7 @@ export default function NotingScreen() {
                         : styles.tagTextUnselected,
                     ]}
                   >
-                    {isSelected ? `✓ ${tag}` : tag}
+                    {tag}
                   </Text>
                 </Pressable>
               );
@@ -353,15 +360,32 @@ export default function NotingScreen() {
         <View style={[styles.bottomSection, isPeriodModalVisible && styles.bgDimmed]}>
           <Pressable
             style={({ pressed }) => [
-              styles.saveButton,
+              styles.saveButtonWrapper,
               pressed && styles.buttonPressed,
             ]}
             onPress={handleSaveButtonPress}
             accessibilityRole="button"
             accessibilityLabel="Save and continue"
           >
-            <Text style={styles.saveButtonText}>Save</Text>
-            <Text style={styles.nextArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.saveButtonGradient}
+            >
+              <Text style={styles.saveButtonText}>Save</Text>
+              <View style={styles.saveArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
           <Text style={styles.bottomHelperText}>
@@ -370,7 +394,7 @@ export default function NotingScreen() {
         </View>
       </SafeAreaView>
 
-      {/* ── Period Bottom Sheet Modal with Blur & Focus ───────────────── */}
+      {/* ── Period Bottom Sheet Modal (.nd-sheet / .ci-sheet) ─────────── */}
       <Modal
         visible={isPeriodModalVisible}
         transparent
@@ -383,16 +407,16 @@ export default function NotingScreen() {
 
           {/* Bottom Sheet Container */}
           <View style={styles.periodSheetContainer}>
-            {/* Sheet Drag Handle Bar */}
+            {/* Sheet Drag Handle Bar (.nd-grip) */}
             <View style={styles.handleBar} />
 
-            {/* Sheet Title matching app typography */}
+            {/* Sheet Title (.nd-sheet h3: Comfortaa 400, 25px) */}
             <Text style={styles.sheetHeading}>
               <Text style={styles.sheetHeadingDark}>What day of your </Text>
               <Text style={styles.sheetHeadingAccent}>period?</Text>
             </Text>
 
-            {/* Helper Description */}
+            {/* Helper Description (.nd-body: 14.5px, line-height 22px) */}
             <Text style={styles.sheetDescription}>
               Day 1 = first day of bleeding. This helps heedly understand your cycle over time. Skippable anytime.
             </Text>
@@ -427,28 +451,45 @@ export default function NotingScreen() {
               })}
             </View>
 
-            {/* Sheet Save CTA Button */}
+            {/* Sheet Save CTA Button (.ob-cta gradient) */}
             <Pressable
               style={({ pressed }) => [
-                styles.sheetSaveBtn,
+                styles.sheetSaveBtnWrapper,
                 pressed && styles.buttonPressed,
               ]}
               onPress={handlePeriodSave}
               accessibilityRole="button"
               accessibilityLabel="Save period entry"
             >
-              <Text style={styles.sheetSaveBtnText}>Save</Text>
-              <Text style={styles.nextArrow}>›</Text>
+              <LinearGradient
+                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.sheetSaveBtnGradient}
+              >
+                <Text style={styles.sheetSaveBtnText}>Save</Text>
+                <View style={styles.saveArrowContainer}>
+                  <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M8 5l7 7-7 7"
+                      stroke="#fff8f4"
+                      strokeWidth={2.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+              </LinearGradient>
             </Pressable>
 
-            {/* Sheet Skip Link */}
+            {/* Sheet Skip Link (.nd-skip: 14px, 600, color rgba(74,58,57,0.5)) */}
             <Pressable
               onPress={handlePeriodSkip}
               style={({ pressed }) => [styles.sheetSkipBtn, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Skip period entry"
             >
-              <Text style={styles.sheetSkipText}>Skip</Text>
+              <Text style={styles.sheetSkipText}>Skip for now</Text>
             </Pressable>
           </View>
         </View>
@@ -467,29 +508,26 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
+    paddingTop: 12,
   },
 
   pressed: {
-    opacity: 0.75,
-  },
-
-  buttonPressed: {
-    opacity: 0.88,
-    transform: [{ scale: 0.985 }],
+    opacity: 0.7,
   },
 
   bgDimmed: {
-    opacity: 0.12,
+    opacity: 0.2,
   },
 
-  // ── Top Nav ──────────────────────────────────────────────────────────────
+  // ── Top Nav (.ci-head) ───────────────────────────────────────────────────
 
   topNav: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     height: 52,
+    marginBottom: 10,
   },
 
   navButton: {
@@ -497,24 +535,22 @@ const styles = StyleSheet.create({
     minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 8,
   },
 
   backChevron: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 28,
-    lineHeight: 28,
-    color: COLORS.bodyText,
+    fontSize: 30,
+    lineHeight: 30,
+    color: "rgba(74, 58, 57, 0.6)",
   },
 
   skipText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.mutedText,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "500",
+    color: "rgba(74, 58, 57, 0.5)",
   },
 
-  // ── Progress Bar ─────────────────────────────────────────────────────────
+  // ── Progress Bar (.ci-dots) ──────────────────────────────────────────────
 
   progressRow: {
     flexDirection: "row",
@@ -524,88 +560,101 @@ const styles = StyleSheet.create({
   },
 
   progressActive: {
-    width: 32,
+    width: 22,
     height: 7,
     borderRadius: 4,
-    backgroundColor: COLORS.accent,
   },
 
   progressDot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
-    backgroundColor: COLORS.progressInactive,
+    borderRadius: 3.5,
+    backgroundColor: "rgba(74, 58, 57, 0.18)",
   },
 
   // ── Fixed Viewport Content ───────────────────────────────────────────────
 
   contentArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
+
+  // ── Question Label (.ci-eyebrow) ─────────────────────────────────────────
 
   questionLabel: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
+    fontSize: 11,
+    fontWeight: "600",
+    color: "rgba(74, 58, 57, 0.5)",
+    letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 9,
   },
 
+  // ── Question Heading (.ob-h: Comfortaa 400, 31px) ─────────────────────────
+
   questionHeading: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 38,
-    lineHeight: 46,
-    marginBottom: 6,
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    marginBottom: 12,
   },
 
   headingDark: {
-    color: COLORS.headingDark,
+    color: INK.display,
   },
 
   headingAccent: {
-    color: COLORS.accent,
+    color: CORAL.terracottaDeep,
   },
+
+  // ── Supporting Text (.ob-sub: 14.5px, line-height 22px) ──────────────────
 
   supportingText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: "#463332",
-    marginBottom: 14,
+    fontSize: 14.5,
+    lineHeight: 22,
+    fontWeight: "400",
+    color: "rgba(74, 58, 57, 0.66)",
+    marginBottom: 16,
   },
 
-  // ── Search & Filter Row ──────────────────────────────────────────────────
+  // ── Search & Filter Row (.ci-find: .ci-filter-btn + .ci-search) ──────────
 
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 16,
   },
 
+  // .ci-filter-btn: 46x46, radius 14, border 1px rgba(255,255,255,0.8), bg rgba(255,252,248,0.82)
   filterButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 46,
+    height: 46,
+    borderRadius: 14,
     backgroundColor: COLORS.inputBg,
     borderWidth: 1,
     borderColor: COLORS.inputBorder,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#BE968C",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 9,
+    elevation: 1,
   },
 
   filterButtonActive: {
-    backgroundColor: "rgba(224, 120, 96, 0.15)",
-    borderColor: COLORS.accent,
+    backgroundColor: "rgba(244, 164, 126, 0.22)",
+    borderColor: "rgba(224, 115, 95, 0.42)",
   },
 
+  // .ci-search: height 46, radius 14, border 1px rgba(255,255,255,0.8), bg rgba(255,252,248,0.82)
   searchBar: {
     flex: 1,
-    height: 52,
-    borderRadius: 16,
+    height: 46,
+    borderRadius: 14,
     backgroundColor: COLORS.inputBg,
     borderWidth: 1,
     borderColor: COLORS.inputBorder,
@@ -613,37 +662,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 14,
     gap: 10,
+    shadowColor: "#BE968C",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
   },
 
   searchInput: {
     flex: 1,
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16,
-    color: COLORS.headingDark,
+    fontSize: 14,
+    color: "#4f3c3a",
     paddingVertical: 0,
   },
 
-  // ── Category Drawer ──────────────────────────────────────────────────────
+  // ── Category Drawer (.ci-browse) ─────────────────────────────────────────
 
   categoryDrawer: {
     backgroundColor: COLORS.drawerBg,
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: COLORS.drawerBorder,
-    padding: 16,
+    padding: 15,
     marginBottom: 14,
-    shadowColor: "#8C6A6A",
+    shadowColor: "#BE968C",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 2,
   },
 
+  // .ci-browse-label: 11px, letter-spacing 0.14em, uppercase, 600, rgba(74,58,57,0.5)
   categoryDrawerTitle: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 11,
-    color: "rgba(74, 58, 57, 0.65)",
-    letterSpacing: 1.4,
+    fontWeight: "600",
+    color: "rgba(74, 58, 57, 0.5)",
+    letterSpacing: 1.54,
     textTransform: "uppercase",
     marginBottom: 12,
   },
@@ -651,35 +704,35 @@ const styles = StyleSheet.create({
   categoryPillsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 9,
   },
 
+  // .ci-browse-chip: padding 9px 15px, radius 999, bg rgba(255,255,255,0.72), 13px, 600, #5a4644
   categoryPill: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 251, 248, 0.9)",
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    borderRadius: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
     borderWidth: 1,
-    borderColor: "rgba(212, 184, 174, 0.4)",
+    borderColor: "rgba(255, 255, 255, 0.85)",
   },
 
   categoryPillSelected: {
-    backgroundColor: COLORS.tagSelectedBg,
-    borderColor: COLORS.tagSelectedBg,
+    backgroundColor: CORAL.primary,
+    borderColor: "transparent",
   },
 
   categoryPillText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 14,
-    color: "#463332",
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#5a4644",
   },
 
   categoryPillTextSelected: {
-    fontFamily: "AvenirNext-DemiBold",
-    color: "#FFFFFF",
+    color: "#fff8f4",
   },
 
-  // ── Tag Chips Cloud ──────────────────────────────────────────────────────
+  // ── Tag Chips Cloud (.ci-tags) ───────────────────────────────────────────
 
   tagsScrollView: {
     flex: 1,
@@ -688,96 +741,121 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 9,
     paddingBottom: 16,
   },
 
+  // .ci-tag: padding 9px 15px, radius 999, font 13.5px, 600, shadow
   tagChip: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 24,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    borderRadius: 999,
     borderWidth: 1,
+    shadowColor: "#BE968C",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 9,
+    elevation: 1,
   },
 
   tagChipSelected: {
-    backgroundColor: COLORS.tagSelectedBg,
-    borderColor: COLORS.tagSelectedBg,
+    backgroundColor: "rgba(244, 164, 126, 0.2)",
+    borderColor: "rgba(224, 115, 95, 0.42)",
   },
 
   tagChipUnselected: {
-    backgroundColor: COLORS.tagUnselectedBg,
-    borderColor: COLORS.tagUnselectedBorder,
+    backgroundColor: "rgba(255, 252, 248, 0.76)",
+    borderColor: "rgba(255, 255, 255, 0.8)",
+  },
+
+  tagCheckIcon: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#cf6a4c",
   },
 
   tagText: {
-    fontSize: 15,
+    fontSize: 13.5,
+    fontWeight: "600",
   },
 
   tagTextSelected: {
-    color: COLORS.tagSelectedText,
-    fontFamily: "AvenirNext-DemiBold",
+    color: "#4f3c3a",
   },
 
   tagTextUnselected: {
-    color: COLORS.tagUnselectedText,
-    fontFamily: "AvenirNext-Regular",
+    color: "#5a4644",
   },
 
-  // ── Bottom Action Section ─────────────────────────────────────────────────
+  // ── Bottom Action Section (.ob-cta gradient) ──────────────────────────────
 
   bottomSection: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
     paddingBottom: 24,
-    gap: 12,
+    alignItems: "center",
+    gap: 14,
   },
 
-  saveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 28,
-    height: 56,
-    paddingHorizontal: 24,
+  saveButtonWrapper: {
+    width: "100%",
+    height: 58,
+    borderRadius: 29,
     shadowColor: "#6E5656",
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.16,
-    shadowRadius: 16,
+    shadowRadius: 20,
     elevation: 5,
   },
 
-  saveButtonText: {
+  saveButtonGradient: {
     flex: 1,
-    textAlign: "center",
-    color: COLORS.buttonText,
-    fontSize: 17,
-    fontFamily: "AvenirNext-DemiBold",
-    letterSpacing: 0.1,
+    borderRadius: 29,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.4)",
   },
 
-  nextArrow: {
-    color: COLORS.buttonText,
-    fontSize: 26,
-    fontWeight: "300",
-    lineHeight: 28,
-    opacity: 0.85,
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
+  },
+
+  saveButtonText: {
+    color: "#fff8f4",
+    fontSize: 16.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    textAlign: "center",
+  },
+
+  saveArrowContainer: {
+    position: "absolute",
+    right: 20,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   bottomHelperText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 13.5,
-    color: "#6B4C3E",
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "400",
+    color: "rgba(74, 58, 57, 0.5)",
     textAlign: "center",
   },
 
-  // ── Period Bottom Sheet Modal Styles ──────────────────────────────────────
+  // ── Period Bottom Sheet Modal Styles (.nd-sheet) ─────────────────────────
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(45, 25, 20, 0.52)",
+    backgroundColor: "rgba(74, 58, 57, 0.34)",
     justifyContent: "flex-end",
   },
 
@@ -787,63 +865,60 @@ const styles = StyleSheet.create({
 
   periodSheetContainer: {
     backgroundColor: COLORS.modalBg,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     paddingHorizontal: 24,
     paddingTop: 14,
-    paddingBottom: 36,
-    borderWidth: 1,
-    borderColor: COLORS.sheetBorder,
-    shadowColor: "#301510",
+    paddingBottom: 30,
+    shadowColor: "#785A5A",
     shadowOffset: { width: 0, height: -12 },
     shadowOpacity: 0.22,
-    shadowRadius: 28,
+    shadowRadius: 34,
     elevation: 16,
   },
 
   handleBar: {
     width: 38,
-    height: 4.5,
-    borderRadius: 2.5,
-    backgroundColor: "rgba(180, 150, 140, 0.55)",
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(120, 90, 90, 0.2)",
     alignSelf: "center",
     marginBottom: 18,
   },
 
   sheetHeading: {
-    fontSize: 30,
-    lineHeight: 36,
-    marginBottom: 8,
+    fontFamily: Fonts.display.regular,
+    fontSize: 25,
+    lineHeight: 30,
+    letterSpacing: -0.25,
+    marginBottom: 10,
   },
 
   sheetHeadingDark: {
-    fontFamily: "AvenirNext-Regular",
-    color: COLORS.headingDark,
+    color: INK.display,
   },
 
   sheetHeadingAccent: {
-    fontFamily: "AvenirNext-Regular",
-    color: COLORS.accent,
+    color: CORAL.terracottaDeep,
   },
 
   sheetDescription: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 15,
-    lineHeight: 21,
-    color: "rgba(70, 51, 50, 0.75)",
-    marginBottom: 24,
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: "rgba(74, 58, 57, 0.72)",
+    marginBottom: 20,
   },
 
   dayNumbersRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 26,
+    marginBottom: 24,
   },
 
   dayNumberBtn: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 14,
     backgroundColor: "rgba(255, 255, 255, 0.95)",
     borderWidth: 1,
@@ -858,43 +933,50 @@ const styles = StyleSheet.create({
   },
 
   dayNumberBtnSelected: {
-    backgroundColor: COLORS.buttonFill,
-    borderColor: COLORS.buttonFill,
+    backgroundColor: CORAL.primary,
+    borderColor: "transparent",
   },
 
   dayNumberText: {
-    fontFamily: "AvenirNext-DemiBold",
-    fontSize: 16.5,
-    color: COLORS.headingDark,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#4f3c3a",
   },
 
   dayNumberTextSelected: {
     color: "#FFFFFF",
   },
 
-  sheetSaveBtn: {
+  sheetSaveBtnWrapper: {
+    width: "100%",
+    height: 58,
+    borderRadius: 29,
+    shadowColor: "#6E5656",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 5,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+
+  sheetSaveBtnGradient: {
+    flex: 1,
+    borderRadius: 29,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 28,
-    height: 56,
     paddingHorizontal: 24,
-    shadowColor: "#6E5656",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 14,
-    elevation: 5,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.4)",
   },
 
   sheetSaveBtnText: {
-    flex: 1,
+    color: "#fff8f4",
+    fontSize: 16.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
     textAlign: "center",
-    color: COLORS.buttonText,
-    fontSize: 17,
-    fontFamily: "AvenirNext-DemiBold",
-    letterSpacing: 0.1,
   },
 
   sheetSkipBtn: {
@@ -904,9 +986,9 @@ const styles = StyleSheet.create({
   },
 
   sheetSkipText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 15.5,
-    color: COLORS.mutedText,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "rgba(74, 58, 57, 0.5)",
     textAlign: "center",
   },
 });

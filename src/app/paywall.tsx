@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DawnBackground, EnergyOrb } from "@/components/core";
+import { Fonts, INK } from "@/constants/theme";
 
 // ─── Design Tokens (pixel-matched to screenshot) ─────────────────────────────
 
@@ -63,7 +64,7 @@ export default function PaywallScreen() {
             <EnergyOrb state="empty" size={152} />
           </View>
 
-          {/* ── Headline ───────────────────────────────────────────────── */}
+          {/* ── Headline (Comfortaa 400) ────────────────────────────────── */}
           <Text style={styles.mainTitle}>Stay a step ahead.</Text>
 
           {/* ── Subtitle ───────────────────────────────────────────────── */}
@@ -240,23 +241,24 @@ const styles = StyleSheet.create({
 
   // ── Typography ───────────────────────────────────────────────────────────
 
+  // .mainTitle: Comfortaa 400, 32px, lineHeight 38px, #3A2420
   mainTitle: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 38,
-    lineHeight: 46,
-    letterSpacing: -1.0,
-    color: COLORS.headingDark,
+    fontFamily: Fonts.display.regular,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.3,
+    color: INK.display,
     textAlign: "center",
     marginBottom: 10,
   },
 
   subtitleText: {
-    fontFamily: "AvenirNext-Regular",
     fontSize: 14.5,
+    fontWeight: "400",
     lineHeight: 21,
     color: COLORS.bodyText,
     textAlign: "center",
-    marginBottom: 26,
+    marginBottom: 24,
     paddingHorizontal: 32,
   },
 
@@ -299,8 +301,8 @@ const styles = StyleSheet.create({
   },
 
   featureText: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 15,
+    fontWeight: "600",
     lineHeight: 21,
     color: COLORS.headingDark,
     flex: 1,
@@ -313,6 +315,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: 18,
+    borderWidth: 1.5,
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
@@ -323,13 +326,11 @@ const styles = StyleSheet.create({
 
   planBoxSelected: {
     backgroundColor: COLORS.planSelectedBg,
-    borderWidth: 1.5,
     borderColor: COLORS.planBorderSelected,
   },
 
   planBoxUnselected: {
     backgroundColor: "#FFFFFF",
-    borderWidth: 1,
     borderColor: COLORS.planBorderUnselected,
   },
 
@@ -344,18 +345,19 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
+    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
   },
 
   radioOuterSelected: {
     backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
   },
 
   radioOuterUnselected: {
-    borderWidth: 1.5,
-    borderColor: "rgba(170, 150, 140, 0.5)",
     backgroundColor: "#FFFFFF",
+    borderColor: "rgba(170, 150, 140, 0.5)",
   },
 
   radioCheck: {
@@ -371,20 +373,20 @@ const styles = StyleSheet.create({
   },
 
   planName: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 16,
+    fontWeight: "600",
     color: COLORS.headingDark,
   },
 
   planPrice: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 16,
+    fontWeight: "600",
     color: COLORS.headingDark,
   },
 
   planSub: {
-    fontFamily: "AvenirNext-Regular",
     fontSize: 13,
+    fontWeight: "400",
     lineHeight: 18,
     color: COLORS.bodyText,
     marginTop: 1,
@@ -398,8 +400,8 @@ const styles = StyleSheet.create({
   },
 
   bestValueText: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 10,
+    fontWeight: "700",
     letterSpacing: 0.8,
     color: "#FFFFFF",
     textTransform: "uppercase",
@@ -431,14 +433,14 @@ const styles = StyleSheet.create({
   },
 
   ctaText: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 17,
+    fontWeight: "600",
     color: "#FFFFFF",
   },
 
   ctaArrow: {
-    fontFamily: "AvenirNext-Regular",
     fontSize: 22,
+    fontWeight: "400",
     color: "#FFFFFF",
     lineHeight: 24,
   },
@@ -446,8 +448,8 @@ const styles = StyleSheet.create({
   // ── Footer ───────────────────────────────────────────────────────────────
 
   disclaimer: {
-    fontFamily: "AvenirNext-Regular",
     fontSize: 13.5,
+    fontWeight: "400",
     lineHeight: 19,
     color: "#6E5044",
     textAlign: "center",
@@ -463,8 +465,8 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 13.5,
+    fontWeight: "600",
     color: "#9B6E5C",
     textDecorationLine: "underline",
   },

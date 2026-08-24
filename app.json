@@ -32,6 +32,20 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Comfortaa-Regular.ttf",
+            "./assets/fonts/Comfortaa-Medium.ttf",
+            "./assets/fonts/Comfortaa-SemiBold.ttf",
+            "./assets/fonts/Comfortaa-Bold.ttf",
+            "./assets/fonts/HankenGrotesk-Medium.ttf",
+            "./assets/fonts/HankenGrotesk-SemiBold.ttf",
+            "./assets/fonts/HankenGrotesk-Bold.ttf"
+          ]
+        }
       ]
     ],
     "experiments": {

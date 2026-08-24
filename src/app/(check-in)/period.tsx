@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -329,7 +329,6 @@ const styles = StyleSheet.create({
   },
 
   backChevron: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 28,
     lineHeight: 28,
     color: '#785344',
@@ -343,15 +342,15 @@ const styles = StyleSheet.create({
   },
 
   optionalBadgeText: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 11,
+    fontWeight: '600',
     color: COLORS.mutedText,
     letterSpacing: 1.4,
   },
 
   skipText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 15,
+    fontWeight: '500',
     color: '#785344',
   },
 
@@ -366,8 +365,8 @@ const styles = StyleSheet.create({
   },
 
   questionLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 12,
+    fontWeight: '600',
     color: COLORS.mutedText,
     letterSpacing: 1.8,
     textTransform: 'uppercase',
@@ -383,17 +382,16 @@ const styles = StyleSheet.create({
   },
 
   headingDark: {
-    fontFamily: 'AvenirNext-Regular',
+    fontFamily: Fonts.display.regular,
     color: COLORS.headingDark,
   },
 
   headingAccent: {
-    fontFamily: 'AvenirNext-Regular',
+    fontFamily: Fonts.display.regular,
     color: COLORS.accent,
   },
 
   supportingText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 16,
     lineHeight: 22,
     color: COLORS.bodyText,
@@ -429,8 +427,8 @@ const styles = StyleSheet.create({
   },
 
   dayText: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 14.5,
+    fontWeight: '600',
   },
 
   dayTextSelected: {
@@ -450,8 +448,8 @@ const styles = StyleSheet.create({
   },
 
   subLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 11,
+    fontWeight: '600',
     color: COLORS.mutedText,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
@@ -483,13 +481,12 @@ const styles = StyleSheet.create({
   },
 
   flowText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 14,
   },
 
   flowTextSelected: {
     color: COLORS.selectedText,
-    fontFamily: 'AvenirNext-DemiBold',
+    fontWeight: '600',
   },
 
   flowTextUnselected: {
@@ -527,13 +524,12 @@ const styles = StyleSheet.create({
   },
 
   quickText: {
-    fontFamily: 'AvenirNext-Regular',
     fontSize: 14.5,
   },
 
   quickTextSelected: {
     color: COLORS.selectedText,
-    fontFamily: 'AvenirNext-DemiBold',
+    fontWeight: '600',
   },
 
   quickTextUnselected: {
@@ -568,7 +564,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: COLORS.buttonText,
     fontSize: 17,
-    fontFamily: 'AvenirNext-DemiBold',
+    fontWeight: '600',
     letterSpacing: 0.1,
   },
 
@@ -581,8 +577,8 @@ const styles = StyleSheet.create({
   },
 
   bottomHelperText: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 13.5,
+    fontWeight: '500',
     color: '#6B4C3E',
     textAlign: 'center',
   },

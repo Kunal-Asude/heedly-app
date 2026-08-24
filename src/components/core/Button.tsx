@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
 
   baseText: {
-    fontFamily: 'AvenirNext-DemiBold',
+    fontWeight: '600',
     letterSpacing: -0.15,
   },
 

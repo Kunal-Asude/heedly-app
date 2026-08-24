@@ -180,23 +180,24 @@ export default function AppTabs() {
 const styles = StyleSheet.create({
   tabBarOuter: {
     position: "absolute",
-    left: 18,
-    right: 18,
+    left: 20,
+    right: 20,
     zIndex: 100,
     alignItems: "center",
   },
 
+  // .tabbar: padding 9px 12px, radius 28px, border 1px rgba(255,255,255,0.65), bg rgba(255,255,255,0.5), shadow
   tabBarContainer: {
     width: "100%",
-    maxWidth: 420,
+    maxWidth: 400,
     flexDirection: "row",
     alignSelf: "center",
-    borderRadius: 32,
+    borderRadius: 28,
     borderWidth: 1,
-    padding: 8,
-    shadowOffset: { width: 0, height: 5 },
+    padding: 6,
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.14,
-    shadowRadius: 12,
+    shadowRadius: 18,
     elevation: 4,
   },
 
@@ -205,28 +206,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 9,
-    paddingVertical: 17,
-    paddingHorizontal: 14,
-    borderRadius: 26,
+    gap: 7,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
 
   tabItemFocused: {
     borderWidth: 1,
-    shadowColor: "#8C6E66",
+    shadowColor: "#BE968C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 2,
   },
 
+  // .tab: 13.5px, 600, letter-spacing -0.01em
   tabLabel: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    lineHeight: 20,
+    fontSize: 13.5,
+    fontWeight: "600",
+    letterSpacing: -0.13,
+    lineHeight: 18,
   },
 
   tabLabelFocused: {
-    fontFamily: "AvenirNext-DemiBold",
+    fontWeight: "600",
   },
 });

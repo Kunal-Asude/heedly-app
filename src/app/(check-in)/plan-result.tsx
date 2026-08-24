@@ -1,30 +1,14 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 import { useCheckInConfig } from '@/hooks/data';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b05334',
-  bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  cardBg: 'rgba(255, 251, 248, 0.85)',
-  cardBorder: 'rgba(212, 184, 174, 0.35)',
-  cautionBadgeBg: '#F4E2C7',
-  cautionBadgeText: '#B57E32',
-  cautionDot: '#D4A545',
-  tipBoxBg: 'rgba(230, 222, 208, 0.65)',
-  tipBoxBorder: 'rgba(212, 184, 174, 0.3)',
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -54,7 +38,7 @@ export default function PlanResultScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
 
-          {/* ── Top Header ────────────────────────────────────────────────── */}
+          {/* ── Top Header (.sx-nav & .pl-*) ───────────────────────────────── */}
           <View style={styles.headerBlock}>
             <Pressable
               onPress={() => router.back()}
@@ -64,45 +48,49 @@ export default function PlanResultScreen() {
               <Text style={styles.backChevron}>‹</Text>
             </Pressable>
 
+            {/* .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
             <Text style={styles.sectionLabel}>LOOKING AHEAD</Text>
 
+            {/* .pl-rtitle: Comfortaa 400, 27px, lineHeight 34px, #463332 */}
             <Text style={styles.mainHeading}>
               {dayName} · {activityLabel}
             </Text>
           </View>
 
-          {/* ── Main Forecast Card ────────────────────────────────────────── */}
+          {/* ── Main Forecast Card (.pl-card) ─────────────────────────────── */}
           <View style={styles.forecastCard}>
-            {/* Hero Orb */}
+            {/* Hero Orb (.pl-gauge: 138x138) */}
             <View style={styles.orbContainer}>
               <EnergyOrb state="caution" size={138} />
             </View>
 
-            {/* Caution Badge */}
+            {/* Caution Badge (.pl-pill) */}
             <View style={styles.badgeContainer}>
               <View style={styles.badgeDot} />
               <Text style={styles.badgeText}>Caution</Text>
             </View>
 
-            {/* Main Explanation Copy */}
+            {/* Main Explanation Copy (.pl-read) */}
             <Text style={styles.explanationText}>
               {explanationText}
             </Text>
           </View>
 
-          {/* ── Recommendation Box ────────────────────────────────────────── */}
+          {/* ── Recommendation Box (.pl-tip) ─────────────────────────────── */}
           <View style={styles.recommendationBox}>
-            <SymbolView
-              name="waveform.path.ecg"
-              size={18}
-              tintColor={COLORS.bodyText}
-            />
+            <View style={styles.tipIconContainer}>
+              <SymbolView
+                name="waveform.path.ecg"
+                size={18}
+                tintColor="#5d7a52"
+              />
+            </View>
             <Text style={styles.recommendationText}>
               {recommendationText}
             </Text>
           </View>
 
-          {/* ── Footer Estimate Notice ────────────────────────────────────── */}
+          {/* ── Footer Estimate Notice (.pl-caveat) ───────────────────────── */}
           <Text style={styles.estimateNotice}>
             Days further out are a rougher estimate.
           </Text>
@@ -110,21 +98,34 @@ export default function PlanResultScreen() {
           {/* Spacer pushing bottom CTA area */}
           <View style={styles.flexSpacer} />
 
-          {/* ── Bottom Action Area ───────────────────────────────────────── */}
+          {/* ── Bottom Action Area (.pl-done & .pl-relink) ───────────────── */}
           <View style={styles.bottomArea}>
-            {/* Done CTA Button with checkmark */}
             <Pressable
-              style={({ pressed }) => [styles.doneButton, pressed && styles.buttonPressed]}
+              style={({ pressed }) => [styles.doneButtonWrapper, pressed && styles.buttonPressed]}
               onPress={handleDone}
               accessibilityRole="button"
               accessibilityLabel="Done">
-              <View style={styles.doneTextContainer}>
+              <LinearGradient
+                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.doneButtonGradient}>
                 <Text style={styles.doneButtonText}>Done</Text>
-              </View>
-              <Text style={styles.checkmarkIcon}>✓</Text>
+                <View style={styles.checkmarkIconContainer}>
+                  <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M20 6L9 17l-5-5"
+                      stroke="#fff8f4"
+                      strokeWidth={2.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+              </LinearGradient>
             </Pressable>
 
-            {/* Remind me link */}
+            {/* Remind me link (.pl-relink) */}
             <Pressable
               style={({ pressed }) => [styles.reminderContainer, pressed && styles.pressed]}
               accessibilityRole="button"
@@ -148,34 +149,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
-  },
-
   safeArea: {
     flex: 1,
   },
 
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: Spacing.four,
+    paddingBottom: 24,
   },
 
   pressed: {
-    opacity: 0.82,
+    opacity: 0.8,
   },
 
   buttonPressed: {
-    opacity: 0.88,
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
   },
 
   flexSpacer: {
@@ -185,52 +176,58 @@ const styles = StyleSheet.create({
   // ── Header ──────────────────────────────────────────────────────────────
 
   headerBlock: {
-    marginBottom: Spacing.three,
+    marginBottom: 16,
   },
 
   backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 4,
+    width: 36,
+    height: 36,
+    marginLeft: -6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
 
   backChevron: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 28,
-    lineHeight: 28,
-    color: COLORS.bodyText,
+    fontSize: 30,
+    lineHeight: 30,
+    color: 'rgba(74, 58, 57, 0.62)',
   },
 
+  // .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
   sectionLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
+  // .pl-rtitle: Comfortaa 400, 27px, lineHeight 34px, #463332
   mainHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 34,
-    lineHeight: 42,
-    color: COLORS.headingDark,
+    fontFamily: Fonts.display.regular,
+    fontSize: 27,
+    lineHeight: 34,
+    letterSpacing: -0.3,
+    color: INK.display,
   },
 
-  // ── Main Forecast Card ──────────────────────────────────────────────────
+  // ── Main Forecast Card (.pl-card) ────────────────────────────────────────
 
   forecastCard: {
-    backgroundColor: COLORS.cardBg,
+    backgroundColor: 'rgba(250, 244, 236, 0.88)',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingVertical: 24,
-    paddingHorizontal: 14,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 22,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: Spacing.three,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    marginBottom: 14,
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
     elevation: 3,
   },
 
@@ -239,129 +236,139 @@ const styles = StyleSheet.create({
     height: 138,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
   },
 
+  // .pl-pill: padding 7px 16px, radius 999px, bg rgba(217,152,67,0.16), border 1px rgba(217,152,67,0.3)
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cautionBadgeBg,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(200, 150, 70, 0.4)',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
     gap: 8,
-    marginBottom: 18,
+    marginTop: 14,
+    marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: 'rgba(217, 152, 67, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(217, 152, 67, 0.3)',
   },
 
   badgeDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    backgroundColor: COLORS.cautionDot,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#d99843',
   },
 
+  // .pl-pill text: 14px, 600, #9a6a2a
   badgeText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 15,
-    color: COLORS.cautionBadgeText,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9a6a2a',
   },
 
+  // .pl-read: 14.5px, 1.55, rgba(74,58,57,0.82)
   explanationText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 24,
-    color: '#463332',
+    fontSize: 14.5,
+    lineHeight: 22.5,
+    color: 'rgba(74, 58, 57, 0.82)',
+    fontWeight: '500',
     textAlign: 'center',
-    width: '100%',
-    maxWidth: 330,
-    alignSelf: 'center',
-    paddingHorizontal: 6,
   },
 
-  // ── Recommendation Box ──────────────────────────────────────────────────
+  // ── Recommendation Box (.pl-tip) ────────────────────────────────────────
 
   recommendationBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(235, 226, 210, 0.75)',
-    borderRadius: 16,
+    gap: 11,
+    backgroundColor: 'rgba(126, 155, 106, 0.1)',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(195, 170, 145, 0.5)',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    gap: 12,
-    marginBottom: Spacing.three,
+    borderColor: 'rgba(126, 155, 106, 0.2)',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 14,
   },
 
+  tipIconContainer: {
+    marginTop: 1,
+  },
+
+  // .pl-tip p: 13.5px, 1.5, #4f5a45, 500
   recommendationText: {
     flex: 1,
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 15.5,
-    lineHeight: 22,
-    color: '#463332',
+    fontSize: 13.5,
+    lineHeight: 20,
+    color: '#4f5a45',
+    fontWeight: '500',
   },
 
-  // ── Footer Estimate Notice ──────────────────────────────────────────────
-
+  // .pl-caveat: 13px, 1.5, rgba(74,58,57,0.62)
   estimateNotice: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 14,
-    color: '#6B4C3E',
+    fontSize: 13,
+    lineHeight: 19.5,
+    color: 'rgba(74, 58, 57, 0.62)',
+    fontWeight: '500',
     textAlign: 'center',
-    marginTop: 4,
   },
 
-  // ── Bottom Action Area ──────────────────────────────────────────────────
+  // ── Bottom Action Area ───────────────────────────────────────────────────
 
   bottomArea: {
-    gap: 14,
+    width: '100%',
     alignItems: 'center',
+    gap: 12,
   },
 
-  doneButton: {
+  // .pl-done: 58px, 29px radius, gradient, shadow
+  doneButtonWrapper: {
     width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingHorizontal: Spacing.four,
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
+    height: 58,
+    borderRadius: 29,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     elevation: 5,
   },
 
-  doneTextContainer: {
+  doneButtonGradient: {
     flex: 1,
+    borderRadius: 29,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 24,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   doneButtonText: {
-    color: COLORS.buttonText,
-    fontSize: 17,
+    color: '#fff8f4',
+    fontSize: 16.5,
     fontWeight: '600',
+    letterSpacing: -0.15,
   },
 
-  checkmarkIcon: {
-    color: COLORS.buttonText,
-    fontSize: 18,
-    fontWeight: '700',
+  checkmarkIconContainer: {
+    position: 'absolute',
+    right: 22,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
+  // .pl-relink: 13.5px, 500, rgba(176,83,52,0.85), underline
   reminderContainer: {
     paddingVertical: 4,
   },
 
   reminderText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 14,
-    color: COLORS.accent,
+    fontSize: 13.5,
+    fontWeight: '500',
+    color: 'rgba(176, 83, 52, 0.85)',
     textDecorationLine: 'underline',
   },
 });

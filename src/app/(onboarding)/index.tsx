@@ -1,10 +1,12 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { CORAL, INK, Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -15,51 +17,60 @@ export default function WelcomeScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Top spacer — pushes the orb into the upper-middle zone */}
-        <View style={styles.topSpacer} />
+        <View style={styles.content}>
+          {/* ── Signature Multi-color Logo Orb (152px) ─────── */}
+          <View style={styles.orbContainer}>
+            <EnergyOrb state="empty" size={152} />
+          </View>
 
-        {/* ── Signature Animated Glass Orb (Pure glass, no waves, scaled down) ── */}
-        <View style={styles.orbContainer}>
-          <EnergyOrb state="empty" size={152} />
-        </View>
-
-        {/* ── Content Block ──────────────────────────────────────────────── */}
-        <View style={styles.contentBlock}>
-          {/* Original Wordmark Logo Asset (heedly-warm-ink.png) */}
+          {/* ── Brand Wordmark Asset (heedly-warm-ink.png) ──── */}
           <Image
             source={require('@/assets/images/heedly-warm-ink.png')}
             style={styles.brandLogo}
             contentFit="contain"
           />
 
-          {/* Tagline */}
+          {/* ── Tagline (Comfortaa, 22px, terracotta-deep) ─── */}
           <Text style={styles.taglineText}>Works lying down.</Text>
 
-          {/* Description Copy */}
+          {/* ── Lead Description (SF Pro, 15px, ink-soft) ──── */}
           <Text style={styles.description}>
             Your energy companion for ME/CFS,{'\n'}
             Long COVID, POTS, Fibromyalgia and{'\n'}
             related conditions.
           </Text>
 
-          {/* Coral Gradient Primary CTA Button (.ob-cta) */}
+          {/* ── Primary CTA Button (.ob-cta 3-color gradient) ── */}
           <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [styles.buttonWrapper, pressed && styles.buttonPressed]}
             onPress={() => router.push('/(onboarding)/connect')}
             accessibilityRole="button"
             accessibilityLabel="Get started">
-            <Text style={styles.buttonText}>Get started</Text>
-            <Text style={styles.buttonArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}>
+              <Text style={styles.buttonText}>Get started</Text>
+              <View style={styles.buttonArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
-          {/* Privacy Copy / Disclaimer */}
+          {/* ── Footnote / Privacy Text (.ob-foot) ─────────── */}
           <Text style={styles.privacyText}>
             {"No account needed. Your data is private by default, and we don't sell your data."}
           </Text>
         </View>
-
-        {/* Bottom spacer */}
-        <View style={styles.bottomSpacer} />
       </SafeAreaView>
     </View>
   );
@@ -73,112 +84,105 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 26,
   },
 
-  // ── Vertical Rhythm Spacers (Positions CTA at ~70% screen height) ─────
-
-  topSpacer: {
-    flex: 1,
-  },
-
-  bottomSpacer: {
-    flex: 1,
-  },
-
-  // ── Orb Container ────────────────────────────────────────────────────────
-
-  orbContainer: {
+  content: {
+    width: '100%',
+    maxWidth: 380,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // ── Content Block ────────────────────────────────────────────────────────
-
-  contentBlock: {
-    alignSelf: 'stretch',
+  // ── Orb Container (.ob-orb: margin 0 0 26px) ──────────────────────────────
+  orbContainer: {
     alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    gap: 1,
+    justifyContent: 'center',
+    marginBottom: 26,
   },
 
-  // ── Branding & Typography ────────────────────────────────────────────────
-
+  // ── Wordmark (.wordmark: height 58px) ─────────────────────────────────────
   brandLogo: {
-    width: 190,
-    height: 100,
+    width: 160,
+    height: 68,
     tintColor: INK.display,
   },
 
+  // ── Tagline (.tagline: Comfortaa, 22px, #b0532f, margin-top 6px) ─────────
   taglineText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 26,
-    color: CORAL.terracotta,
-    lineHeight: 30,
+    fontFamily: Fonts.display.regular,
+    fontSize: 22,
+    lineHeight: 28,
+    color: CORAL.terracottaDeep,
     textAlign: 'center',
-    marginBottom: 12,
+    marginTop: 6,
   },
 
+  // ── Lead description (.lead: 15px, line-height 1.55, ink-soft, max-width 30ch)
   description: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    color: '#463332',
-    textAlign: 'center',
+    fontSize: 15,
     lineHeight: 23,
-    marginTop: 2,
-    marginBottom: 6,
+    color: INK.soft,
+    textAlign: 'center',
+    marginTop: 18,
+    maxWidth: 300,
   },
 
-  // ── Primary Button (.ob-cta) ─────────────────────────────────────────────
+  // ── Primary CTA Button (.ob-cta: height 58px, radius 29px, gradient, shadow)
+  buttonWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    marginTop: 30,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 5,
+  },
 
-  button: {
+  buttonGradient: {
+    flex: 1,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CORAL.primary,
-    borderRadius: 30,
-    height: 56,
-    paddingLeft: Spacing.four + 12,
-    paddingRight: Spacing.three,
-    alignSelf: 'stretch',
-    shadowColor: '#6E5656',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 5,
-    marginTop: 15,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   buttonPressed: {
-    opacity: 0.88,
     transform: [{ scale: 0.985 }],
+    opacity: 0.94,
   },
 
   buttonText: {
-    flex: 1,
-    textAlign: 'center',
-    color: '#FFF8F4',
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 17,
+    color: '#fff8f4',
+    fontSize: 16.5,
+    fontWeight: '600',
     letterSpacing: -0.15,
-  },
-
-  buttonArrow: {
-    color: '#FFF8F4',
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    opacity: 0.9,
-  },
-
-  // ── Privacy Copy ─────────────────────────────────────────────────────────
-
-  privacyText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 14.5,
-    color: '#6d5755ff',
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 350,
-    marginTop: 20,
+  },
+
+  buttonArrowContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // ── Footnote (.ob-foot: 12.5px, line-height 1.5, rgba(74,58,57,0.5), margin-top 14px)
+  privacyText: {
+    fontSize: 12.5,
+    lineHeight: 19,
+    color: 'rgba(74, 58, 57, 0.5)',
+    textAlign: 'center',
+    marginTop: 14,
+    maxWidth: 340,
   },
 });

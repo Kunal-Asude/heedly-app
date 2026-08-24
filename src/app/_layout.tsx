@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,6 +12,22 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
+
+  const [loaded, error] = useFonts({
+    'Comfortaa-Regular': require('../../assets/fonts/Comfortaa-Regular.ttf'),
+    'Comfortaa-Medium': require('../../assets/fonts/Comfortaa-Medium.ttf'),
+    'Comfortaa-SemiBold': require('../../assets/fonts/Comfortaa-SemiBold.ttf'),
+    'Comfortaa-Bold': require('../../assets/fonts/Comfortaa-Bold.ttf'),
+    'HankenGrotesk-Medium': require('../../assets/fonts/HankenGrotesk-Medium.ttf'),
+    'HankenGrotesk-SemiBold': require('../../assets/fonts/HankenGrotesk-SemiBold.ttf'),
+    'HankenGrotesk-Bold': require('../../assets/fonts/HankenGrotesk-Bold.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
 
   useEffect(() => {
     // 1. Handle notification click when app is already open or in background

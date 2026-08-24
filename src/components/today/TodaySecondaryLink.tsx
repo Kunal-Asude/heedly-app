@@ -1,7 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from "@/constants/themes";
-
 interface TodaySecondaryLinkProps {
   text?: string;
   isLink?: boolean;
@@ -13,8 +11,6 @@ export function TodaySecondaryLink({
   isLink = false,
   onPress,
 }: TodaySecondaryLinkProps) {
-  const theme = useTheme();
-
   return (
     <View style={styles.secondarySlot}>
       {text ? (
@@ -28,12 +24,12 @@ export function TodaySecondaryLink({
             accessibilityRole="button"
             accessibilityLabel={text}
           >
-            <Text style={[styles.linkText, { color: theme.coral.terracotta }]}>
+            <Text style={styles.linkText}>
               {text}
             </Text>
           </Pressable>
         ) : (
-          <Text style={[styles.staticText, { color: theme.ink.soft }]}>
+          <Text style={styles.staticText}>
             {text}
           </Text>
         )
@@ -44,30 +40,35 @@ export function TodaySecondaryLink({
 
 const styles = StyleSheet.create({
   secondarySlot: {
-    height: 28,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
-    marginBottom: 8,
+    marginTop: 6,
+    marginBottom: 4,
   },
 
   linkContainer: {
     alignSelf: "center",
   },
 
+  // .qlink: 13px, 500, color rgba(176,83,52,0.78), letter-spacing 0.01em, underline
   linkText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16,
+    fontSize: 13,
+    fontWeight: "500",
+    letterSpacing: 0.13,
+    color: "rgba(176, 83, 52, 0.78)",
     textDecorationLine: "underline",
   },
 
   staticText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 16,
+    fontSize: 13,
+    fontWeight: "500",
+    color: "rgba(74, 58, 57, 0.66)",
     textAlign: "center",
   },
 
   pressed: {
-    opacity: 0.8,
+    opacity: 0.75,
   },
 });

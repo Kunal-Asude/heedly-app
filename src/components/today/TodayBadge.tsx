@@ -1,4 +1,3 @@
-import { useTheme } from "@/constants/themes";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodayBadgeProps {
@@ -14,33 +13,30 @@ export function TodayBadge({
   indicatorDotColor,
   onPress,
 }: TodayBadgeProps) {
-  const theme = useTheme();
-  const steadyState = theme.states.steady;
-
   return (
     <View style={styles.badgeSlot}>
       {isFirstDay ? (
+        /* .fd-chip: padding 5px 12px 5px 11px, radius 20, bg rgba(126,155,106,0.15), border 1px rgba(126,155,106,0.24) */
         <Pressable
           onPress={onPress}
-          style={[
-            styles.learningChip,
-            {
-              backgroundColor: steadyState.bg,
-              borderColor: steadyState.ring,
-            },
-          ]}
+          style={styles.learningChip}
         >
-          <View
-            style={[styles.learningDot, { backgroundColor: steadyState.color }]}
-          />
-          <Text style={[styles.learningText, { color: steadyState.ink }]}>
+          <View style={styles.learningDot} />
+          <Text style={styles.learningText}>
             LEARNING
           </Text>
         </Pressable>
       ) : (
+        /* .state: single tidy line, dot 7x7 with subtle halo, label 13px 600 rgba(74,58,57,0.72) */
         <Pressable onPress={onPress} style={styles.standardBadgeRow}>
           <View
-            style={[styles.statusDot, { backgroundColor: indicatorDotColor }]}
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor: indicatorDotColor,
+                shadowColor: indicatorDotColor,
+              },
+            ]}
           />
           <Text style={styles.standardBadgeText}>{indicatorText}</Text>
         </Pressable>
@@ -51,52 +47,66 @@ export function TodayBadge({
 
 const styles = StyleSheet.create({
   badgeSlot: {
-    height: 28,
+    height: 26,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
     marginTop: -2,
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
+  // .fd-chip: padding 5px 12px 5px 11px, radius 20px, bg rgba(126,155,106,0.15), border 1px rgba(126,155,106,0.24)
   learningChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 18,
-    borderRadius: 18,
+    gap: 7,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: "rgba(126, 155, 106, 0.15)",
     borderWidth: 1,
+    borderColor: "rgba(126, 155, 106, 0.24)",
   },
 
+  // .fd-chip i: 6x6, radius 50%, bg #7e9b6a, box-shadow 0 0 0 3px rgba(126,155,106,0.18)
   learningDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#7e9b6a",
   },
 
+  // .fd-chip span: 10.5px, 700, letter-spacing 0.16em, uppercase, color #5d7a52
   learningText: {
-    fontFamily: "AvenirNext-Bold",
-    fontSize: 12,
-    letterSpacing: 1.8,
+    fontSize: 10.5,
+    fontWeight: "700",
+    letterSpacing: 1.68,
     textTransform: "uppercase",
+    color: "#5d7a52",
   },
 
   standardBadgeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
 
+  // .state .dot: 7x7, radius 50%
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 1,
   },
 
+  // .state .label: 13px, 600, letter-spacing 0.02em, color rgba(74,58,57,0.72)
   standardBadgeText: {
-    fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    color: "#785344",
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.26,
+    color: "rgba(74, 58, 57, 0.72)",
   },
 });

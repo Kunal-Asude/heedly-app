@@ -1,31 +1,18 @@
-import { SymbolView } from 'expo-symbols';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 import { useUserSettings } from '@/hooks/data';
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
 
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b05334',
-  bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  chipBg: '#FFFBF8',
-  chipSelectedBg: '#F0D5C8',
-  chipSelectedBorder: '#D4917E',
-  checkboxOutline: '#D4B8AE',
-  checkboxFilled: '#D9735A',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-};
-
-const CHIP_GAP = 12;
+const CHIP_GAP = 16;   // .ob-chips gap: 16px
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -58,25 +45,25 @@ export default function ConditionsScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}>
 
-          {/* ── Progress indicator (step 3 active) ───────────────────────── */}
+          {/* ── Progress indicator (.ob-progress, step 3 active) ─────── */}
           <View style={styles.progressRow}>
             <View style={styles.progressDot} />
             <View style={styles.progressDot} />
             <View style={styles.progressActive} />
           </View>
 
-          {/* ── Heading ─────────────────────────────────────────────────── */}
+          {/* ── Heading (.ob-h: Comfortaa 400, 31px, #463332 / em #b0532f) ── */}
           <Text style={styles.heading}>
             <Text style={styles.headingDark}>What are you{'\n'}</Text>
             <Text style={styles.headingAccent}>living with?</Text>
           </Text>
 
-          {/* ── Supporting text ──────────────────────────────────────────── */}
+          {/* ── Supporting text (.ob-sub) ──────────────────────────────── */}
           <Text style={styles.supportingText}>
             Select all that apply. You can change this{'\n'}later.
           </Text>
 
-          {/* ── 2-Column Condition Chips ─────────────────────────────────── */}
+          {/* ── 2-Column Condition Chips (.ob-chips) ──────────────────── */}
           <View style={styles.grid}>
             {conditions.map((condition) => {
               const isSelected = selectedConditions.includes(condition);
@@ -93,7 +80,7 @@ export default function ConditionsScreen() {
                   accessibilityState={{ checked: isSelected }}
                   accessibilityLabel={condition}>
 
-                  {/* Circular Checkbox */}
+                  {/* Circular Checkbox (.ob-chip .ring) */}
                   <View
                     style={[
                       styles.checkbox,
@@ -116,23 +103,39 @@ export default function ConditionsScreen() {
             })}
           </View>
 
-          {/* ── Information note ────────────────────────────────────────── */}
+          {/* ── Information note (.ob-help: 11.5px, rgba(74,58,57,0.52)) ── */}
           <Text style={styles.infoText}>
             This helps heedly understand your experience and personalize{'\n'}
             your patterns. You can update this any time.
           </Text>
 
-          {/* ── Continue Button ─────────────────────────────────────────── */}
+          {/* ── Continue Button (.ob-cta gradient) ────────────────────── */}
           <Pressable
             style={({ pressed }) => [
-              styles.continueButton,
+              styles.continueWrapper,
               pressed && styles.continueButtonPressed,
             ]}
             onPress={handleContinue}
             accessibilityRole="button"
             accessibilityLabel="Continue">
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Text style={styles.continueArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.continueGradient}>
+              <Text style={styles.continueButtonText}>Continue</Text>
+              <View style={styles.continueArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
         </ScrollView>
@@ -144,23 +147,10 @@ export default function ConditionsScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  // ── Root & background ──────────────────────────────────────────────────
-
   root: {
     flex: 1,
     backgroundColor: 'transparent',
     overflow: 'hidden',
-  },
-
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
   },
 
   safeArea: {
@@ -171,90 +161,91 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  // .ob: padding 70px 26px 42px
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.five,
+    paddingHorizontal: 26,
+    paddingTop: 16,
+    paddingBottom: 42,
   },
 
-  // ── Progress indicator ─────────────────────────────────────────────────
-
+  // ── Progress indicator (.ob-progress: gap 6px, margin-bottom 30px) ─────
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: Spacing.four,
+    marginBottom: 30,
   },
 
+  // .ob-progress i: 6px, radius 50%, bg rgba(74,58,57,0.18)
   progressDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#D4B8AE',
+    backgroundColor: 'rgba(74, 58, 57, 0.18)',
   },
 
+  // .ob-progress i.on: width 20px, radius 3px, gradient
   progressActive: {
-    width: 24,
+    width: 20,
     height: 6,
     borderRadius: 3,
-    backgroundColor: COLORS.accent,
+    backgroundColor: CORAL.primary,
   },
 
-  // ── Heading ────────────────────────────────────────────────────────────
-
+  // ── Heading (.ob-h: Comfortaa 400, 31px, line-height 1.15, letter-spacing -0.01em) ──
   heading: {
-    fontSize: 34,
-    lineHeight: 42,
-    fontFamily: 'AvenirNext-Regular',
-    marginBottom: Spacing.two,
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    marginBottom: 0,
   },
 
   headingDark: {
-    color: COLORS.headingDark,
+    color: INK.display,
   },
 
+  // .ob-h em: color #b0532f
   headingAccent: {
-    color: COLORS.accent,
+    color: CORAL.terracottaDeep,
   },
 
-  // ── Supporting text ────────────────────────────────────────────────────
-
+  // ── Supporting text (.ob-sub: 14.5px, line-height 1.5, rgba(74,58,57,0.66), weight 450)
   supportingText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: '#463332',
-    marginBottom: Spacing.four,
+    fontSize: 14.5,
+    lineHeight: 22,
+    fontWeight: '400',
+    color: 'rgba(74, 58, 57, 0.66)',
+    marginTop: 12,
+    maxWidth: 310,
   },
 
-  // ── Grid ───────────────────────────────────────────────────────────────
-
+  // ── Chip grid (.ob-chips: grid 1fr 1fr, gap 16px, margin-top 26px) ────
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: CHIP_GAP,
-    marginBottom: Spacing.four,
+    marginTop: 26,
   },
 
+  // .ob-chip: padding 15px 18px, radius 999px, bg rgba(255,252,248,0.74), border 1px rgba(255,255,255,0.75)
   chip: {
-    // 2 columns with CHIP_GAP spacing
-    width: '48%',
+    width: '47%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.chipBg,
-    borderRadius: 50,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    backgroundColor: 'rgba(255, 252, 248, 0.74)',
+    borderRadius: 999,
+    paddingVertical: 15,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.75)',
     gap: 10,
-    // Subtle elevation matching reference
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#BE968C',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 2,
   },
 
@@ -262,82 +253,91 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
+  // .ob-chip.sel: gradient bg, border rgba(224,115,95,0.42)
   chipSelected: {
-    backgroundColor: COLORS.chipSelectedBg,
-    borderColor: COLORS.chipSelectedBorder,
+    backgroundColor: 'rgba(244, 164, 126, 0.16)',
+    borderColor: 'rgba(224, 115, 95, 0.42)',
   },
 
+  // .ob-chip .ring: 20px, radius 50%, border 1.6px rgba(120,90,90,0.32)
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: COLORS.checkboxOutline,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.6,
+    borderColor: 'rgba(120, 90, 90, 0.32)',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
+  // .ob-chip.sel .ring: gradient bg, no border
   checkboxSelected: {
-    backgroundColor: COLORS.checkboxFilled,
-    borderColor: COLORS.checkboxFilled,
+    backgroundColor: CORAL.primary,
+    borderColor: 'transparent',
   },
 
+  // .ob-chip text: 14.5px, 600, #4f3c3a
   chipText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 14,
-    color: COLORS.headingDark,
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: '#4f3c3a',
     flexShrink: 1,
   },
 
-  // ── Information text ───────────────────────────────────────────────────
-
+  // ── Information text (.ob-help: 11.5px, line-height 1.5, rgba(74,58,57,0.52), margin 30px 0 0)
   infoText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 12,
-    lineHeight: 19,
-    color: COLORS.mutedText,
+    fontSize: 11.5,
+    lineHeight: 17,
+    color: 'rgba(74, 58, 57, 0.52)',
     textAlign: 'left',
-    marginBottom: Spacing.four,
-    marginTop: Spacing.two,
+    marginTop: 30,
   },
 
-  // ── Continue button ────────────────────────────────────────────────────
-
-  continueButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingLeft: Spacing.four,
-    paddingRight: Spacing.three,
-    alignSelf: 'stretch',
+  // ── Continue CTA (.ob-cta: height 58px, radius 29px, gradient, shadow, margin-top auto) ──
+  continueWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
     marginTop: 'auto',
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     elevation: 5,
   },
 
-  continueButtonPressed: {
-    opacity: 0.86,
-  },
-
-  continueButtonText: {
+  continueGradient: {
     flex: 1,
-    textAlign: 'center',
-    color: COLORS.buttonText,
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: 0.1,
+    borderRadius: 29,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
-  continueArrow: {
-    color: COLORS.buttonText,
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    opacity: 0.85,
+  continueButtonPressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
+  },
+
+  // .ob-cta text: 16.5px, 600, #fff8f4
+  continueButtonText: {
+    color: '#fff8f4',
+    fontSize: 16.5,
+    fontWeight: '600',
+    letterSpacing: -0.15,
+    textAlign: 'center',
+  },
+
+  // .ob-cta .arr: position absolute, right 20px
+  continueArrowContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

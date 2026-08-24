@@ -1,11 +1,11 @@
 import React from "react";
 import {
-    Pressable,
-    PressableProps,
-    StyleSheet,
-    Text,
-    TextStyle,
-    ViewStyle,
+  Pressable,
+  PressableProps,
+  StyleSheet,
+  Text,
+  TextStyle,
+  ViewStyle,
 } from "react-native";
 
 import { useTheme } from "@/constants/themes";
@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
   },
 
   linkText: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 13,
+    fontWeight: "600",
     textDecorationLine: "underline",
     letterSpacing: 0.1,
   },

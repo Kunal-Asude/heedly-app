@@ -1,26 +1,14 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { Spacing } from '@/constants/theme';
+import { CORAL, Fonts, INK } from '@/constants/theme';
 import { useCheckInConfig } from '@/hooks/data';
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b05334',
-  bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  progressInactive: '#E5C4B7',
-  pillBg: 'rgba(255, 251, 248, 0.75)',
-  pillBorder: 'rgba(212, 184, 174, 0.4)',
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -182,7 +170,12 @@ export default function EnergyScreen() {
 
           {/* Progress indicator (Question 1 of 3) */}
           <View style={styles.progressRow}>
-            <View style={styles.progressActive} />
+            <LinearGradient
+              colors={['#f0a07e', '#e0735f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.progressActive}
+            />
             <View style={styles.progressDot} />
             <View style={styles.progressDot} />
           </View>
@@ -199,10 +192,10 @@ export default function EnergyScreen() {
 
         {/* ── Fixed Viewport Content (Non-scrollable) ──────────────────── */}
         <View style={styles.contentArea}>
-          {/* ── Question Label ─────────────────────────────────────────── */}
+          {/* ── Question Label (.ci-eyebrow) ───────────────────────────── */}
           <Text style={styles.questionLabel}>QUESTION 1 OF 3</Text>
 
-          {/* ── Question Heading ───────────────────────────────────────── */}
+          {/* ── Question Heading (.ob-h: 31px, Comfortaa 400) ──────────── */}
           <Text style={styles.questionHeading}>
             {isFirstTime ? (
               <>
@@ -217,14 +210,12 @@ export default function EnergyScreen() {
             )}
           </Text>
 
-          {/* ── Supporting Text ────────────────────────────────────────── */}
+          {/* ── Supporting Text (.ob-sub: 14.5px) ──────────────────────── */}
           <Text style={styles.supportingText}>
-            {isFirstTime
-              ? 'No need to think hard — go with your gut.'
-              : 'No need to think hard — go with your gut.'}
+            No need to think hard — go with your gut.
           </Text>
 
-          {/* ── 5-Level Energy Selector ────────────────────────────────── */}
+          {/* ── 5-Level Energy Selector (.ci-scalewrap) ────────────────── */}
           <View style={styles.selectorContainer}>
             <View style={styles.circlesRow}>
               {levels.map((level, idx) => {
@@ -238,7 +229,7 @@ export default function EnergyScreen() {
                     accessibilityState={{ selected: isSelected }}
                     accessibilityLabel={`Energy level ${level.label}`}>
                     <View style={styles.circleWrapper}>
-                      {/* Translucent glow ring for selected state */}
+                      {/* Translucent glow halo for selected state */}
                       {isSelected && (
                         <View
                           style={[
@@ -247,7 +238,7 @@ export default function EnergyScreen() {
                           ]}
                         />
                       )}
-                      {/* Main color circle */}
+                      {/* Main color circle (.ci-dot) */}
                       <View
                         style={[
                           styles.circle,
@@ -260,11 +251,11 @@ export default function EnergyScreen() {
               })}
             </View>
 
-            {/* ── Labels Row (awful/drained, selected pill, great/high) ──── */}
+            {/* ── Labels Row (.ci-labels: .ci-lab, .ci-pill, .ci-lab) ──── */}
             <View style={styles.labelsRow}>
               <Text style={styles.endpointLabel}>{levels[0].label}</Text>
 
-              {/* Center selected pill */}
+              {/* Center selected pill (.ci-pill) */}
               <View style={styles.selectedPill}>
                 <View
                   style={[
@@ -279,7 +270,7 @@ export default function EnergyScreen() {
             </View>
           </View>
 
-          {/* ── Crash Link ─────────────────────────────────────────────── */}
+          {/* ── Crash Link (.ci-crash: 14px, 600, terracotta) ───────────── */}
           <Pressable
             onPress={handleCrashPress}
             style={({ pressed }) => [styles.crashContainer, pressed && styles.pressed]}
@@ -299,12 +290,28 @@ export default function EnergyScreen() {
         {/* ── Bottom Section: Next Button & Helper Text ───────────────── */}
         <View style={styles.bottomSection}>
           <Pressable
-            style={({ pressed }) => [styles.nextButton, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [styles.nextButtonWrapper, pressed && styles.buttonPressed]}
             onPress={handleNext}
             accessibilityRole="button"
             accessibilityLabel="Next">
-            <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
-            <Text style={styles.nextArrow}>›</Text>
+            <LinearGradient
+              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.nextButtonGradient}>
+              <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
+              <View style={styles.nextArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke="#fff8f4"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
           <Text style={styles.bottomHelperText}>
@@ -324,33 +331,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
-  },
-
   safeArea: {
     flex: 1,
+    paddingTop: 12,
   },
 
   pressed: {
     opacity: 0.7,
   },
 
-  // ── Top Nav ──────────────────────────────────────────────────────────────
+  // ── Top Nav (.ci-head) ───────────────────────────────────────────────────
 
   topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     height: 52,
+    marginBottom: 10,
   },
 
   navButton: {
@@ -358,24 +356,22 @@ const styles = StyleSheet.create({
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
   },
 
   backChevron: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 28,
-    lineHeight: 28,
-    color: COLORS.bodyText,
+    fontSize: 30,
+    lineHeight: 30,
+    color: 'rgba(74, 58, 57, 0.6)',
   },
 
   skipText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.mutedText,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: 'rgba(74, 58, 57, 0.5)',
   },
 
-  // ── Progress Bar ─────────────────────────────────────────────────────────
+  // ── Progress Bar (.ci-dots) ──────────────────────────────────────────────
 
   progressRow: {
     flexDirection: 'row',
@@ -385,121 +381,125 @@ const styles = StyleSheet.create({
   },
 
   progressActive: {
-    width: 32,
+    width: 22,
     height: 7,
     borderRadius: 4,
-    backgroundColor: COLORS.accent,
   },
 
   progressDot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
-    backgroundColor: COLORS.progressInactive,
+    borderRadius: 3.5,
+    backgroundColor: 'rgba(74, 58, 57, 0.18)',
   },
 
   // ── Fixed Viewport Content ───────────────────────────────────────────────
 
   contentArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.four,
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
 
-  // ── Question Label ───────────────────────────────────────────────────────
+  // ── Question Label (.ci-eyebrow: 11px, 600, 0.2em, uppercase, margin-bottom 9px) ──
 
   questionLabel: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 12,
-    color: COLORS.mutedText,
-    letterSpacing: 1.8,
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(74, 58, 57, 0.5)',
+    letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: Spacing.two,
+    marginBottom: 9,
   },
 
-  // ── Question Heading ─────────────────────────────────────────────────────
+  // ── Question Heading (.ob-h: Comfortaa 400, 31px, line-height 36px, letter-spacing -0.3) ──
 
   questionHeading: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 38,
-    lineHeight: 46,
-    marginBottom: Spacing.two,
+    fontFamily: Fonts.display.regular,
+    fontSize: 31,
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    marginBottom: 12,
   },
 
   headingDark: {
-    color: COLORS.headingDark,
+    color: INK.display,
   },
 
   headingAccent: {
-    color: COLORS.accent,
+    color: CORAL.terracottaDeep,
   },
 
-  // ── Supporting Text ──────────────────────────────────────────────────────
+  // ── Supporting Text (.ob-sub: 14.5px, line-height 22px, color rgba(74,58,57,0.66)) ──
 
   supportingText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
-    lineHeight: 23,
-    color: '#463332',
-    marginBottom: Spacing.five,
+    fontSize: 14.5,
+    lineHeight: 22,
+    fontWeight: '400',
+    color: 'rgba(74, 58, 57, 0.66)',
+    marginBottom: 36,
     maxWidth: '90%',
   },
 
-  // ── Energy Selector ──────────────────────────────────────────────────────
+  // ── Energy Selector (.ci-scalewrap) ──────────────────────────────────────
 
   selectorContainer: {
-    marginBottom: Spacing.four,
+    marginBottom: 24,
   },
 
   circlesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.two,
-    marginBottom: Spacing.three,
+    paddingHorizontal: 6,
+    marginBottom: 22,
   },
 
   circleTouchArea: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   circleWrapper: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   selectedRing: {
     position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-
-  circle: {
     width: 44,
     height: 44,
     borderRadius: 22,
   },
 
-  // ── Labels Row ───────────────────────────────────────────────────────────
+  circle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.45,
+    shadowRadius: 2,
+  },
+
+  // ── Labels Row (.ci-labels) ──────────────────────────────────────────────
 
   labelsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.one,
+    paddingHorizontal: 2,
   },
 
   endpointLabel: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 14,
-    color: COLORS.mutedText,
-    width: 60,
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(74, 58, 57, 0.55)',
+    width: 65,
     textAlign: 'center',
   },
 
@@ -507,108 +507,105 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: COLORS.pillBg,
+    gap: 7,
+    backgroundColor: 'rgba(244, 164, 126, 0.16)',
     borderWidth: 1,
-    borderColor: COLORS.pillBorder,
-    borderRadius: 25,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    minWidth: 120,
-    shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 15,
   },
 
   pillDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
 
   pillText: {
-    fontFamily: 'AvenirNext-DemiBold',
     fontSize: 14,
-    color: COLORS.headingDark,
+    fontWeight: '600',
+    color: '#4f3c3a',
   },
 
-  // ── Crash Link ───────────────────────────────────────────────────────────
+  // ── Crash Link (.ci-crash: 14px, 600, color rgba(176,83,52,0.85)) ────────
 
   crashContainer: {
     alignSelf: 'center',
-    marginTop: Spacing.three,
-    marginBottom: Spacing.two,
-    fontWeight: '400'
-
+    marginTop: 24,
+    marginBottom: 8,
   },
 
   crashText: {
-    fontFamily: 'AvenirNext-Regular',
-    fontSize: 15,
-    color: COLORS.accent,
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(176, 83, 52, 0.85)',
+    letterSpacing: 0.15,
     textDecorationLine: 'underline',
-    fontWeight: '400'
-
   },
 
   crashTextActive: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontWeight: '400'
-
+    color: '#b05334',
   },
 
-  // ── Bottom Section ───────────────────────────────────────────────────────
+  // ── Bottom Section (.ob-cta gradient) ────────────────────────────────────
 
   bottomSection: {
-    paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.three,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
 
-  nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.buttonFill,
-    borderRadius: 50,
-    paddingVertical: 18,
-    paddingLeft: Spacing.four,
-    paddingRight: Spacing.three,
-    alignSelf: 'stretch',
-    shadowColor: '#C05A3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
+  nextButtonWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    shadowColor: '#6E5656',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     elevation: 5,
   },
 
+  nextButtonGradient: {
+    flex: 1,
+    borderRadius: 29,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+
   buttonPressed: {
-    opacity: 0.86,
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
   },
 
   nextButtonText: {
-    flex: 1,
-    textAlign: 'center',
-    color: COLORS.buttonText,
-    fontSize: 17,
+    color: '#fff8f4',
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: 0.1,
+    letterSpacing: -0.15,
+    textAlign: 'center',
   },
 
-  nextArrow: {
-    color: COLORS.buttonText,
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    opacity: 0.85,
+  nextArrowContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   bottomHelperText: {
-    fontFamily: 'AvenirNext-DemiBold',
-    fontSize: 13.5,
-    color: '#6B4C3E',
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '400',
+    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 });

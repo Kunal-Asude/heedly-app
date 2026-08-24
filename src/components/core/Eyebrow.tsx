@@ -23,8 +23,8 @@ export function Eyebrow({ children, style, ...rest }: EyebrowProps) {
 
 const styles = StyleSheet.create({
   eyebrow: {
-    fontFamily: "AvenirNext-DemiBold",
     fontSize: 11,
+    fontWeight: "600",
     letterSpacing: 1.8,
     textTransform: "uppercase",
   },
