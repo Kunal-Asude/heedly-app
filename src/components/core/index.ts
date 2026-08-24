@@ -5,6 +5,6 @@ export * from './Footnote';
 export * from './QuietLink';
 export * from './StateBadge';
 export * from './Toggle';
-export * from './Orb';
+export { Orb, type OrbProps } from './Orb';
 export * from './EnergyOrb';
 export * from './DawnBackground';

@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
-import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { SymbolView } from 'expo-symbols';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { usePatterns } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -23,79 +25,21 @@ const COLORS = {
   costBadge: '#E08568',
 };
 
-// ─── Data structures for easy API integration ───────────────────────────────
-
-type DayPattern = {
-  day: string;
-  type: 'steady' | 'caution' | 'rest';
-  size: number;
-  color: string;
-};
-
-type PatternCardData = {
-  id: string;
-  icon: SymbolViewProps['name'];
-  badgeColor: string;
-  bodyText: string;
-  subtitleText: string;
-};
-
-const THIS_WEEK_DAYS: DayPattern[] = [
-  { day: 'M', type: 'steady', size: 36, color: COLORS.steadyGreen },
-  { day: 'T', type: 'steady', size: 36, color: COLORS.steadyGreen },
-  { day: 'W', type: 'caution', size: 32, color: COLORS.cautionYellow },
-  { day: 'T', type: 'caution', size: 32, color: COLORS.cautionYellow },
-  { day: 'F', type: 'caution', size: 28, color: COLORS.cautionYellow },
-  { day: 'S', type: 'rest', size: 26, color: COLORS.restPink },
-  { day: 'S', type: 'rest', size: 26, color: COLORS.restPink },
-];
-
-const HELP_PATTERNS: PatternCardData[] = [
-  {
-    id: 'help-1',
-    icon: 'moon.fill',
-    badgeColor: COLORS.helpBadge,
-    bodyText: 'Your energy tends to be steadiest on mornings after eight or more hours of sleep.',
-    subtitleText: 'Based on 38 mornings.',
-  },
-  {
-    id: 'help-2',
-    icon: 'clock.fill',
-    badgeColor: COLORS.helpBadge,
-    bodyText: 'On nights you fall asleep before 11pm, your tank tends to start the next day about a quarter fuller.',
-    subtitleText: 'Across 6 of the last 8 weeks.',
-  },
-];
-
-const COST_PATTERNS: PatternCardData[] = [
-  {
-    id: 'cost-1',
-    icon: 'person.2.fill',
-    badgeColor: COLORS.costBadge,
-    bodyText: 'Social time tends to show up in your body two days later, not the same evening.',
-    subtitleText: 'Noticed across 6 of your last 7 social days.',
-  },
-  {
-    id: 'cost-2',
-    icon: 'bolt.fill',
-    badgeColor: COLORS.costBadge,
-    bodyText: 'Long screen stretches — work, admin, anything mentally heavy — seem to drain you almost as fast as standing does.',
-    subtitleText: 'Strongest on days over 4 hours of screen time.',
-  },
-  {
-    id: 'cost-3',
-    icon: 'sun.max.fill',
-    badgeColor: COLORS.costBadge,
-    bodyText: 'Even mildly warm rooms above 25°C pull your tank down quickly, especially in the afternoon.',
-    subtitleText: '9 hot days noticed so far — a stronger pattern than most.',
-  },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PatternsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isTankTooltipVisible, setIsTankTooltipVisible] = useState(false);
+  const {
+    thisWeekDays,
+    helpPatterns,
+    costPatterns,
+    learningSinceText,
+    subtitleLeftText,
+    tankTooltipTitle,
+    tankTooltipBody,
+  } = usePatterns();
 
   return (
     <View style={styles.root}>
@@ -129,12 +73,8 @@ export default function PatternsScreen() {
 
         {/* ── Subtitle Block ─────────────────────────────────────────────── */}
         <View style={styles.subtitleRow}>
-          <Text style={styles.subtitleLeft}>
-            {"A few small things we're\nlearning about you."}
-          </Text>
-          <Text style={styles.subtitleRight}>
-            {"LEARNING SINCE\nMARCH 14"}
-          </Text>
+          <Text style={styles.subtitleLeft}>{subtitleLeftText}</Text>
+          <Text style={styles.subtitleRight}>{learningSinceText}</Text>
         </View>
 
         {/* ── "This week" 7-Day Card ─────────────────────────────────────── */}
@@ -142,19 +82,51 @@ export default function PatternsScreen() {
           {/* Card Header */}
           <View style={styles.cardHeaderRow}>
             <Text style={styles.thisWeekTitle}>This week</Text>
-            <View style={styles.thisWeekRightHeader}>
+            <Pressable
+              onPress={() => setIsTankTooltipVisible(!isTankTooltipVisible)}
+              style={({ pressed }) => [
+                styles.thisWeekRightHeader,
+                pressed && styles.pressed,
+              ]}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="How is the tank measured?"
+            >
               <Text style={styles.sevenDaysText}>7 DAYS</Text>
               <SymbolView
                 name="info.circle"
                 size={18}
-                tintColor={COLORS.mutedText}
+                tintColor={isTankTooltipVisible ? COLORS.accent : COLORS.mutedText}
               />
-            </View>
+            </Pressable>
           </View>
+
+          {/* Popover Tooltip when Info Icon is Pressed */}
+          {isTankTooltipVisible && (
+            <View style={styles.tankTooltipPopover}>
+              <View style={styles.tankTooltipHeader}>
+                <Text style={styles.tankTooltipTitle}>{tankTooltipTitle}</Text>
+                <Pressable
+                  onPress={() => setIsTankTooltipVisible(false)}
+                  style={({ pressed }) => [
+                    styles.tankTooltipCloseBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close tooltip"
+                >
+                  <Text style={styles.tankTooltipCloseText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <Text style={styles.tankTooltipBody}>{tankTooltipBody}</Text>
+            </View>
+          )}
 
           {/* 7-Day Circles Row */}
           <View style={styles.daysRow}>
-            {THIS_WEEK_DAYS.map((dayItem, index) => (
+            {thisWeekDays.map((dayItem, index) => (
               <View key={index} style={styles.dayColumn}>
                 <View style={styles.dayDotContainer}>
                   <View
@@ -201,7 +173,7 @@ export default function PatternsScreen() {
           <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO HELP</Text>
         </View>
 
-        {HELP_PATTERNS.map((pattern) => (
+        {helpPatterns.map((pattern) => (
           <Pressable
             key={pattern.id}
             style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
@@ -224,7 +196,7 @@ export default function PatternsScreen() {
           <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO COST YOU</Text>
         </View>
 
-        {COST_PATTERNS.map((pattern) => (
+        {costPatterns.map((pattern) => (
           <Pressable
             key={pattern.id}
             style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
@@ -379,6 +351,64 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     color: COLORS.mutedText,
+  },
+
+  tankTooltipPopover: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 275,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 184, 174, 0.4)',
+    shadowColor: '#4A2820',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 18,
+    elevation: 12,
+    zIndex: 100,
+  },
+
+  tankTooltipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  tankTooltipTitle: {
+    fontFamily: 'AvenirNext-DemiBold',
+    fontSize: 12,
+    letterSpacing: 1.1,
+    color: '#785344',
+    textTransform: 'uppercase',
+    flex: 1,
+    marginRight: 8,
+  },
+
+  tankTooltipCloseBtn: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  tankTooltipCloseText: {
+    fontFamily: 'AvenirNext-Regular',
+    fontSize: 14,
+    lineHeight: 16,
+    color: '#A38778',
+  },
+
+  tankTooltipBody: {
+    fontFamily: 'AvenirNext-Regular',
+    fontSize: 13.5,
+    lineHeight: 19.5,
+    color: '#6B4C3E',
   },
 
   daysRow: {

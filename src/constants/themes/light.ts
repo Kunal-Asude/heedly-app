@@ -137,12 +137,12 @@ export const lightTheme: DesignTokens = {
   // ─── Component-Specific Tokens ──────────────────────────────────────
   components: {
     tabBar: {
-      background: "#F6EAE6",
-      border: "rgba(255, 255, 255, 0.75)",
+      background: "#ffefe8ff",
+      border: "rgba(255, 255, 255, 0.95)",
       selectedPill: "#FFFFFF",
-      selectedText: "#b05334",
-      unselectedText: "rgba(74, 58, 57, 0.68)",
-      shadowColor: "#A67F73",
+      selectedText: "#AC4E30",
+      unselectedText: "rgba(95, 68, 58, 0.65)",
+      shadowColor: "#9C7668",
     },
     forecastCard: {
       background: "rgba(248, 236, 225, 0.85)",
@@ -153,29 +153,43 @@ export const lightTheme: DesignTokens = {
     },
     energyOrb: {
       steady: {
-        topColor: "#9DCEB8",
-        botColor: "#7EAF98",
-        crestColor: "rgba(255, 255, 255, 0.55)",
+        // STATES[0]: tintTop "142 206 196", tintBot "74 172 184", alpha .20
+        topColor: 'rgb(142, 206, 196)',
+        botColor: 'rgb(74, 172, 184)',
+        alphaTop: 0.20,
+        alphaBot: 0.30,
+        crestColor: 'rgba(255, 255, 255, 0.40)',
       },
       caution: {
-        topColor: "#F5CCA0",
-        botColor: "#E6A86E",
-        crestColor: "rgba(255, 255, 255, 0.55)",
+        // STATES[1]: tintTop "250 198 170", tintBot "243 176 142", alpha .20
+        topColor: 'rgb(250, 198, 170)',
+        botColor: 'rgb(243, 176, 142)',
+        alphaTop: 0.20,
+        alphaBot: 0.30,
+        crestColor: 'rgba(255, 255, 255, 0.40)',
       },
       rest: {
-        topColor: "#F2B5B0",
-        botColor: "#DC908B",
-        crestColor: "rgba(255, 255, 255, 0.55)",
+        // STATES[2]: tintTop "224 110 146", tintBot "188 62 104", alpha .22
+        topColor: 'rgb(224, 110, 146)',
+        botColor: 'rgb(188, 62, 104)',
+        alphaTop: 0.22,
+        alphaBot: 0.32,
+        crestColor: 'rgba(255, 255, 255, 0.40)',
       },
       wearableRead: {
-        topColor: "#8CA28F",
-        botColor: "#3EAC54",
-        crestColor: "rgba(255, 255, 255, 0.65)",
+        // Same as steady (first-read uses steady fill appearance)
+        topColor: 'rgb(142, 206, 196)',
+        botColor: 'rgb(74, 172, 184)',
+        alphaTop: 0.20,
+        alphaBot: 0.30,
+        crestColor: 'rgba(255, 255, 255, 0.40)',
       },
       learning: {
-        topColor: "#7E9B6A",
-        botColor: "#5D7A52",
-        crestColor: "rgba(255, 255, 255, 0.55)",
+        topColor: 'rgb(142, 206, 196)',
+        botColor: 'rgb(74, 172, 184)',
+        alphaTop: 0.20,
+        alphaBot: 0.30,
+        crestColor: 'rgba(255, 255, 255, 0.40)',
       },
     },
     background: {

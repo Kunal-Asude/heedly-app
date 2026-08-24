@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { DawnBackground } from "@/components/core";
 import { Spacing } from "@/constants/theme";
+import { useCheckInConfig } from "@/hooks/data";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -39,103 +40,11 @@ const COLORS = {
   sheetBorder: "rgba(255, 255, 255, 0.85)",
 };
 
-// ─── Categories & Tags ────────────────────────────────────────────────────────
-
-type Category = {
-  id: string;
-  label: string;
-  tags: string[];
-};
-
-const CATEGORIES: Category[] = [
-  {
-    id: "activities",
-    label: "Activities",
-    tags: [
-      "physical activity",
-      "walking",
-      "standing",
-      "deep focus",
-      "screens",
-      "social interaction",
-    ],
-  },
-  {
-    id: "mind_mood",
-    label: "Mind & mood",
-    tags: ["deep focus", "brain fog", "social interaction", "screens"],
-  },
-  {
-    id: "environment",
-    label: "Environment",
-    tags: ["warm room", "heat exposure", "noise"],
-  },
-  {
-    id: "symptoms",
-    label: "Symptoms",
-    tags: [
-      "brain fog",
-      "headache",
-      "poor sleep",
-      "pain flare",
-      "joint pain",
-      "sore throat",
-      "heart racing",
-      "breathlessness",
-      "nausea",
-      "dizziness",
-    ],
-  },
-  {
-    id: "body",
-    label: "Body",
-    tags: [
-      "poor sleep",
-      "pain flare",
-      "joint pain",
-      "sore throat",
-      "heart racing",
-      "breathlessness",
-      "nausea",
-      "dizziness",
-    ],
-  },
-  {
-    id: "other",
-    label: "Other",
-    tags: ["noise", "warm room", "heat exposure"],
-  },
-];
-
-const ALL_TAGS = [
-  "social interaction",
-  "screens",
-  "warm room",
-  "deep focus",
-  "physical activity",
-  "heat exposure",
-  "standing",
-  "walking",
-  "brain fog",
-  "headache",
-  "poor sleep",
-  "pain flare",
-  "joint pain",
-  "sore throat",
-  "heart racing",
-  "breathlessness",
-  "nausea",
-  "dizziness",
-  "noise",
-];
-
-const INITIAL_SELECTED = ["social interaction", "screens", "warm room"];
-const PERIOD_DAYS = [1, 2, 3, 4, 5, 6, 7];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function NotingScreen() {
   const router = useRouter();
+  const { categories, allTags, initialSelectedTags, periodDays } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -143,18 +52,30 @@ export default function NotingScreen() {
     energyLabel?: string;
     bodyIndex?: string;
     bodyLabel?: string;
+    tags?: string;
+    periodInfo?: string;
+    isFirstTime?: string;
+    isEditing?: string;
+    openPeriod?: string;
   }>();
 
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(
-    new Set(INITIAL_SELECTED),
-  );
+  const isEditing = params.isEditing === 'true';
+  const openPeriod = params.openPeriod === 'true';
+
+  const initialTags = params.tags && params.tags.trim().length > 0
+    ? new Set(params.tags.split(' · ').map((t) => t.trim()))
+    : new Set(initialSelectedTags);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTags);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState<boolean>(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   // Period bottom sheet modal state
-  const [isPeriodModalVisible, setIsPeriodModalVisible] = useState<boolean>(false);
-  const [selectedPeriodDay, setSelectedPeriodDay] = useState<number | null>(null);
+  const initialPeriodDay = params.periodInfo && params.periodInfo.startsWith('Day ')
+    ? Number(params.periodInfo.replace('Day ', ''))
+    : null;
+  const [isPeriodModalVisible, setIsPeriodModalVisible] = useState<boolean>(openPeriod);
+  const [selectedPeriodDay, setSelectedPeriodDay] = useState<number | null>(initialPeriodDay);
 
   const handleToggleTag = (tag: string) => {
     const next = new Set(selectedTags);
@@ -179,6 +100,15 @@ export default function NotingScreen() {
   };
 
   const handleBack = () => {
+    if (isEditing) {
+      router.push({
+        pathname: "/(check-in)/saved",
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -187,6 +117,15 @@ export default function NotingScreen() {
   };
 
   const handleSkip = () => {
+    if (isEditing) {
+      router.push({
+        pathname: "/(check-in)/saved",
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     handleOpenPeriodSheet();
   };
 
@@ -209,8 +148,17 @@ export default function NotingScreen() {
         bodyLabel: params.bodyLabel ?? "tender",
         tags: tagsString,
         periodInfo: periodInfo,
+        isFirstTime: params.isFirstTime,
       },
     });
+  };
+
+  const handleSaveButtonPress = () => {
+    if (isEditing) {
+      navigateToSaved(params.periodInfo);
+    } else {
+      handleOpenPeriodSheet();
+    }
   };
 
   const handlePeriodSave = () => {
@@ -223,8 +171,8 @@ export default function NotingScreen() {
   };
 
   // Filter tags by search query and category
-  const activeCategory = CATEGORIES.find((c) => c.id === selectedCategoryId);
-  const baseTags = activeCategory ? activeCategory.tags : ALL_TAGS;
+  const activeCategory = categories.find((c) => c.id === selectedCategoryId);
+  const baseTags = activeCategory ? activeCategory.tags : allTags;
 
   const filteredTags = baseTags.filter((tag) =>
     tag.toLowerCase().includes(searchQuery.trim().toLowerCase()),
@@ -332,7 +280,7 @@ export default function NotingScreen() {
             <View style={styles.categoryDrawer}>
               <Text style={styles.categoryDrawerTitle}>BROWSE BY CATEGORY</Text>
               <View style={styles.categoryPillsRow}>
-                {CATEGORIES.map((cat) => {
+                {categories.map((cat) => {
                   const isSelected = selectedCategoryId === cat.id;
                   return (
                     <Pressable
@@ -408,7 +356,7 @@ export default function NotingScreen() {
               styles.saveButton,
               pressed && styles.buttonPressed,
             ]}
-            onPress={handleOpenPeriodSheet}
+            onPress={handleSaveButtonPress}
             accessibilityRole="button"
             accessibilityLabel="Save and continue"
           >
@@ -451,7 +399,7 @@ export default function NotingScreen() {
 
             {/* 7 Days Number Row */}
             <View style={styles.dayNumbersRow}>
-              {PERIOD_DAYS.map((day) => {
+              {periodDays.map((day) => {
                 const isSelected = selectedPeriodDay === day;
                 return (
                   <Pressable
@@ -515,7 +463,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "transparent",
-    overflow: "hidden",
   },
 
   safeArea: {
@@ -541,18 +488,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.two,
-    height: 44,
+    paddingHorizontal: 16,
+    height: 52,
   },
 
   navButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    height: 44,
     minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 8,
   },
 
   backChevron: {
@@ -567,9 +512,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: COLORS.mutedText,
-    paddingBottom: 4,
-    paddingRight: 6,
-    paddingLeft: 2,
   },
 
   // ── Progress Bar ─────────────────────────────────────────────────────────

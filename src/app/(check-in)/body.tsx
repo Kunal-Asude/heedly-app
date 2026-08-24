@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -21,38 +22,32 @@ const COLORS = {
   pillBorder: 'rgba(212, 184, 174, 0.4)',
 };
 
-// ─── Body feel level data ──────────────────────────────────────────────────────
-
-type BodyLevel = {
-  id: number;
-  label: string;
-  color: string;
-  glowColor: string;
-};
-
-const BODY_LEVELS: BodyLevel[] = [
-  { id: 0, label: 'in pain', color: '#DC6B76', glowColor: 'rgba(220, 107, 118, 0.3)' },
-  { id: 1, label: 'uncomfortable', color: '#E08568', glowColor: 'rgba(224, 133, 104, 0.3)' },
-  { id: 2, label: 'tender', color: '#E7B874', glowColor: 'rgba(231, 184, 116, 0.35)' },
-  { id: 3, label: 'comfortable', color: '#A5C49F', glowColor: 'rgba(165, 196, 159, 0.35)' },
-  { id: 4, label: 'easy', color: '#7BA98B', glowColor: 'rgba(123, 169, 139, 0.35)' },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function BodyScreen() {
   const router = useRouter();
+  const { bodyLevels } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
     energyIndex?: string;
     energyLabel?: string;
+    bodyIndex?: string;
+    bodyLabel?: string;
+    tags?: string;
+    periodInfo?: string;
     isFirstTime?: string;
+    isEditing?: string;
   }>();
-  const [selectedIndex, setSelectedIndex] = useState<number>(2); // Default: tender (index 2)
+  const initialIndex = params.bodyIndex !== undefined && !isNaN(Number(params.bodyIndex))
+    ? Math.min(Math.max(0, Number(params.bodyIndex)), bodyLevels.length - 1)
+    : 2;
+  const [selectedIndex, setSelectedIndex] = useState<number>(initialIndex);
   const [isCrash, setIsCrash] = useState<boolean>(false);
 
-  const selectedLevel = BODY_LEVELS[selectedIndex];
+  const selectedLevel = bodyLevels[selectedIndex];
+
+  const isEditing = params.isEditing === 'true';
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
@@ -67,6 +62,15 @@ export default function BodyScreen() {
   };
 
   const handleBack = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -75,6 +79,15 @@ export default function BodyScreen() {
   };
 
   const handleSkip = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     router.push({
       pathname: '/(check-in)/noting',
       params: {
@@ -82,12 +95,27 @@ export default function BodyScreen() {
         yesterdayLabel: params.yesterdayLabel,
         energyIndex: params.energyIndex,
         energyLabel: params.energyLabel,
+        bodyIndex: params.bodyIndex,
+        bodyLabel: params.bodyLabel,
+        tags: params.tags,
+        periodInfo: params.periodInfo,
         isFirstTime: params.isFirstTime,
       },
     });
   };
 
   const handleNext = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+          bodyIndex: selectedIndex,
+          bodyLabel: selectedLevel.label,
+        },
+      });
+      return;
+    }
     router.push({
       pathname: '/(check-in)/noting',
       params: {
@@ -97,6 +125,8 @@ export default function BodyScreen() {
         energyLabel: params.energyLabel ?? 'middling',
         bodyIndex: selectedIndex,
         bodyLabel: selectedLevel.label,
+        tags: params.tags,
+        periodInfo: params.periodInfo,
         isFirstTime: params.isFirstTime,
       },
     });
@@ -155,7 +185,7 @@ export default function BodyScreen() {
           {/* ── 5-Level Body Feel Selector ─────────────────────────────── */}
           <View style={styles.selectorContainer}>
             <View style={styles.circlesRow}>
-              {BODY_LEVELS.map((level, idx) => {
+              {bodyLevels.map((level, idx) => {
                 const isSelected = selectedIndex === idx;
                 return (
                   <Pressable
@@ -230,7 +260,7 @@ export default function BodyScreen() {
             onPress={handleNext}
             accessibilityRole="button"
             accessibilityLabel="Next">
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
             <Text style={styles.nextArrow}>›</Text>
           </Pressable>
 
@@ -249,7 +279,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
 
   glowInner: {
@@ -277,18 +306,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.two,
-    height: 44,
+    paddingHorizontal: 16,
+    height: 52,
   },
 
   navButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    height: 44,
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
 
   backChevron: {
@@ -303,9 +330,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: COLORS.mutedText,
-    paddingBottom: 4,
-    paddingRight: 6,
-    paddingLeft: 2,
   },
 
   // ── Progress Bar ─────────────────────────────────────────────────────────

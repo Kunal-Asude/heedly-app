@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -22,35 +23,11 @@ const COLORS = {
   chipSelectedText: '#FFFFFF',
 };
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-type DayItem = {
-  id: string;
-  day: string;
-  date: number;
-};
-
-const DAY_OPTIONS: DayItem[] = [
-  { id: 'wed-21', day: 'WED', date: 21 },
-  { id: 'thu-22', day: 'THU', date: 22 },
-  { id: 'fri-23', day: 'FRI', date: 23 },
-  { id: 'sat-24', day: 'SAT', date: 24 },
-  { id: 'sun-25', day: 'SUN', date: 25 },
-  { id: 'mon-26', day: 'MON', date: 26 },
-];
-
-const ACTIVITY_OPTIONS = [
-  'Social',
-  'Work / mental',
-  'Physical',
-  'Travel',
-  'Appointment',
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PlanScreen() {
   const router = useRouter();
+  const { planningDays, planningActivities } = useCheckInConfig();
 
   // Selection states (pre-selected values matching reference screenshot)
   const [selectedPreset, setSelectedPreset] = useState<'tomorrow' | 'weekend' | null>('weekend');
@@ -86,7 +63,7 @@ export default function PlanScreen() {
   };
 
   const handleCheckCost = () => {
-    const selectedDayObj = DAY_OPTIONS.find((d) => d.id === selectedDayId);
+    const selectedDayObj = planningDays.find((d) => d.id === selectedDayId);
     const dayNameMap: Record<string, string> = {
       WED: 'Wednesday',
       THU: 'Thursday',
@@ -176,7 +153,7 @@ export default function PlanScreen() {
 
             {/* Date Cards Row */}
             <View style={styles.dateCardsRow}>
-              {DAY_OPTIONS.map((item) => {
+              {planningDays.map((item) => {
                 const isSelected = selectedDayId === item.id;
                 return (
                   <Pressable
@@ -218,7 +195,7 @@ export default function PlanScreen() {
 
             {/* Activity Type Chips Wrap */}
             <View style={styles.activityWrap}>
-              {ACTIVITY_OPTIONS.map((activity) => {
+              {planningActivities.map((activity) => {
                 const isSelected = selectedActivities.includes(activity);
                 return (
                   <Pressable

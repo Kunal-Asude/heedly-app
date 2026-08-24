@@ -156,26 +156,36 @@ export const darkTheme: DesignTokens = {
       steady: {
         topColor: "#B8DD98", // PLACEHOLDER
         botColor: "#A8D080", // PLACEHOLDER
+        alphaTop: 0.20,
+        alphaBot: 0.30,
         crestColor: "rgba(255, 255, 255, 0.4)", // PLACEHOLDER
       },
       caution: {
         topColor: "#F5C895", // PLACEHOLDER
         botColor: "#EDB87C", // PLACEHOLDER
+        alphaTop: 0.20,
+        alphaBot: 0.30,
         crestColor: "rgba(255, 255, 255, 0.4)", // PLACEHOLDER
       },
       rest: {
         topColor: "#F5A285", // PLACEHOLDER
         botColor: "#EB8875", // PLACEHOLDER
+        alphaTop: 0.22,
+        alphaBot: 0.32,
         crestColor: "rgba(255, 255, 255, 0.4)", // PLACEHOLDER
       },
       wearableRead: {
         topColor: "#B0C8A8", // PLACEHOLDER
         botColor: "#6EBD7A", // PLACEHOLDER
+        alphaTop: 0.20,
+        alphaBot: 0.30,
         crestColor: "rgba(255, 255, 255, 0.5)", // PLACEHOLDER
       },
       learning: {
         topColor: "#B8DD98", // PLACEHOLDER
         botColor: "#9FC585", // PLACEHOLDER
+        alphaTop: 0.20,
+        alphaBot: 0.30,
         crestColor: "rgba(255, 255, 255, 0.4)", // PLACEHOLDER
       },
     },

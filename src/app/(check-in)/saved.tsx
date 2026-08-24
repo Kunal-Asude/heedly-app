@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +15,7 @@ const COLORS = {
   accent: '#b05334',
   bodyText: '#463332',
   mutedText: '#6B4C3E',
+  helperText: '#8A6A5E',
   buttonBg: 'rgba(255, 251, 248, 0.95)',
   buttonBorder: 'rgba(212, 184, 174, 0.35)',
   cardBg: 'rgba(255, 251, 248, 0.85)',
@@ -56,16 +58,69 @@ export default function CheckInSavedScreen() {
     bodyLabel?: string;
     tags?: string;
     periodInfo?: string;
+    isFirstTime?: string;
   }>();
 
+  const isFirstTime = params.isFirstTime === 'true';
+
   const yesterdayLabel = params.yesterdayLabel;
-  const yesterdayRating = params.yesterdayIndex ? Number(params.yesterdayIndex) + 1 : undefined;
-  const energyLabel = params.energyLabel ?? 'middling';
+  const energyLabel = params.energyLabel ?? (isFirstTime ? 'okay' : 'middling');
   const energyRating = params.energyIndex ? Number(params.energyIndex) + 1 : 3;
   const bodyLabel = params.bodyLabel ?? 'tender';
   const bodyRating = params.bodyIndex ? Number(params.bodyIndex) + 1 : 3;
   const tagsText = params.tags && params.tags.length > 0 ? params.tags : 'social · screens · warm room';
   const periodInfo = params.periodInfo;
+
+  const currentParams = {
+    energyIndex: params.energyIndex,
+    energyLabel: params.energyLabel,
+    yesterdayIndex: params.yesterdayIndex,
+    yesterdayLabel: params.yesterdayLabel,
+    bodyIndex: params.bodyIndex,
+    bodyLabel: params.bodyLabel,
+    tags: params.tags,
+    periodInfo: params.periodInfo,
+    isFirstTime: params.isFirstTime,
+    isEditing: 'true',
+  };
+
+  const handleEditEnergy = () => {
+    router.push({
+      pathname: '/(check-in)/energy',
+      params: currentParams,
+    });
+  };
+
+  const handleEditBody = () => {
+    router.push({
+      pathname: '/(check-in)/body',
+      params: currentParams,
+    });
+  };
+
+  const handleEditNotable = () => {
+    router.push({
+      pathname: '/(check-in)/noting',
+      params: currentParams,
+    });
+  };
+
+  const handleEditYesterday = () => {
+    router.push({
+      pathname: '/(check-in)/yesterday',
+      params: currentParams,
+    });
+  };
+
+  const handleEditCycle = () => {
+    router.push({
+      pathname: '/(check-in)/noting',
+      params: {
+        ...currentParams,
+        openPeriod: 'true',
+      },
+    });
+  };
 
   const handleBackToToday = () => {
     router.replace('/(tabs)?mode=steady' as any);
@@ -91,76 +146,116 @@ export default function CheckInSavedScreen() {
             </View>
           </View>
 
-          {/* Heading */}
-          <Text style={styles.heading}>
-            <Text style={styles.headingDark}>Saved.{'\n'}</Text>
-            <Text style={styles.headingAccent}>Rest well, Sam.</Text>
-          </Text>
+          {/* Conditional Heading */}
+          {isFirstTime ? (
+            <Text style={styles.headingFirstTime}>
+              <Text style={styles.headingDark}>Thank you, </Text>
+              <Text style={styles.headingAccent}>Sam.</Text>
+            </Text>
+          ) : (
+            <Text style={styles.headingRegular}>
+              <Text style={styles.headingDark}>Saved.{'\n'}</Text>
+              <Text style={styles.headingAccent}>Rest well, Sam.</Text>
+            </Text>
+          )}
 
-          {/* Description */}
-          <Text style={styles.description}>
-            {"We'll quietly watch for patterns and only"}{'\n'}ping you if something matters.
-          </Text>
+          {/* Conditional Description */}
+          {isFirstTime ? (
+            <Text style={styles.description}>
+              {"That's your first piece of the picture.\nEach check-in teaches heedly a little\nmore about you."}
+            </Text>
+          ) : (
+            <Text style={styles.description}>
+              {"We'll quietly watch for patterns and only\nping you if something matters."}
+            </Text>
+          )}
 
-          {/* Summary Card */}
+          {/* Summary Card with Tappable Rows */}
           <View style={styles.summaryCard}>
-            {/* YESTERDAY Row (if recorded) */}
-            {yesterdayLabel && yesterdayRating !== undefined && (
-              <>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.rowLabel}>YESTERDAY</Text>
-                  <View style={styles.rowValueBlock}>
-                    <Text style={styles.rowValueText}>{yesterdayLabel}</Text>
-                    <FiveDotRating value={yesterdayRating} />
-                  </View>
-                </View>
-                <View style={styles.divider} />
-              </>
-            )}
-
-            {/* ENERGY Row */}
-            <View style={styles.summaryRow}>
-              <Text style={styles.rowLabel}>ENERGY</Text>
+            {/* FIRST ROW: FEELING (First Time) vs ENERGY (Recurring) */}
+            <Pressable
+              style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
+              onPress={handleEditEnergy}
+              accessibilityRole="button"
+              accessibilityLabel={`Edit ${isFirstTime ? 'feeling' : 'energy'}: ${energyLabel}`}
+            >
+              <Text style={styles.rowLabel}>{isFirstTime ? 'FEELING' : 'ENERGY'}</Text>
               <View style={styles.rowValueBlock}>
                 <Text style={styles.rowValueText}>{energyLabel}</Text>
                 <FiveDotRating value={energyRating} />
               </View>
-            </View>
+            </Pressable>
 
             <View style={styles.divider} />
 
-            {/* BODY Row */}
-            <View style={styles.summaryRow}>
+            {/* SECOND ROW: BODY */}
+            <Pressable
+              style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
+              onPress={handleEditBody}
+              accessibilityRole="button"
+              accessibilityLabel={`Edit body: ${bodyLabel}`}
+            >
               <Text style={styles.rowLabel}>BODY</Text>
               <View style={styles.rowValueBlock}>
                 <Text style={styles.rowValueText}>{bodyLabel}</Text>
                 <FiveDotRating value={bodyRating} />
               </View>
-            </View>
+            </Pressable>
 
             <View style={styles.divider} />
 
-            {/* NOTABLE Row */}
-            <View style={styles.summaryRowTopAligned}>
+            {/* THIRD ROW: NOTABLE */}
+            <Pressable
+              style={({ pressed }) => [styles.summaryRowTopAligned, pressed && styles.rowPressed]}
+              onPress={handleEditNotable}
+              accessibilityRole="button"
+              accessibilityLabel={`Edit notable tags: ${tagsText}`}
+            >
               <Text style={styles.rowLabelTop}>NOTABLE</Text>
               <Text style={styles.rowValueTextNotable}>
                 {tagsText}
               </Text>
-            </View>
+            </Pressable>
+
+            {/* FOURTH ROW: YESTERDAY (Shown on Regular / Recurring check-in) */}
+            {!isFirstTime && yesterdayLabel && (
+              <>
+                <View style={styles.divider} />
+                <Pressable
+                  style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
+                  onPress={handleEditYesterday}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit yesterday: ${yesterdayLabel}`}
+                >
+                  <Text style={styles.rowLabel}>YESTERDAY</Text>
+                  <Text style={styles.rowValueText}>{yesterdayLabel}</Text>
+                </Pressable>
+              </>
+            )}
 
             {/* CYCLE / PERIOD Row (if recorded) */}
             {periodInfo && (
               <>
                 <View style={styles.divider} />
-                <View style={styles.summaryRowTopAligned}>
+                <Pressable
+                  style={({ pressed }) => [styles.summaryRowTopAligned, pressed && styles.rowPressed]}
+                  onPress={handleEditCycle}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit cycle: ${periodInfo}`}
+                >
                   <Text style={styles.rowLabelTop}>CYCLE</Text>
                   <Text style={styles.rowValueTextNotable}>
                     {periodInfo}
                   </Text>
-                </View>
+                </Pressable>
               </>
             )}
           </View>
+
+          {/* Helper Text below card */}
+          <Text style={styles.helperText}>
+            Tap any line to edit before you go.
+          </Text>
 
         </View>
 
@@ -186,18 +281,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
-  },
-
-  glowInner: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: '#EEDCE0',
-    opacity: 0.45,
-    top: '8%',
-    alignSelf: 'center',
   },
 
   safeArea: {
@@ -206,6 +289,11 @@ const styles = StyleSheet.create({
 
   pressed: {
     opacity: 0.85,
+    transform: [{ scale: 0.985 }],
+  },
+
+  rowPressed: {
+    opacity: 0.6,
   },
 
   // ── Content Area ─────────────────────────────────────────────────────────
@@ -214,7 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.four,
     justifyContent: 'center',
-    paddingBottom: Spacing.four,
+    paddingBottom: Spacing.two,
   },
 
   // ── Icon Badge ───────────────────────────────────────────────────────────
@@ -238,14 +326,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  // ── Heading ──────────────────────────────────────────────────────────────
+  // ── Headings ─────────────────────────────────────────────────────────────
 
-  heading: {
+  headingFirstTime: {
+    fontFamily: 'AvenirNext-Regular',
+    fontSize: 36,
+    lineHeight: 44,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+
+  headingRegular: {
     fontFamily: 'AvenirNext-Regular',
     fontSize: 34,
     lineHeight: 42,
     textAlign: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
 
   headingDark: {
@@ -260,25 +356,25 @@ const styles = StyleSheet.create({
 
   description: {
     fontFamily: 'AvenirNext-Regular',
-    fontSize: 16.5,
+    fontSize: 16,
     lineHeight: 23,
     color: '#463332',
     textAlign: 'center',
-    marginBottom: 32,
-    paddingHorizontal: Spacing.two,
+    marginBottom: 28,
+    paddingHorizontal: Spacing.three,
   },
 
   // ── Summary Card ─────────────────────────────────────────────────────────
 
   summaryCard: {
     backgroundColor: COLORS.cardBg,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     paddingVertical: 18,
     paddingHorizontal: 20,
     shadowColor: '#C8A090',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 3,
@@ -343,6 +439,17 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
 
+  // ── Helper Text ──────────────────────────────────────────────────────────
+
+  helperText: {
+    fontFamily: 'AvenirNext-Regular',
+    fontSize: 13.5,
+    lineHeight: 18,
+    color: COLORS.helperText,
+    textAlign: 'center',
+    marginTop: 16,
+  },
+
   // ── Dot Rating ───────────────────────────────────────────────────────────
 
   dotRatingRow: {
@@ -367,7 +474,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: COLORS.buttonBg,
     borderRadius: 50,
-    paddingVertical: 18,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

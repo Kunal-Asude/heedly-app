@@ -155,26 +155,36 @@ export interface DesignTokens {
       steady: {
         topColor: string;
         botColor: string;
+        alphaTop: number;
+        alphaBot: number;
         crestColor: string;
       };
       caution: {
         topColor: string;
         botColor: string;
+        alphaTop: number;
+        alphaBot: number;
         crestColor: string;
       };
       rest: {
         topColor: string;
         botColor: string;
+        alphaTop: number;
+        alphaBot: number;
         crestColor: string;
       };
       wearableRead: {
         topColor: string;
         botColor: string;
+        alphaTop: number;
+        alphaBot: number;
         crestColor: string;
       };
       learning: {
         topColor: string;
         botColor: string;
+        alphaTop: number;
+        alphaBot: number;
         crestColor: string;
       };
     };

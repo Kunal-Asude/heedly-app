@@ -43,6 +43,20 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
+  const currentRoute = state.routes[state.index];
+  const focusedOptions = descriptors[currentRoute?.key]?.options;
+
+  // Do not render tab bar on notes, your-data, explore, or hidden routes
+  if (
+    currentRoute?.name === "notes" ||
+    currentRoute?.name === "your-data" ||
+    currentRoute?.name === "explore" ||
+    focusedOptions?.tabBarStyle?.display === "none" ||
+    focusedOptions?.href === null
+  ) {
+    return null;
+  }
+
   return (
     <View
       style={[
@@ -141,8 +155,21 @@ export default function AppTabs() {
     >
       <Tabs.Screen name="index" options={{ title: "Today" }} />
       <Tabs.Screen name="patterns" options={{ title: "Patterns" }} />
-      <Tabs.Screen name="notes" options={{ title: "Notes" }} />
+      <Tabs.Screen
+        name="notes"
+        options={{
+          title: "Notes",
+          tabBarStyle: { display: "none" },
+        }}
+      />
       <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+      <Tabs.Screen
+        name="your-data"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
       <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );

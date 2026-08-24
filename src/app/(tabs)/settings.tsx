@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useUserSettings } from '@/hooks/data';
+import { sendTestCautionHeadsUpNotification } from '@/services/notifications';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -58,16 +60,17 @@ function CustomToggle({ value, onValueChange }: CustomToggleProps) {
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { settings } = useUserSettings();
 
   // Control states for interactive UI
-  const [themeMode, setThemeMode] = useState<'system' | 'light' | 'dark'>('system');
-  const [isTrueBlack, setIsTrueBlack] = useState(false);
-  const [isReduceMotion, setIsReduceMotion] = useState(false);
-  const [isAiInsights, setIsAiInsights] = useState(true);
-  const [isCycleNotTypical, setIsCycleNotTypical] = useState(false);
-  const [isDailyReminder, setIsDailyReminder] = useState(true);
-  const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(true);
-  const [isWeeklyRecap, setIsWeeklyRecap] = useState(false);
+  const [themeMode, setThemeMode] = useState<'system' | 'light' | 'dark'>(settings.themeMode);
+  const [isTrueBlack, setIsTrueBlack] = useState(settings.isTrueBlack);
+  const [isReduceMotion, setIsReduceMotion] = useState(settings.isReduceMotion);
+  const [isAiInsights, setIsAiInsights] = useState(settings.isAiInsights);
+  const [isCycleNotTypical, setIsCycleNotTypical] = useState(settings.isCycleNotTypical);
+  const [isDailyReminder, setIsDailyReminder] = useState(settings.isDailyReminder);
+  const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(settings.isHarderDaysReminder);
+  const [isWeeklyRecap, setIsWeeklyRecap] = useState(settings.isWeeklyRecap);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -195,7 +198,7 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           {/* Connected Wearable */}
           <View style={styles.rowBetween}>
-            <Text style={styles.rowTitle}>Oura Ring</Text>
+            <Text style={styles.rowTitle}>{settings.connectedWearableName}</Text>
             <Pressable
               style={({ pressed }) => [styles.changeLink, pressed && styles.pressed]}
               accessibilityRole="button"
@@ -205,7 +208,7 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
           <Text style={styles.rowDescription}>
-            Connected · syncing in the background
+            {settings.connectedWearableStatus}
           </Text>
 
           <View style={styles.divider} />
@@ -278,6 +281,7 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <Pressable
             style={({ pressed }) => [styles.rowBetween, pressed && styles.pressed]}
+            onPress={() => router.push('/paywall' as any)}
             accessibilityRole="button"
             accessibilityLabel="Manage subscription">
             <Text style={styles.rowTitle}>Manage subscription</Text>
@@ -294,6 +298,7 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <Pressable
             style={({ pressed }) => [styles.rowBetween, pressed && styles.pressed]}
+            onPress={() => router.push('/(tabs)/your-data' as any)}
             accessibilityRole="button"
             accessibilityLabel="Your data">
             <Text style={styles.rowTitle}>Your data</Text>
@@ -336,11 +341,37 @@ export default function SettingsScreen() {
           {/* Heads-up before harder days */}
           <View style={styles.rowBetween}>
             <Text style={styles.rowTitle}>Heads-up before harder days</Text>
-            <CustomToggle value={isHarderDaysReminder} onValueChange={setIsHarderDaysReminder} />
+            <CustomToggle
+              value={isHarderDaysReminder}
+              onValueChange={(val) => {
+                setIsHarderDaysReminder(val);
+                if (val) {
+                  sendTestCautionHeadsUpNotification();
+                }
+              }}
+            />
           </View>
           <Text style={styles.rowDescription}>
             heedly lets you know when the next few days look heavier, so you can plan ahead.
           </Text>
+          <Pressable
+            onPress={async () => {
+              const id = await sendTestCautionHeadsUpNotification();
+              if (id) {
+                Alert.alert(
+                  'Heads-up notification sent',
+                  'A real notification will arrive in 2 seconds. Pull down notification center or lock your device to see it!',
+                  [{ text: 'OK' }]
+                );
+              } else {
+                Alert.alert('Permission required', 'Please enable notifications for Heedly in iOS Settings.');
+              }
+            }}
+            style={({ pressed }) => [styles.previewLinkRow, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Send test heads-up notification">
+            <Text style={styles.previewLinkText}>Send test heads-up notification ›</Text>
+          </Pressable>
 
           <View style={styles.divider} />
 
@@ -660,5 +691,15 @@ const styles = StyleSheet.create({
 
   toggleThumbActive: {
     alignSelf: 'flex-end',
+  },
+  previewLinkRow: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    paddingVertical: 4,
+  },
+  previewLinkText: {
+    fontFamily: 'AvenirNext-DemiBold',
+    fontSize: 13.5,
+    color: COLORS.accent,
   },
 });

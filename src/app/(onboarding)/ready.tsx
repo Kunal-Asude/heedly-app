@@ -1,12 +1,10 @@
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { CORAL, INK, Spacing, SURFACES } from '@/constants/theme';
+import { CORAL, INK, Spacing } from '@/constants/theme';
 
 export default function ReadyScreen() {
   const router = useRouter();
@@ -26,7 +24,7 @@ export default function ReadyScreen() {
 
         {/* ── Signature Animated Glass Orb (Pure glass, no waves, scaled down) ──── */}
         <View style={styles.orbContainer}>
-          <EnergyOrb state="empty" size={175} />
+          <EnergyOrb state="empty" size={152} />
         </View>
 
         {/* ── Content block ────────────────────────────────────────────── */}
@@ -39,7 +37,7 @@ export default function ReadyScreen() {
               style={styles.wordmarkInline}
               contentFit="contain"
             />
-            <Text style={styles.headingIs}>is </Text>
+            <Text style={styles.headingIs}>is</Text>
             <Text style={styles.headingAccent}>ready.</Text>
           </View>
 
@@ -115,6 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
     marginBottom: 14,
   },
 
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
     width: 108,
     height: 36,
     tintColor: INK.display,
-    marginRight: -18,
+    marginRight: -20,
   },
 
   headingIs: {

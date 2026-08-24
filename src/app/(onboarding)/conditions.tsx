@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useUserSettings } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -24,24 +25,13 @@ const COLORS = {
   buttonText: '#FFFFFF',
 };
 
-// ─── Condition items ──────────────────────────────────────────────────────────
-
-const CONDITIONS = [
-  'ME/CFS',
-  'Long COVID',
-  'POTS',
-  'Fibromyalgia',
-  'Dysautonomia',
-  'MCAS',
-  'Something else',
-];
-
 const CHIP_GAP = 12;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ConditionsScreen() {
   const router = useRouter();
+  const { conditions } = useUserSettings();
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   const toggleCondition = (condition: string) => {
@@ -88,7 +78,7 @@ export default function ConditionsScreen() {
 
           {/* ── 2-Column Condition Chips ─────────────────────────────────── */}
           <View style={styles.grid}>
-            {CONDITIONS.map((condition) => {
+            {conditions.map((condition) => {
               const isSelected = selectedConditions.includes(condition);
               return (
                 <Pressable

@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { EnergyOrb, EnergyOrbState } from "@/components/core";
 
-export const TODAY_ORB_SIZE = 280;
+export const TODAY_ORB_SIZE = 254;
 
 interface TodayOrbContainerProps {
   state: EnergyOrbState;

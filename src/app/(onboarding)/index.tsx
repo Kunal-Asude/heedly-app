@@ -1,11 +1,10 @@
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { CORAL, INK, Spacing, SURFACES } from '@/constants/theme';
+import { CORAL, INK, Spacing } from '@/constants/theme';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -21,7 +20,7 @@ export default function WelcomeScreen() {
 
         {/* ── Signature Animated Glass Orb (Pure glass, no waves, scaled down) ── */}
         <View style={styles.orbContainer}>
-          <EnergyOrb state="empty" size={175} />
+          <EnergyOrb state="empty" size={152} />
         </View>
 
         {/* ── Content Block ──────────────────────────────────────────────── */}
@@ -55,7 +54,7 @@ export default function WelcomeScreen() {
 
           {/* Privacy Copy / Disclaimer */}
           <Text style={styles.privacyText}>
-            No account needed. Your data is private by default, and we don't sell your data.
+            {"No account needed. Your data is private by default, and we don't sell your data."}
           </Text>
         </View>
 

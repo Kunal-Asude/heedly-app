@@ -1,40 +1,25 @@
-import { Image } from 'expo-image';
-import React from 'react';
-import { StyleSheet, View, ViewProps, ViewStyle } from 'react-native';
+import { EnergyOrb } from './EnergyOrb';
+import type { EnergyOrbProps, EnergyOrbState } from './EnergyOrb';
 
-export interface OrbProps extends ViewProps {
+export interface OrbProps extends EnergyOrbProps {
   /**
-   * 'logo' = full luminous logo orb for Onboarding & Paywall screens (heedly-orb.png)
-   * 'today' = tank gauge orb for Today screen (today-orb.png)
+   * 'logo' = full luminous logo orb for Onboarding & Paywall screens (empty water state)
+   * 'today' = tank gauge orb for Today screen (steady/caution/rest state)
    */
   variant?: 'logo' | 'today';
-  size?: number;
-  style?: ViewStyle | ViewStyle[];
 }
 
 /**
- * Shared signature glass orb component matching design system spec (orb.jsx).
+ * Aubade — the shared signature orb (the brand's "default tank" glass sphere).
+ * Matches design system spec from orb.jsx:
+ * Welcome, Today, and Paywall ALL render this one component so the orb can't drift.
+ *   • Omit `water` / 'logo'  → the full, luminous default orb (Welcome + Paywall logo orb).
+ *   • Pass `water` / 'today' → the same sphere with Today's per-state tank fill layered in.
+ * Size is controlled by the wrapper CSS (.ob-orb / .orb-wrap / .pw-orb), never here.
  */
-export function Orb({ variant = 'logo', size = 250, style, ...rest }: OrbProps) {
-  const source =
-    variant === 'today'
-      ? require('@/assets/images/today-orb.png')
-      : require('@/assets/images/heedly-orb.png');
+export function Orb({ variant, state, size, ...rest }: OrbProps) {
+  const effectiveState: EnergyOrbState =
+    state ?? (variant === 'today' ? 'steady' : 'empty');
 
-  return (
-    <View style={[styles.container, { width: size, height: size }, style]} {...rest}>
-      <Image source={source} style={styles.image} contentFit="contain" />
-    </View>
-  );
+  return <EnergyOrb state={effectiveState} size={size} {...rest} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-});

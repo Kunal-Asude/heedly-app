@@ -1,11 +1,11 @@
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DawnBackground } from '@/components/core';
+import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -30,10 +30,17 @@ const COLORS = {
 
 export default function PlanResultScreen() {
   const router = useRouter();
+  const { defaultPlanningPrediction } = useCheckInConfig();
   const params = useLocalSearchParams<{ dayName?: string; activityLabel?: string }>();
 
   const dayName = params.dayName || 'Saturday';
   const activityLabel = params.activityLabel || 'Social';
+
+  const explanationText = defaultPlanningPrediction.explanationTemplate.replace(
+    '{dayName}',
+    dayName
+  );
+  const recommendationText = defaultPlanningPrediction.recommendation;
 
   const handleDone = () => {
     router.replace('/(tabs)');
@@ -68,11 +75,7 @@ export default function PlanResultScreen() {
           <View style={styles.forecastCard}>
             {/* Hero Orb */}
             <View style={styles.orbContainer}>
-              <Image
-                source={require('@/assets/images/heedly-orb.png')}
-                style={styles.orb}
-                contentFit="contain"
-              />
+              <EnergyOrb state="caution" size={138} />
             </View>
 
             {/* Caution Badge */}
@@ -83,7 +86,7 @@ export default function PlanResultScreen() {
 
             {/* Main Explanation Copy */}
             <Text style={styles.explanationText}>
-              {`${dayName} follows two heavier days\n— your reserves are likely to be low.`}
+              {explanationText}
             </Text>
           </View>
 
@@ -95,7 +98,7 @@ export default function PlanResultScreen() {
               tintColor={COLORS.bodyText}
             />
             <Text style={styles.recommendationText}>
-              {"If it can move, midweek looks easier — or keep Friday light to give yourself room."}
+              {recommendationText}
             </Text>
           </View>
 
@@ -221,7 +224,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     alignItems: 'center',
     marginBottom: Spacing.three,
     shadowColor: '#C8A090',
@@ -232,17 +235,11 @@ const styles = StyleSheet.create({
   },
 
   orbContainer: {
-    width: 200,
-    height: 200,
+    width: 138,
+    height: 138,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-
-  orb: {
-    width: '130%',
-    height: '130%',
-    top: 10
   },
 
   badgeContainer: {
@@ -274,9 +271,13 @@ const styles = StyleSheet.create({
   explanationText: {
     fontFamily: 'AvenirNext-Regular',
     fontSize: 16.5,
-    lineHeight: 23,
+    lineHeight: 24,
     color: '#463332',
     textAlign: 'center',
+    width: '100%',
+    maxWidth: 330,
+    alignSelf: 'center',
+    paddingHorizontal: 6,
   },
 
   // ── Recommendation Box ──────────────────────────────────────────────────

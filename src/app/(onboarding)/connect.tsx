@@ -1,4 +1,4 @@
-import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { SymbolView } from 'expo-symbols';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useUserSettings } from '@/hooks/data';
+import type { DeviceId } from '@/types/user';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -26,30 +28,6 @@ const COLORS = {
   buttonText: '#FFFFFF',
 };
 
-// ─── Card data ────────────────────────────────────────────────────────────────
-
-type SymbolName = SymbolViewProps['name'];
-
-type DeviceId = 'oura' | 'apple-watch' | 'apple-health' | 'garmin' | 'whoop' | 'other';
-
-type WearableCard = {
-  id: DeviceId;
-  /** SF Symbol name for iOS */
-  icon: SymbolName;
-  label: string;
-  /** Optional secondary description (Apple Health only) */
-  subtitle?: string;
-};
-
-const WEARABLES: WearableCard[] = [
-  { id: 'oura', icon: 'circle.circle', label: 'Oura' },
-  { id: 'apple-watch', icon: 'applewatch', label: 'Apple Watch' },
-  { id: 'apple-health', icon: 'heart', label: 'Apple Health', subtitle: 'Fitbit, Polar,\nWithings & more' },
-  { id: 'garmin', icon: 'clock', label: 'Garmin' },
-  { id: 'whoop', icon: 'ellipsis.rectangle', label: 'Whoop' },
-  { id: 'other', icon: 'waveform.path.ecg', label: 'Other' },
-];
-
 const CARD_GAP = 12;
 const TOTAL_COLUMNS = 3;
 
@@ -57,6 +35,7 @@ const TOTAL_COLUMNS = 3;
 
 export default function ConnectWearableScreen() {
   const router = useRouter();
+  const { wearables } = useUserSettings();
   const [selectedDevice, setSelectedDevice] = useState<DeviceId | null>(null);
 
   const handleCardPress = (id: DeviceId) => {
@@ -99,7 +78,7 @@ export default function ConnectWearableScreen() {
 
           {/* ── Card grid ───────────────────────────────────────────────── */}
           <View style={styles.grid}>
-            {WEARABLES.map((card) => {
+            {wearables.map((card) => {
               const isSelected = selectedDevice === card.id;
               return (
                 <Pressable

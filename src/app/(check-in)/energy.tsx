@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -21,47 +22,35 @@ const COLORS = {
   pillBorder: 'rgba(212, 184, 174, 0.4)',
 };
 
-// ─── Energy level data ────────────────────────────────────────────────────────
-
-type EnergyLevel = {
-  id: number;
-  label: string;
-  color: string;
-  glowColor: string;
-};
-
-const RECURRING_LEVELS: EnergyLevel[] = [
-  { id: 0, label: 'drained', color: '#DC6B76', glowColor: 'rgba(220, 107, 118, 0.3)' },
-  { id: 1, label: 'low', color: '#E08568', glowColor: 'rgba(224, 133, 104, 0.3)' },
-  { id: 2, label: 'middling', color: '#E7B874', glowColor: 'rgba(231, 184, 116, 0.35)' },
-  { id: 3, label: 'good', color: '#A5C49F', glowColor: 'rgba(165, 196, 159, 0.35)' },
-  { id: 4, label: 'high', color: '#7BA98B', glowColor: 'rgba(123, 169, 139, 0.35)' },
-];
-
-const FIRST_TIME_LEVELS: EnergyLevel[] = [
-  { id: 0, label: 'awful', color: '#DC6B76', glowColor: 'rgba(220, 107, 118, 0.3)' },
-  { id: 1, label: 'poor', color: '#E08568', glowColor: 'rgba(224, 133, 104, 0.3)' },
-  { id: 2, label: 'okay', color: '#E7B874', glowColor: 'rgba(231, 184, 116, 0.35)' },
-  { id: 3, label: 'good', color: '#A5C49F', glowColor: 'rgba(165, 196, 159, 0.35)' },
-  { id: 4, label: 'great', color: '#7BA98B', glowColor: 'rgba(123, 169, 139, 0.35)' },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EnergyScreen() {
   const router = useRouter();
+  const { recurringEnergyLevels, firstTimeEnergyLevels } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
+    energyIndex?: string;
+    energyLabel?: string;
+    bodyIndex?: string;
+    bodyLabel?: string;
+    tags?: string;
+    periodInfo?: string;
     isFirstTime?: string;
+    isEditing?: string;
   }>();
 
   const isFirstTime = params.isFirstTime === 'true';
-  const levels = isFirstTime ? FIRST_TIME_LEVELS : RECURRING_LEVELS;
-  const [selectedIndex, setSelectedIndex] = useState<number>(2); // Default: okay / middling
+  const levels = isFirstTime ? firstTimeEnergyLevels : recurringEnergyLevels;
+  const initialIndex = params.energyIndex !== undefined && !isNaN(Number(params.energyIndex))
+    ? Math.min(Math.max(0, Number(params.energyIndex)), levels.length - 1)
+    : 2;
+  const [selectedIndex, setSelectedIndex] = useState<number>(initialIndex);
   const [isCrash, setIsCrash] = useState<boolean>(false);
 
   const selectedLevel = levels[selectedIndex];
+
+  const isEditing = params.isEditing === 'true';
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
@@ -76,6 +65,15 @@ export default function EnergyScreen() {
   };
 
   const handleBack = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -84,10 +82,25 @@ export default function EnergyScreen() {
   };
 
   const handleSkip = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (isFirstTime) {
       router.push({
         pathname: '/(check-in)/yesterday',
         params: {
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
           isFirstTime: 'true',
         },
       });
@@ -97,18 +110,39 @@ export default function EnergyScreen() {
         params: {
           yesterdayIndex: params.yesterdayIndex,
           yesterdayLabel: params.yesterdayLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
         },
       });
     }
   };
 
   const handleNext = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+          energyIndex: selectedIndex,
+          energyLabel: selectedLevel.label,
+        },
+      });
+      return;
+    }
     if (isFirstTime) {
       router.push({
         pathname: '/(check-in)/yesterday',
         params: {
           energyIndex: selectedIndex,
           energyLabel: selectedLevel.label,
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
           isFirstTime: 'true',
         },
       });
@@ -120,6 +154,10 @@ export default function EnergyScreen() {
           yesterdayLabel: params.yesterdayLabel,
           energyIndex: selectedIndex,
           energyLabel: selectedLevel.label,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
         },
       });
     }
@@ -265,7 +303,7 @@ export default function EnergyScreen() {
             onPress={handleNext}
             accessibilityRole="button"
             accessibilityLabel="Next">
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
             <Text style={styles.nextArrow}>›</Text>
           </Pressable>
 
@@ -284,7 +322,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
 
   glowInner: {
@@ -312,18 +349,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.two,
-    height: 44,
+    paddingHorizontal: 16,
+    height: 52,
   },
 
   navButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    height: 44,
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
 
   backChevron: {
@@ -338,9 +373,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: COLORS.mutedText,
-    paddingBottom: 4,
-    paddingRight: 6,
-    paddingLeft: 2,
   },
 
   // ── Progress Bar ─────────────────────────────────────────────────────────

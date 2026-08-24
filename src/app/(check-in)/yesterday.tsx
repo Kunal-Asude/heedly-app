@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Spacing } from '@/constants/theme';
+import { useCheckInConfig } from '@/hooks/data';
+import type { YesterdayOption } from '@/types/checkin';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -19,59 +21,48 @@ const COLORS = {
   progressInactive: '#E5C4B7',
 };
 
-type YesterdayOption = {
-  id: string;
-  prefix: string;
-  emphasis: string;
-  value: string;
-  dotColor: string;
-  cardBg: string;
-  cardBorder: string;
-};
-
-const OPTIONS: YesterdayOption[] = [
-  {
-    id: 'lighter',
-    prefix: 'Lighter than ',
-    emphasis: 'usual',
-    value: 'Lighter than usual',
-    dotColor: '#85B58E',
-    cardBg: 'rgba(225, 238, 227, 0.65)',
-    cardBorder: 'rgba(133, 181, 142, 0.4)',
-  },
-  {
-    id: 'same',
-    prefix: 'About the ',
-    emphasis: 'same',
-    value: 'About the same',
-    dotColor: '#D4B278',
-    cardBg: 'rgba(247, 241, 230, 0.65)',
-    cardBorder: 'rgba(212, 178, 120, 0.4)',
-  },
-  {
-    id: 'heavier',
-    prefix: 'Heavier than ',
-    emphasis: 'usual',
-    value: 'Heavier than usual',
-    dotColor: '#DC7B6E',
-    cardBg: 'rgba(248, 227, 224, 0.65)',
-    cardBorder: 'rgba(220, 123, 110, 0.4)',
-  },
-];
-
 export default function YesterdayScreen() {
   const router = useRouter();
+  const { yesterdayOptions } = useCheckInConfig();
   const params = useLocalSearchParams<{
+    yesterdayIndex?: string;
+    yesterdayLabel?: string;
     energyIndex?: string;
     energyLabel?: string;
+    bodyIndex?: string;
+    bodyLabel?: string;
+    tags?: string;
+    periodInfo?: string;
     isFirstTime?: string;
+    isEditing?: string;
   }>();
   const hasEnergy = !!params.energyIndex;
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const initialId = params.yesterdayIndex === '3' || params.yesterdayLabel === 'Lighter than usual'
+    ? 'lighter'
+    : params.yesterdayIndex === '2' || params.yesterdayLabel === 'About the same'
+    ? 'same'
+    : params.yesterdayIndex === '1' || params.yesterdayLabel === 'Heavier than usual'
+    ? 'heavier'
+    : null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
+
+  const isEditing = params.isEditing === 'true';
 
   const handleSelectOption = (option: YesterdayOption) => {
     setSelectedId(option.id);
     const yesterdayIdx = option.id === 'lighter' ? '3' : option.id === 'same' ? '2' : '1';
+
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+          yesterdayIndex: yesterdayIdx,
+          yesterdayLabel: option.value,
+        },
+      });
+      return;
+    }
 
     if (hasEnergy) {
       // First-time flow: already answered Q1 (feeling), now proceed to Q2 (body)
@@ -82,6 +73,10 @@ export default function YesterdayScreen() {
           energyLabel: params.energyLabel,
           yesterdayIndex: yesterdayIdx,
           yesterdayLabel: option.value,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
           isFirstTime: params.isFirstTime,
         },
       });
@@ -92,12 +87,28 @@ export default function YesterdayScreen() {
         params: {
           yesterdayIndex: yesterdayIdx,
           yesterdayLabel: option.value,
+          energyIndex: params.energyIndex,
+          energyLabel: params.energyLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
+          isFirstTime: params.isFirstTime,
         },
       });
     }
   };
 
   const handleBack = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -106,6 +117,15 @@ export default function YesterdayScreen() {
   };
 
   const handleSkip = () => {
+    if (isEditing) {
+      router.push({
+        pathname: '/(check-in)/saved',
+        params: {
+          ...params,
+        },
+      });
+      return;
+    }
     if (hasEnergy) {
       // First-time flow: proceed to body
       router.push({
@@ -113,6 +133,12 @@ export default function YesterdayScreen() {
         params: {
           energyIndex: params.energyIndex,
           energyLabel: params.energyLabel,
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
           isFirstTime: params.isFirstTime,
         },
       });
@@ -120,6 +146,17 @@ export default function YesterdayScreen() {
       // Recurring daily flow: proceed to energy
       router.push({
         pathname: '/(check-in)/energy',
+        params: {
+          yesterdayIndex: params.yesterdayIndex,
+          yesterdayLabel: params.yesterdayLabel,
+          energyIndex: params.energyIndex,
+          energyLabel: params.energyLabel,
+          bodyIndex: params.bodyIndex,
+          bodyLabel: params.bodyLabel,
+          tags: params.tags,
+          periodInfo: params.periodInfo,
+          isFirstTime: params.isFirstTime,
+        },
       });
     }
   };
@@ -173,7 +210,7 @@ export default function YesterdayScreen() {
 
           {/* ── 3 Option Cards ─────────────────────────────────────────── */}
           <View style={styles.optionsList}>
-            {OPTIONS.map((option) => {
+            {yesterdayOptions.map((option) => {
               const isSelected = selectedId === option.id;
               return (
                 <Pressable
@@ -226,7 +263,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
 
   safeArea: {
@@ -248,18 +284,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.two,
-    height: 44,
+    paddingHorizontal: 16,
+    height: 52,
   },
 
   navButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    height: 44,
     minWidth: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
 
   backChevron: {
@@ -288,9 +322,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: COLORS.mutedText,
-    paddingBottom: 4,
-    paddingRight: 6,
-    paddingLeft: 2,
   },
 
   // ── Content Area ─────────────────────────────────────────────────────────

@@ -158,15 +158,16 @@ const styles = StyleSheet.create({
   learningNoteContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
+    width: "100%",
   },
 
   learningNoteText: {
     fontFamily: "AvenirNext-Regular",
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 15.5,
+    lineHeight: 23,
     color: "rgba(55, 40, 39, 0.72)",
     textAlign: "center",
-    maxWidth: 290,
+    maxWidth: 360,
   },
 });
