@@ -7,4 +7,5 @@ export * from './StateBadge';
 export * from './Toggle';
 export { Orb, type OrbProps } from './Orb';
 export * from './EnergyOrb';
+export * from './NotificationTile';
 export * from './DawnBackground';

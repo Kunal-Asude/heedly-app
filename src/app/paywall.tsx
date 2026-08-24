@@ -61,7 +61,7 @@ export default function PaywallScreen() {
         >
           {/* ── Hero Orb ───────────────────────────────────────────────── */}
           <View style={styles.orbContainer}>
-            <EnergyOrb state="empty" size={152} />
+            <EnergyOrb state="empty" size={137} />
           </View>
 
           {/* ── Headline (Comfortaa 400) ────────────────────────────────── */}
@@ -235,8 +235,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 20,
-    marginBottom: 14,
+    marginTop: 14,
+    marginBottom: 26,
   },
 
   // ── Typography ───────────────────────────────────────────────────────────

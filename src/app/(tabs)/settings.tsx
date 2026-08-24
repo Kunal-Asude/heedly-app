@@ -279,10 +279,6 @@ export default function SettingsScreen() {
 
         <View style={styles.card}>
           <View style={styles.row}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.rowTitle}>Cycle & hormones</Text>
-            </View>
-
             {/* Selection Dropdown Button (.sx-select) */}
             <Pressable
               style={({ pressed }) => [styles.cycleSelectButton, pressed && styles.pressed]}
@@ -718,7 +714,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(224, 115, 95, 0.22)',
     paddingVertical: 12,
     paddingHorizontal: 14,
-    marginTop: 10,
+    marginTop: 2,
   },
 
   cycleSelectButtonText: {

@@ -51,6 +51,8 @@ export interface EnergyOrbProps extends ViewProps {
   size?: number;
   bubbles?: BubbleConfig[];
   style?: ViewStyle | ViewStyle[];
+  animated?: boolean;
+  showHalo?: boolean;
 }
 
 /**
@@ -647,6 +649,8 @@ export function EnergyOrb({
   size = 254,
   bubbles,
   style,
+  animated = true,
+  showHalo = true,
   ...rest
 }: EnergyOrbProps) {
   const effectiveState = waterState ?? state;
@@ -671,7 +675,7 @@ export function EnergyOrb({
   }, []);
 
   useEffect(() => {
-    if (reduceMotion) {
+    if (reduceMotion || !animated) {
       breatheScale.value = 1;
       return;
     }
@@ -688,7 +692,7 @@ export function EnergyOrb({
       -1,
       true,
     );
-  }, [breatheScale, reduceMotion]);
+  }, [animated, breatheScale, reduceMotion]);
 
   const breatheStyle = useAnimatedStyle(() => ({
     transform: [{ scale: breatheScale.value }],
@@ -706,7 +710,7 @@ export function EnergyOrb({
       {...rest}
     >
       {/* ── Soft Warm Outer Halo (.orb::before) ─────────────────────────── */}
-      <OuterHalo size={size} />
+      {showHalo && <OuterHalo size={size} />}
 
       {/* ── Breathing Animated Glass Orb Sphere (.orb) ──────────────────── */}
       <Animated.View
@@ -721,14 +725,17 @@ export function EnergyOrb({
 
         {/* Layer 2: Liquid Water Wave (.liquid .water-host) */}
         {hasWater && (
-          <WaterWave state={effectiveState} reduceMotion={reduceMotion} />
+          <WaterWave
+            state={effectiveState}
+            reduceMotion={reduceMotion || !animated}
+          />
         )}
 
         {/* Layer 3: Rising Bubbles (.liquid .bubble) */}
         <BubblesLayer
           bubbles={activeBubbles}
           orbSize={size}
-          reduceMotion={reduceMotion}
+          reduceMotion={reduceMotion || !animated}
         />
 
         {/* Layer 4: Specular Blooms (.blooms) */}
