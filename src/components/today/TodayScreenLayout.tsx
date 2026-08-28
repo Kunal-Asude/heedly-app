@@ -61,7 +61,7 @@ export function TodayScreenLayout({
   greeting,
   onSettingsPress,
   orbState,
-  orbSize = TODAY_ORB_SIZE,
+  orbSize,
   headline1,
   headline2,
   isHeadlineAccent = true,
@@ -80,6 +80,8 @@ export function TodayScreenLayout({
   footerNote,
   onFooterPress,
 }: TodayScreenLayoutProps) {
+  const actualOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+
   return (
     <View style={styles.root}>
       <DawnBackground />
@@ -94,7 +96,7 @@ export function TodayScreenLayout({
 
           <View style={styles.mainContentGroup}>
             <View style={styles.orbSlot}>
-              <TodayOrbContainer state={orbState} size={orbSize} />
+              <TodayOrbContainer state={orbState} size={actualOrbSize} />
             </View>
 
             <View style={styles.headlineSlot}>
@@ -124,17 +126,15 @@ export function TodayScreenLayout({
                 learningNote={learningNote}
               />
             </View>
-
-            <View style={styles.secondarySlot}>
-              <TodaySecondaryLink
-                text={secondaryText}
-                isLink={isSecondaryLink}
-                onPress={onSecondaryPress}
-              />
-            </View>
           </View>
 
-          <View style={styles.flexibleSpacer} />
+          <View style={styles.secondaryCenterRegion}>
+            <TodaySecondaryLink
+              text={secondaryText}
+              isLink={isSecondaryLink}
+              onPress={onSecondaryPress}
+            />
+          </View>
 
           <View style={styles.actionAreaGroup}>
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
@@ -163,6 +163,8 @@ export interface LearningScreenLayoutProps {
   forecast?: ForecastDay[];
   learningNote?: string;
   secondaryText?: string;
+  isSecondaryLink?: boolean;
+  onSecondaryPress?: () => void;
   ctaLabel: string;
   onCtaPress: () => void;
   footerNote?: string;
@@ -174,7 +176,7 @@ export function LearningScreenLayout({
   greeting,
   onSettingsPress,
   orbState,
-  orbSize = TODAY_ORB_SIZE,
+  orbSize,
   headline1,
   headline2,
   isHeadlineAccent = true,
@@ -186,11 +188,15 @@ export function LearningScreenLayout({
   forecast,
   learningNote,
   secondaryText,
+  isSecondaryLink = false,
+  onSecondaryPress,
   ctaLabel,
   onCtaPress,
   footerNote,
   onFooterPress,
 }: LearningScreenLayoutProps) {
+  const actualOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+
   return (
     <View style={styles.root}>
       <DawnBackground />
@@ -205,7 +211,7 @@ export function LearningScreenLayout({
 
           <View style={styles.learningContentGroup}>
             <View style={styles.orbSlot}>
-              <TodayOrbContainer state={orbState} size={orbSize} />
+              <TodayOrbContainer state={orbState} size={actualOrbSize} />
             </View>
 
             <View style={styles.headlineSlot}>
@@ -235,13 +241,15 @@ export function LearningScreenLayout({
                 learningNote={learningNote}
               />
             </View>
-
-            <View style={styles.secondarySlot}>
-              <TodaySecondaryLink text={secondaryText} />
-            </View>
           </View>
 
-          <View style={styles.learningFlexibleSpacer} />
+          <View style={styles.secondaryCenterRegion}>
+            <TodaySecondaryLink
+              text={secondaryText}
+              isLink={isSecondaryLink}
+              onPress={onSecondaryPress}
+            />
+          </View>
 
           <View style={styles.actionAreaGroup}>
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
@@ -266,7 +274,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: Spacing.four,
-    paddingBottom: 90, // Clearance for absolute positioned bottom tab bar, shifted up 2px
+    paddingBottom: 76, // Shifts the CTA button slightly lower down towards the floating tab bar
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -291,41 +299,64 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  smallOrbSlot: {
+    marginTop: 88,
+    marginBottom: 18,
+  },
+
   headlineSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 6,
-    marginBottom: 8,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+
+  smallOrbHeadlineSlot: {
+    marginTop: 24,
+    marginBottom: 16,
   },
 
   badgeSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   supportingSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 4,
+    marginBottom: 6,
   },
 
   forecastSlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 14,
-    marginBottom: 2,
+    marginTop: 22,
+    marginBottom: 4,
+  },
+
+  smallOrbForecastSlot: {
+    marginTop: 22,
+    marginBottom: 6,
+  },
+
+  secondaryCenterRegion: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 28,
   },
 
   secondarySlot: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 12,
+    marginTop: 0,
     marginBottom: 0,
   },
 

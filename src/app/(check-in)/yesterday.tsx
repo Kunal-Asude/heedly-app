@@ -5,24 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
-import { useCheckInConfig } from '@/hooks/data';
+import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import type { YesterdayOption } from '@/types/checkin';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b0532f',
-  bodyText: '#463332',
-  mutedText: 'rgba(74, 58, 57, 0.5)',
-  skipLink: '#b05334',
-  progressInactive: 'rgba(74, 58, 57, 0.18)',
-};
 
 export default function YesterdayScreen() {
   const router = useRouter();
-  const { yesterdayOptions } = useCheckInConfig();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -35,17 +25,48 @@ export default function YesterdayScreen() {
     isFirstTime?: string;
     isEditing?: string;
   }>();
-  const hasEnergy = !!params.energyIndex;
-  const initialId = params.yesterdayIndex === '3' || params.yesterdayLabel === 'Lighter than usual'
-    ? 'lighter'
-    : params.yesterdayIndex === '2' || params.yesterdayLabel === 'About the same'
-    ? 'same'
-    : params.yesterdayIndex === '1' || params.yesterdayLabel === 'Heavier than usual'
-    ? 'heavier'
-    : null;
+
+  const initialId =
+    params.yesterdayIndex === '3' || params.yesterdayLabel === 'Lighter than usual'
+      ? 'lighter'
+      : params.yesterdayIndex === '2' || params.yesterdayLabel === 'About the same'
+      ? 'same'
+      : params.yesterdayIndex === '1' || params.yesterdayLabel === 'Heavier than usual'
+      ? 'heavier'
+      : null;
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
 
   const isEditing = params.isEditing === 'true';
+
+  const options: YesterdayOption[] = [
+    {
+      id: 'lighter',
+      value: 'Lighter than usual',
+      prefix: 'Lighter than ',
+      emphasis: 'usual',
+      dotColor: '#86C4B4',
+      cardBg: isDark ? 'rgba(134, 196, 180, 0.14)' : 'rgba(224, 240, 235, 0.85)',
+      cardBorder: isDark ? 'rgba(134, 196, 180, 0.42)' : 'rgba(134, 196, 180, 0.4)',
+    },
+    {
+      id: 'same',
+      value: 'About the same',
+      prefix: 'About ',
+      emphasis: 'the same',
+      dotColor: isDark ? '#cdb488' : '#B88A58',
+      cardBg: isDark ? 'rgba(232, 168, 124, 0.18)' : 'rgba(252, 246, 236, 0.88)',
+      cardBorder: isDark ? 'rgba(232, 168, 124, 0.4)' : 'rgba(215, 186, 150, 0.4)',
+    },
+    {
+      id: 'heavier',
+      value: 'Heavier than usual',
+      prefix: 'Heavier than ',
+      emphasis: 'usual',
+      dotColor: '#E27A6C',
+      cardBg: isDark ? 'rgba(226, 122, 108, 0.13)' : 'rgba(255, 238, 232, 0.88)',
+      cardBorder: isDark ? 'rgba(226, 122, 108, 0.42)' : 'rgba(226, 122, 108, 0.4)',
+    },
+  ];
 
   const handleSelectOption = (option: YesterdayOption) => {
     setSelectedId(option.id);
@@ -63,39 +84,16 @@ export default function YesterdayScreen() {
       return;
     }
 
-    if (hasEnergy) {
-      // First-time flow: already answered Q1 (feeling), now proceed to Q2 (body)
-      router.push({
-        pathname: '/(check-in)/body',
-        params: {
-          energyIndex: params.energyIndex,
-          energyLabel: params.energyLabel,
-          yesterdayIndex: yesterdayIdx,
-          yesterdayLabel: option.value,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: params.isFirstTime,
-        },
-      });
-    } else {
-      // Recurring daily flow: yesterday was question 1, now proceed to energy question
-      router.push({
-        pathname: '/(check-in)/energy',
-        params: {
-          yesterdayIndex: yesterdayIdx,
-          yesterdayLabel: option.value,
-          energyIndex: params.energyIndex,
-          energyLabel: params.energyLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: params.isFirstTime,
-        },
-      });
-    }
+    // Recurring daily flow: proceed to Question 1 of 3 (energy)
+    router.push({
+      pathname: '/(check-in)/energy',
+      params: {
+        ...params,
+        yesterdayIndex: yesterdayIdx,
+        yesterdayLabel: option.value,
+        isFirstTime: 'false',
+      },
+    });
   };
 
   const handleBack = () => {
@@ -125,91 +123,72 @@ export default function YesterdayScreen() {
       });
       return;
     }
-    if (hasEnergy) {
-      // First-time flow: proceed to body
-      router.push({
-        pathname: '/(check-in)/body',
-        params: {
-          energyIndex: params.energyIndex,
-          energyLabel: params.energyLabel,
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: params.isFirstTime,
-        },
-      });
-    } else {
-      // Recurring daily flow: proceed to energy
-      router.push({
-        pathname: '/(check-in)/energy',
-        params: {
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          energyIndex: params.energyIndex,
-          energyLabel: params.energyLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: params.isFirstTime,
-        },
-      });
-    }
+    // Recurring daily flow: skip directly to energy screen
+    router.push({
+      pathname: '/(check-in)/energy',
+      params: {
+        ...params,
+        isFirstTime: 'false',
+      },
+    });
   };
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Exact Aubade Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Top Navigation Bar ───────────────────────────────────────── */}
+        {/* ── Top Navigation Bar (.ci-head) ────────────────────────────── */}
         <View style={styles.topNav}>
-          {/* Back Chevron */}
+          {/* Back Chevron (.ci-back) */}
           <Pressable
             onPress={handleBack}
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back">
-            <Text style={styles.backChevron}>‹</Text>
+            accessibilityLabel="Go back"
+          >
+            <Text style={[styles.backChevron, { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' }]}>
+              ‹
+            </Text>
           </Pressable>
 
-          {/* 3 Progress Dots */}
+          {/* 3 Inactive Progress Dots (.ci-dots) */}
           <View style={styles.progressRow}>
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
           </View>
 
-          {/* Skip Link */}
+          {/* Skip Link (.ci-skip) */}
           <Pressable
             onPress={handleSkip}
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Skip">
-            <Text style={styles.skipText}>Skip</Text>
+            accessibilityLabel="Skip"
+          >
+            <Text style={[styles.skipText, { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' }]}>
+              Skip
+            </Text>
           </Pressable>
         </View>
 
         {/* ── Viewport Content ─────────────────────────────────────────── */}
         <View style={styles.contentArea}>
-          {/* ── Question Heading ───────────────────────────────────────── */}
+          {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={styles.headingDark}>{'How did\n'}</Text>
-            <Text style={styles.headingAccent}>yesterday land?</Text>
+            <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'How did\n'}</Text>
+            <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>yesterday land?</Text>
           </Text>
 
-          {/* ── Supporting Subtitle ────────────────────────────────────── */}
-          <Text style={styles.supportingText}>
+          {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
+          <Text style={[styles.supportingText, { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' }]}>
             {'Just a quick look back — it helps the patterns make sense.'}
           </Text>
 
-          {/* ── 3 Option Cards ─────────────────────────────────────────── */}
+          {/* ── 3 Option Cards (.ci-yp) ────────────────────────────────── */}
           <View style={styles.optionsList}>
-            {yesterdayOptions.map((option) => {
+            {options.map((option) => {
               const isSelected = selectedId === option.id;
               return (
                 <Pressable
@@ -221,12 +200,17 @@ export default function YesterdayScreen() {
                       backgroundColor: option.cardBg,
                       borderColor: option.cardBorder,
                     },
+                    isSelected && {
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(74, 58, 57, 0.35)',
+                      shadowOpacity: isDark ? 0.35 : 0.15,
+                    },
                     (pressed || isSelected) && styles.cardPressed,
                   ]}
                   accessibilityRole="button"
-                  accessibilityLabel={option.value}>
+                  accessibilityLabel={option.value}
+                >
                   <View style={[styles.dot, { backgroundColor: option.dotColor }]} />
-                  <Text style={styles.cardText}>
+                  <Text style={[styles.cardText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
                     <Text style={styles.cardTextRegular}>{option.prefix}</Text>
                     <Text style={styles.cardTextBold}>{option.emphasis}</Text>
                   </Text>
@@ -235,19 +219,30 @@ export default function YesterdayScreen() {
             })}
           </View>
 
-          {/* ── Secondary Skip Link ────────────────────────────────────── */}
+          {/* ── Secondary Skip Link (.ci-yp-skip) ──────────────────────── */}
           <Pressable
             onPress={handleSkip}
             style={({ pressed }) => [styles.secondarySkipBtn, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Skip, not sure yet">
-            <Text style={styles.secondarySkipText}>Skip — not sure yet.</Text>
+            accessibilityLabel="Skip, not sure yet"
+          >
+            <Text
+              style={[
+                styles.secondarySkipText,
+                {
+                  color: isDark ? '#E8907A' : '#b05334',
+                  borderColor: isDark ? 'rgba(232, 144, 122, 0.46)' : 'rgba(176, 83, 52, 0.4)',
+                },
+              ]}
+            >
+              Skip — not sure yet.
+            </Text>
           </Pressable>
         </View>
 
-        {/* ── Bottom Section: Footnote ─────────────────────────────────── */}
+        {/* ── Bottom Section: Footnote (.ob-foot) ──────────────────────── */}
         <View style={styles.bottomSection}>
-          <Text style={styles.bottomHelperText}>
+          <Text style={[styles.bottomHelperText, { color: isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.5)' }]}>
             You can do this lying down.
           </Text>
         </View>
@@ -266,27 +261,24 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
-    paddingTop: 12,
+    paddingTop: 8,
   },
 
   pressed: {
-    opacity: 0.7,
+    opacity: 0.75,
   },
 
   cardPressed: {
-    opacity: 0.85,
     transform: [{ scale: 0.985 }],
   },
-
-  // ── Top Navigation Bar ───────────────────────────────────────────────────
 
   topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    height: 52,
-    marginBottom: 10,
+    height: 48,
+    marginBottom: 12,
   },
 
   navButton: {
@@ -297,9 +289,9 @@ const styles = StyleSheet.create({
   },
 
   backChevron: {
-    fontSize: 30,
-    lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.6)',
+    fontSize: 28,
+    lineHeight: 28,
+    fontWeight: '300',
   },
 
   progressRow: {
@@ -313,71 +305,56 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: COLORS.progressInactive,
   },
 
   skipText: {
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '500',
-    color: COLORS.mutedText,
   },
-
-  // ── Content Area ─────────────────────────────────────────────────────────
 
   contentArea: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 8,
     alignItems: 'flex-start',
   },
 
   questionHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 31,
+    fontSize: 30,
     lineHeight: 36,
     letterSpacing: -0.3,
-    marginBottom: 12,
+    marginBottom: 10,
     textAlign: 'left',
-  },
-
-  headingDark: {
-    color: COLORS.headingDark,
-  },
-
-  headingAccent: {
-    color: COLORS.accent,
   },
 
   supportingText: {
-    fontSize: 14.5,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.66)',
-    marginBottom: 24,
-    maxWidth: '92%',
+    marginBottom: 26,
+    maxWidth: '96%',
     textAlign: 'left',
   },
-
-  // ── Option Cards ─────────────────────────────────────────────────────────
 
   optionsList: {
     width: '100%',
     gap: 12,
-    marginBottom: 22,
+    marginBottom: 20,
   },
 
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 13,
+    gap: 14,
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 18,
     borderWidth: 1,
-    shadowColor: '#BE968C',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.14,
     shadowRadius: 9,
     elevation: 2,
   },
@@ -390,8 +367,7 @@ const styles = StyleSheet.create({
 
   cardText: {
     fontSize: 16,
-    color: '#4f3c3a',
-    lineHeight: 20,
+    lineHeight: 21,
   },
 
   cardTextRegular: {
@@ -402,36 +378,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Secondary Skip Link ──────────────────────────────────────────────────
-
   secondarySkipBtn: {
     alignSelf: 'center',
     paddingVertical: 4,
     paddingHorizontal: 2,
-    marginTop: 10,
+    marginTop: 8,
   },
 
   secondarySkipText: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '500',
-    color: COLORS.skipLink,
-    textDecorationLine: 'underline',
+    borderBottomWidth: 1.2,
+    paddingBottom: 2,
     textAlign: 'center',
   },
 
-  // ── Bottom Footnote ──────────────────────────────────────────────────────
-
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingBottom: 16,
     alignItems: 'center',
   },
 
   bottomHelperText: {
-    fontSize: 12,
+    fontSize: 13.5,
     lineHeight: 18,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 });

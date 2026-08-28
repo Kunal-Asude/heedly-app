@@ -136,6 +136,34 @@ export const lightTheme: DesignTokens = {
 
   // ─── Component-Specific Tokens ──────────────────────────────────────
   components: {
+    header: {
+      dateColor: "rgba(74, 58, 57, 0.50)",
+      greetingColor: "#4a3736",
+      settingsBg: "rgba(255, 255, 255, 0.38)",
+      settingsBorder: "rgba(255, 255, 255, 0.55)",
+      settingsIconColor: "rgba(74, 58, 57, 0.62)",
+      settingsShadowColor: "#BE8C8C",
+    },
+    cta: {
+      gradient: ["#F0A07E", "#E8907A", "#E0735F"],
+      textColor: "#FFF8F4",
+      borderColor: "rgba(255, 255, 255, 0.40)",
+      shadowColor: "#6E5656",
+      shadowOpacity: 0.16,
+    },
+    badge: {
+      learning: {
+        background: "rgba(126, 155, 106, 0.15)",
+        border: "rgba(126, 155, 106, 0.24)",
+        dot: "#7e9b6a",
+        text: "#5d7a52",
+      },
+      statusText: "rgba(74, 58, 57, 0.72)",
+    },
+    supportingText: {
+      color: "rgba(74, 58, 57, 0.70)",
+      noteColor: "rgba(74, 58, 57, 0.66)",
+    },
     tabBar: {
       background: "#ffefe8ff",
       border: "rgba(255, 255, 255, 0.95)",
@@ -148,7 +176,9 @@ export const lightTheme: DesignTokens = {
       background: "rgba(248, 236, 225, 0.85)",
       border: "rgba(255, 255, 255, 0.6)",
       labelColor: "rgba(74, 58, 57, 0.55)",
+      valueColor: "#4f3c3a",
       shadowColor: "#C8A998",
+      shadowOpacity: 0.14,
       divider: "rgba(120, 90, 90, 0.12)",
     },
     energyOrb: {
@@ -191,8 +221,105 @@ export const lightTheme: DesignTokens = {
         alphaBot: 0.30,
         crestColor: 'rgba(255, 255, 255, 0.40)',
       },
+      glass: {
+        // ── Dawn glass core: warm peach radial ───────────────────────────────
+        // Source: Aubade - Today.html .glass
+        // background: radial-gradient(circle at 50% 50%, #f8d2bf, #f0bba6 68%, #e8b29c 100%)
+        coreInner: '#f9e5da',   // warm peach center
+        coreMid: '#f4d1c1',     // 65% mid
+        coreOuter: '#ebbca9',   // 100% outer
+        coreInnerAlpha: 1,
+        coreMidAlpha: 1,
+        coreOuterAlpha: 1,
+
+        // ── Dawn per-state bottom glows ──────────────────────────────────────
+        // Dawn uses a single warm cream (#ffe6c4) for all states
+        steadyGlowColor: '#ffe6c4',
+        steadyGlowAlpha: 0.88,
+        cautionGlowColor: '#ffe6c4',
+        cautionGlowAlpha: 0.88,
+        restGlowColor: '#ffe6c4',
+        restGlowAlpha: 0.88,
+
+        // ── Dawn brand/empty ember ───────────────────────────────────────────
+        // Source: .glass warm bottom glow: rgba(255,222,178,0.95)
+        emberColor: '#ffdeb2',  // rgba(255,222,178) as hex
+        emberAlpha0: 0.95,
+        emberAlpha45: 0,
+        emberAlpha68: 0,
+
+        // ── Dawn frosted milky veil (.glass::after) ──────────────────────────
+        // Source: radial-gradient(circle at 50% 32%, rgba(255,255,255,0.3), transparent 55%)
+        // Note: 0.38 is used in EnergyOrb (higher-fidelity match than the CSS 0.3)
+        veilAlpha: 0.42,
+
+        // ── Dawn rim — pure white inset highlights ───────────────────────────
+        // Source: .glass box-shadow: inset 0 14px 38px rgba(255,255,255,0.5), ...
+        rimColor: '#ffffff',
+        rimTopAlpha: 0.5,    // inset 0 14px 38px rgba(255,255,255,0.5) — top inner
+        rimBotAlpha: 0.26,   // inset 0 -12px 34px rgba(214,142,112,0.26) — bottom warm depth
+        rimRingAlpha: 0,     // Dawn has no 1.5px ring
+        rimSideAlpha: 0.18,  // inset 8px 0 30px rgba(255,255,255,0.18) — left side
+
+        // ── Dawn halo: warm peach/pink at 50% 58% ───────────────────────────
+        // Source: .orb::before
+        // radial-gradient(circle at 50% 58%, rgba(255,206,170,0.45), rgba(247,200,210,0.2) 45%, transparent 70%)
+        haloInnerColor: '#ffceaa',  // rgba(255,206,170) — warm peach
+        haloInnerAlpha: 0.45,
+        haloMidColor: '#f7c8d2',     // rgba(247,200,210)
+        haloMidAlpha: 0.20,
+        // Rest halo same as above in Dawn
+        restHaloInnerColor: '#ffceaa',
+        restHaloInnerAlpha: 0.45,
+        restHaloMidColor: '#f7c8d2',
+        restHaloMidAlpha: 0.20,
+        // Brand/empty same as above in Dawn
+        brandHaloInnerColor: '#ffceaa',
+        brandHaloInnerAlpha: 0.45,
+        brandHaloMidColor: '#f7c8d2',
+        brandHaloMidAlpha: 0.20,
+      },
     },
     background: {
+      type: "gradient",
+      baseColor: "#F5DDD5",
+      baseLinear: {
+        start: "#f4e9e1",
+        middle: "#f7ded1",
+        end: "#f6e2d6",
+      },
+      radial1: {
+        color: "#fbcdb4",
+        cx: 288,
+        cy: 64,
+        r: 260,
+        opacity: 0.9,
+        stopPercent: "60%",
+      },
+      radial2: {
+        color: "#ecd2e6",
+        cx: 64,
+        cy: 208,
+        r: 260,
+        opacity: 0.95,
+        stopPercent: "58%",
+      },
+      radial3: {
+        color: "#ffd8bd",
+        cx: 200,
+        cy: 816,
+        r: 320,
+        opacity: 0.9,
+        stopPercent: "62%",
+      },
+      radial4: {
+        color: "rgba(255, 243, 233, 0.5)",
+        cx: 200,
+        cy: 480,
+        r: 300,
+        opacity: 0.5,
+        stopPercent: "70%",
+      },
       dawnBase: {
         start: "#f4e9e1",
         middle: "#f7ded1",
@@ -209,6 +336,36 @@ export const lightTheme: DesignTokens = {
       },
       dawnRadial4: {
         color: "#fff3e9",
+      },
+    },
+    onboarding: {
+      card: {
+        background: "rgba(255, 252, 248, 0.82)",
+        border: "rgba(255, 255, 255, 0.75)",
+        shadowColor: "#BE968C",
+        shadowOpacity: 0.10,
+        iconBackground: "#ffe9d6",
+        iconColor: "#9a6a52",
+        selectedBackground: "rgba(244, 164, 126, 0.14)",
+        selectedBorder: "rgba(224, 115, 95, 0.50)",
+        selectedIconBackground: "#ffe9d6",
+        selectedIconColor: "#9a6a52",
+        selectedTextColor: "#4f3c3a",
+        selectedActionColor: "#cf6a4c",
+        waitingBackground: "rgba(255, 252, 248, 0.60)",
+        waitingBorder: "rgba(74, 58, 57, 0.14)",
+        waitingIconBackground: "#f3eae4",
+        waitingIconColor: "rgba(74, 58, 57, 0.50)",
+        waitingActionColor: "rgba(74, 58, 57, 0.55)",
+      },
+      chip: {
+        background: "rgba(255, 252, 248, 0.74)",
+        border: "rgba(255, 255, 255, 0.75)",
+        textColor: "#4f3c3a",
+        checkboxBorder: "rgba(120, 90, 90, 0.32)",
+        selectedBackground: "rgba(244, 164, 126, 0.18)",
+        selectedBorder: "rgba(224, 115, 95, 0.42)",
+        selectedGradient: ["#f0a07e", "#e0735f"] as const,
       },
     },
   },

@@ -6,14 +6,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
+import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
-
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EnergyScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
   const { recurringEnergyLevels, firstTimeEnergyLevels } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
@@ -30,26 +33,30 @@ export default function EnergyScreen() {
 
   const isFirstTime = params.isFirstTime === 'true';
   const levels = isFirstTime ? firstTimeEnergyLevels : recurringEnergyLevels;
-  const initialIndex = params.energyIndex !== undefined && !isNaN(Number(params.energyIndex))
-    ? Math.min(Math.max(0, Number(params.energyIndex)), levels.length - 1)
-    : 2;
+  const initialIndex =
+    params.energyIndex !== undefined && !isNaN(Number(params.energyIndex))
+      ? Math.min(Math.max(0, Number(params.energyIndex)), levels.length - 1)
+      : 2;
   const [selectedIndex, setSelectedIndex] = useState<number>(initialIndex);
-  const [isCrash, setIsCrash] = useState<boolean>(false);
 
   const selectedLevel = levels[selectedIndex];
-
   const isEditing = params.isEditing === 'true';
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
-    setIsCrash(false);
   };
 
   const handleCrashPress = () => {
-    setIsCrash(!isCrash);
-    if (!isCrash) {
-      setSelectedIndex(0); // Set to awful / drained when crash is selected
-    }
+    router.push({
+      pathname: '/(check-in)/saved',
+      params: {
+        ...params,
+        energyIndex: selectedIndex.toString(),
+        energyLabel: selectedLevel.label,
+        isCrash: 'true',
+        isFirstTime: isFirstTime ? 'true' : 'false',
+      },
+    });
   };
 
   const handleBack = () => {
@@ -62,10 +69,18 @@ export default function EnergyScreen() {
       });
       return;
     }
-    if (router.canGoBack()) {
-      router.back();
+    if (isFirstTime) {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)?mode=fd-empty' as any);
+      }
     } else {
-      router.replace('/(tabs)');
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.push('/(check-in)/yesterday');
+      }
     }
   };
 
@@ -79,32 +94,13 @@ export default function EnergyScreen() {
       });
       return;
     }
-    if (isFirstTime) {
-      router.push({
-        pathname: '/(check-in)/yesterday',
-        params: {
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: 'true',
-        },
-      });
-    } else {
-      router.push({
-        pathname: '/(check-in)/body',
-        params: {
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-        },
-      });
-    }
+    router.push({
+      pathname: '/(check-in)/body',
+      params: {
+        ...params,
+        isFirstTime: isFirstTime ? 'true' : 'false',
+      },
+    });
   };
 
   const handleNext = () => {
@@ -113,109 +109,126 @@ export default function EnergyScreen() {
         pathname: '/(check-in)/saved',
         params: {
           ...params,
-          energyIndex: selectedIndex,
+          energyIndex: selectedIndex.toString(),
           energyLabel: selectedLevel.label,
         },
       });
       return;
     }
-    if (isFirstTime) {
-      router.push({
-        pathname: '/(check-in)/yesterday',
-        params: {
-          energyIndex: selectedIndex,
-          energyLabel: selectedLevel.label,
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-          isFirstTime: 'true',
-        },
-      });
-    } else {
-      router.push({
-        pathname: '/(check-in)/body',
-        params: {
-          yesterdayIndex: params.yesterdayIndex,
-          yesterdayLabel: params.yesterdayLabel,
-          energyIndex: selectedIndex,
-          energyLabel: selectedLevel.label,
-          bodyIndex: params.bodyIndex,
-          bodyLabel: params.bodyLabel,
-          tags: params.tags,
-          periodInfo: params.periodInfo,
-        },
-      });
-    }
+    router.push({
+      pathname: '/(check-in)/body',
+      params: {
+        ...params,
+        energyIndex: selectedIndex.toString(),
+        energyLabel: selectedLevel.label,
+        isFirstTime: isFirstTime ? 'true' : 'false',
+      },
+    });
   };
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Exact Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Top navigation bar ───────────────────────────────────────── */}
+        {/* ── Top Navigation Bar (.ci-head) ────────────────────────────── */}
         <View style={styles.topNav}>
-          {/* Back button */}
+          {/* Back Chevron (.ci-back) */}
           <Pressable
             onPress={handleBack}
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back">
-            <Text style={styles.backChevron}>‹</Text>
+            accessibilityLabel="Go back"
+          >
+            <Text
+              style={[
+                styles.backChevron,
+                { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' },
+              ]}
+            >
+              ‹
+            </Text>
           </Pressable>
 
-          {/* Progress indicator (Question 1 of 3) */}
+          {/* Progress Dots: Question 1 of 3 (.ci-dots) */}
           <View style={styles.progressRow}>
             <LinearGradient
-              colors={['#f0a07e', '#e0735f']}
+              colors={['#E28266', '#D9735A']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.progressActive}
             />
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
+            <View
+              style={[
+                styles.progressDot,
+                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+              ]}
+            />
+            <View
+              style={[
+                styles.progressDot,
+                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+              ]}
+            />
           </View>
 
-          {/* Skip link */}
+          {/* Skip Link (.ci-skip) */}
           <Pressable
             onPress={handleSkip}
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Skip">
-            <Text style={styles.skipText}>Skip</Text>
+            accessibilityLabel="Skip"
+          >
+            <Text
+              style={[
+                styles.skipText,
+                { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+              ]}
+            >
+              Skip
+            </Text>
           </Pressable>
         </View>
 
-        {/* ── Fixed Viewport Content (Non-scrollable) ──────────────────── */}
+        {/* ── Fixed Viewport Content ───────────────────────────────────── */}
         <View style={styles.contentArea}>
-          {/* ── Question Label (.ci-eyebrow) ───────────────────────────── */}
-          <Text style={styles.questionLabel}>QUESTION 1 OF 3</Text>
+          {/* ── Question Eyebrow (.ci-eyebrow) ─────────────────────────── */}
+          <Text
+            style={[
+              styles.questionLabel,
+              { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+            ]}
+          >
+            QUESTION 1 OF 3
+          </Text>
 
-          {/* ── Question Heading (.ob-h: 31px, Comfortaa 400) ──────────── */}
+          {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
             {isFirstTime ? (
               <>
-                <Text style={styles.headingDark}>{'How are you\n'}</Text>
-                <Text style={styles.headingAccent}>feeling?</Text>
+                <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'How are you\n'}</Text>
+                <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>feeling?</Text>
               </>
             ) : (
               <>
-                <Text style={styles.headingDark}>{"How's your\n"}</Text>
-                <Text style={styles.headingAccent}>energy right now?</Text>
+                <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{"How's your\n"}</Text>
+                <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>energy right now?</Text>
               </>
             )}
           </Text>
 
-          {/* ── Supporting Text (.ob-sub: 14.5px) ──────────────────────── */}
-          <Text style={styles.supportingText}>
+          {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
+          <Text
+            style={[
+              styles.supportingText,
+              { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+            ]}
+          >
             No need to think hard — go with your gut.
           </Text>
 
-          {/* ── 5-Level Energy Selector (.ci-scalewrap) ────────────────── */}
+          {/* ── 5-Level Scale Selector (.ci-scalewrap) ──────────────────── */}
           <View style={styles.selectorContainer}>
             <View style={styles.circlesRow}>
               {levels.map((level, idx) => {
@@ -227,9 +240,10 @@ export default function EnergyScreen() {
                     style={styles.circleTouchArea}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: isSelected }}
-                    accessibilityLabel={`Energy level ${level.label}`}>
+                    accessibilityLabel={`Scale ${level.label}`}
+                  >
                     <View style={styles.circleWrapper}>
-                      {/* Translucent glow halo for selected state */}
+                      {/* Outer glow ring when selected (.ci-dot.sel) */}
                       {isSelected && (
                         <View
                           style={[
@@ -238,7 +252,7 @@ export default function EnergyScreen() {
                           ]}
                         />
                       )}
-                      {/* Main color circle (.ci-dot) */}
+                      {/* Main dot circle (.ci-dot) */}
                       <View
                         style={[
                           styles.circle,
@@ -251,60 +265,101 @@ export default function EnergyScreen() {
               })}
             </View>
 
-            {/* ── Labels Row (.ci-labels: .ci-lab, .ci-pill, .ci-lab) ──── */}
+            {/* ── Labels Row (.ci-labels) ──────────────────────────────── */}
             <View style={styles.labelsRow}>
-              <Text style={styles.endpointLabel}>{levels[0].label}</Text>
+              <Text
+                style={[
+                  styles.endpointLabel,
+                  { color: isDark ? 'rgba(199, 180, 191, 0.74)' : 'rgba(74, 58, 57, 0.55)' },
+                ]}
+              >
+                {levels[0].label}
+              </Text>
 
               {/* Center selected pill (.ci-pill) */}
-              <View style={styles.selectedPill}>
+              <View
+                style={[
+                  styles.selectedPill,
+                  {
+                    backgroundColor: isDark
+                      ? 'rgba(226, 122, 108, 0.16)'
+                      : 'rgba(244, 164, 126, 0.18)',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(224, 115, 95, 0.28)',
+                  },
+                ]}
+              >
                 <View
                   style={[
                     styles.pillDot,
-                    { backgroundColor: selectedLevel.color },
+                    { backgroundColor: isDark ? '#D9735A' : selectedLevel.color },
                   ]}
                 />
-                <Text style={styles.pillText}>{selectedLevel.label}</Text>
+                <Text
+                  style={[
+                    styles.pillText,
+                    { color: isDark ? '#F3E7E1' : '#4f3c3a' },
+                  ]}
+                >
+                  {selectedLevel.label}
+                </Text>
               </View>
 
-              <Text style={styles.endpointLabel}>{levels[4].label}</Text>
+              <Text
+                style={[
+                  styles.endpointLabel,
+                  { color: isDark ? 'rgba(199, 180, 191, 0.74)' : 'rgba(74, 58, 57, 0.55)' },
+                ]}
+              >
+                {levels[4].label}
+              </Text>
             </View>
           </View>
 
-          {/* ── Crash Link (.ci-crash: 14px, 600, terracotta) ───────────── */}
+          {/* ── Crash Link (.ci-crash) ─────────────────────────────────── */}
           <Pressable
             onPress={handleCrashPress}
             style={({ pressed }) => [styles.crashContainer, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="I'm in a crash">
+            accessibilityLabel="I'm in a crash"
+          >
             <Text
               style={[
                 styles.crashText,
-                isCrash && styles.crashTextActive,
-              ]}>
+                {
+                  color: isDark ? 'rgba(232, 144, 122, 0.98)' : 'rgba(176, 83, 52, 0.98)',
+                  borderColor: isDark ? 'rgba(232, 144, 122, 0.46)' : 'rgba(176, 83, 52, 0.4)',
+                },
+              ]}
+            >
               {"I'm in a crash"}
             </Text>
           </Pressable>
-
         </View>
 
-        {/* ── Bottom Section: Next Button & Helper Text ───────────────── */}
+        {/* ── Bottom Section: Next CTA & Helper Footnote ──────────────── */}
         <View style={styles.bottomSection}>
           <Pressable
             style={({ pressed }) => [styles.nextButtonWrapper, pressed && styles.buttonPressed]}
             onPress={handleNext}
             accessibilityRole="button"
-            accessibilityLabel="Next">
+            accessibilityLabel="Next"
+          >
             <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.nextButtonGradient}>
+              colors={
+                isDark
+                  ? ['#634256', '#8A5D7C', '#9E768E']
+                  : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+              }
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={styles.nextButtonGradient}
+            >
               <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
               <View style={styles.nextArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke="#fff8f4"
+                    stroke="#FFF6F1"
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -314,7 +369,12 @@ export default function EnergyScreen() {
             </LinearGradient>
           </Pressable>
 
-          <Text style={styles.bottomHelperText}>
+          <Text
+            style={[
+              styles.bottomHelperText,
+              { color: isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.5)' },
+            ]}
+          >
             You can do this lying down.
           </Text>
         </View>
@@ -333,22 +393,25 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
-    paddingTop: 12,
+    paddingTop: 8,
   },
 
   pressed: {
-    opacity: 0.7,
+    opacity: 0.75,
   },
 
-  // ── Top Nav (.ci-head) ───────────────────────────────────────────────────
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.92,
+  },
 
   topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    height: 52,
-    marginBottom: 10,
+    height: 48,
+    marginBottom: 12,
   },
 
   navButton: {
@@ -359,19 +422,16 @@ const styles = StyleSheet.create({
   },
 
   backChevron: {
-    fontSize: 30,
-    lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.6)',
+    fontSize: 28,
+    lineHeight: 28,
+    fontWeight: '300',
   },
 
   skipText: {
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.5)',
   },
-
-  // ── Progress Bar (.ci-dots) ──────────────────────────────────────────────
 
   progressRow: {
     flexDirection: 'row',
@@ -390,130 +450,107 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: 'rgba(74, 58, 57, 0.18)',
   },
-
-  // ── Fixed Viewport Content ───────────────────────────────────────────────
 
   contentArea: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 8,
+    alignItems: 'flex-start',
   },
-
-  // ── Question Label (.ci-eyebrow: 11px, 600, 0.2em, uppercase, margin-bottom 9px) ──
 
   questionLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 9,
+    fontWeight: '600',
+    marginBottom: 10,
   },
-
-  // ── Question Heading (.ob-h: Comfortaa 400, 31px, line-height 36px, letter-spacing -0.3) ──
 
   questionHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 31,
+    fontSize: 30,
     lineHeight: 36,
     letterSpacing: -0.3,
-    marginBottom: 12,
+    marginBottom: 10,
+    textAlign: 'left',
   },
-
-  headingDark: {
-    color: INK.display,
-  },
-
-  headingAccent: {
-    color: CORAL.terracottaDeep,
-  },
-
-  // ── Supporting Text (.ob-sub: 14.5px, line-height 22px, color rgba(74,58,57,0.66)) ──
 
   supportingText: {
-    fontSize: 14.5,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.66)',
     marginBottom: 36,
-    maxWidth: '90%',
+    maxWidth: '96%',
+    textAlign: 'left',
   },
 
-  // ── Energy Selector (.ci-scalewrap) ──────────────────────────────────────
-
   selectorContainer: {
-    marginBottom: 24,
+    width: '100%',
+    marginBottom: 28,
   },
 
   circlesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 6,
-    marginBottom: 22,
+    paddingHorizontal: 4,
+    height: 48,
   },
 
   circleTouchArea: {
-    width: 48,
-    height: 48,
+    padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   circleWrapper: {
-    width: 48,
-    height: 48,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
+  circle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
   selectedRing: {
     position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
   },
-
-  circle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.45,
-    shadowRadius: 2,
-  },
-
-  // ── Labels Row (.ci-labels) ──────────────────────────────────────────────
 
   labelsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    marginTop: 22,
+    width: '100%',
   },
 
   endpointLabel: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.55)',
-    width: 65,
-    textAlign: 'center',
+    minWidth: 50,
   },
 
   selectedPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 7,
-    backgroundColor: 'rgba(244, 164, 126, 0.16)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 999,
-    paddingVertical: 7,
+    paddingVertical: 6.5,
     paddingHorizontal: 15,
+    borderRadius: 999,
+    borderWidth: 1,
   },
 
   pillDot: {
@@ -523,36 +560,28 @@ const styles = StyleSheet.create({
   },
 
   pillText: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '600',
-    color: '#4f3c3a',
   },
-
-  // ── Crash Link (.ci-crash: 14px, 600, color rgba(176,83,52,0.85)) ────────
 
   crashContainer: {
     alignSelf: 'center',
-    marginTop: 24,
-    marginBottom: 8,
+    marginTop: 18,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
 
   crashText: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '600',
-    color: 'rgba(176, 83, 52, 0.85)',
-    letterSpacing: 0.15,
-    textDecorationLine: 'underline',
+    borderBottomWidth: 1.2,
+    paddingBottom: 2,
+    textAlign: 'center',
   },
-
-  crashTextActive: {
-    color: '#b05334',
-  },
-
-  // ── Bottom Section (.ob-cta gradient) ────────────────────────────────────
 
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingBottom: 16,
     alignItems: 'center',
     gap: 14,
   },
@@ -561,10 +590,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 58,
     borderRadius: 29,
-    shadowColor: '#6E5656',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
     elevation: 5,
   },
 
@@ -576,36 +605,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-
-  buttonPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.94,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
 
   nextButtonText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    color: '#FFF6F1',
+    fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.15,
-    textAlign: 'center',
   },
 
   nextArrowContainer: {
     position: 'absolute',
-    right: 20,
+    right: 22,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
-    alignItems: 'center',
   },
 
   bottomHelperText: {
-    fontSize: 12,
+    fontSize: 13.5,
     lineHeight: 18,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 });

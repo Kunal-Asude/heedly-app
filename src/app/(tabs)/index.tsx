@@ -6,7 +6,9 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { LearningScreenLayout, TodayScreenLayout } from "@/components/today";
-import { CORAL, Fonts, INK } from "@/constants/theme";
+import { Fonts } from "@/constants/theme";
+import { useTheme } from "@/constants/themes";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { useForecast } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
 
@@ -15,18 +17,21 @@ import type { TodayStatusMode } from "@/types/forecast";
 export default function TodayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
   const params = useLocalSearchParams<{ mode?: string }>();
 
-  const initialMode: TodayStatusMode =
+  const validParamMode =
     params.mode === "fd-empty" ||
     params.mode === "fd-wearable" ||
     params.mode === "steady" ||
     params.mode === "caution" ||
     params.mode === "rest"
       ? (params.mode as TodayStatusMode)
-      : "fd-empty";
+      : null;
 
-  const [statusMode, setStatusMode] = useState<TodayStatusMode>(initialMode);
+  const [customMode, setCustomMode] = useState<TodayStatusMode | null>(null);
+  const statusMode = customMode ?? validParamMode ?? "fd-empty";
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
     "caution",
@@ -46,13 +51,11 @@ export default function TodayScreen() {
     ];
     const idx = modes.indexOf(statusMode);
     const nextMode = modes[(idx + 1) % modes.length];
-    setStatusMode(nextMode);
+    setCustomMode(nextMode);
   };
 
   const handleCtaPress = () => {
     if (statusMode === 'fd-empty') {
-      setStatusMode('fd-wearable');
-    } else if (statusMode === 'fd-wearable') {
       router.push({
         pathname: '/(check-in)/energy',
         params: { isFirstTime: 'true' },
@@ -80,6 +83,55 @@ export default function TodayScreen() {
   const isLearningState =
     statusMode === "fd-empty" || statusMode === "fd-wearable";
 
+  // Dynamic modal theme tokens
+  const modalTokens = {
+    backdrop: isDark ? "rgba(18, 10, 20, 0.62)" : "rgba(74, 58, 57, 0.34)",
+    sheetBg: isDark ? "#332538" : "#fbf3ec",
+    sheetBorder: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
+    handle: isDark ? "rgba(199, 180, 191, 0.28)" : "rgba(120, 90, 90, 0.2)",
+    headingDark: isDark ? "#F3E7E1" : theme.ink.display,
+    headingAccent: isDark ? "#E8907A" : theme.coral.terracottaDeep,
+    subtitle: isDark ? "rgba(199, 180, 191, 0.95)" : theme.ink.muted,
+    badgeBg:
+      whyModalType === "rest"
+        ? isDark
+          ? "rgba(226, 122, 140, 0.18)"
+          : "#FCE4E6"
+        : isDark
+          ? "rgba(232, 168, 124, 0.18)"
+          : "#F4E2C7",
+    badgeBorder:
+      whyModalType === "rest"
+        ? isDark
+          ? "rgba(226, 122, 140, 0.30)"
+          : "transparent"
+        : isDark
+          ? "rgba(232, 168, 124, 0.30)"
+          : "transparent",
+    badgeDot:
+      whyModalType === "rest"
+        ? isDark
+          ? "#E792A4"
+          : "#DC6B76"
+        : isDark
+          ? "#E8A87C"
+          : "#D4A545",
+    badgeText:
+      whyModalType === "rest"
+        ? isDark
+          ? "#E792A4"
+          : "#DC6B76"
+        : isDark
+          ? "#E8A87C"
+          : "#B57E32",
+    iconBg: isDark ? "rgba(138, 75, 60, 0.35)" : "#F3E3D6",
+    iconBorder: isDark ? "rgba(232, 168, 124, 0.22)" : "transparent",
+    iconTint: isDark ? "#F3D9CD" : "#785344",
+    itemTitle: isDark ? "#F3E7E1" : theme.ink.display,
+    itemDesc: isDark ? "rgba(199, 180, 191, 0.88)" : "rgba(74, 58, 57, 0.66)",
+    reassurance: isDark ? "rgba(199, 180, 191, 0.82)" : "rgba(74, 58, 57, 0.6)",
+  };
+
   return (
     <View style={styles.root}>
       {isLearningState ? (
@@ -106,6 +158,7 @@ export default function TodayScreen() {
           secondaryText={
             statusMode === "fd-wearable" ? currentConfig.noteText : undefined
           }
+          isSecondaryLink={false}
           ctaLabel={currentConfig.ctaText}
           onCtaPress={handleCtaPress}
           footerNote={currentConfig.footerNote}
@@ -144,7 +197,12 @@ export default function TodayScreen() {
         transparent={true}
         onRequestClose={() => setIsWhyModalOpen(false)}
       >
-        <View style={styles.modalBackdrop}>
+        <View
+          style={[
+            styles.modalBackdrop,
+            { backgroundColor: modalTokens.backdrop },
+          ]}
+        >
           <Pressable
             style={styles.modalOverlayDismiss}
             onPress={() => setIsWhyModalOpen(false)}
@@ -153,27 +211,41 @@ export default function TodayScreen() {
           <View
             style={[
               styles.modalSheetContainer,
-              { paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24 },
+              {
+                backgroundColor: modalTokens.sheetBg,
+                borderTopColor: modalTokens.sheetBorder,
+                borderTopWidth: isDark ? 1 : 0,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
+              },
             ]}
           >
-            <View style={styles.modalHandle} />
+            <View
+              style={[
+                styles.modalHandle,
+                { backgroundColor: modalTokens.handle },
+              ]}
+            />
 
             <View
               style={[
                 styles.modalBadge,
-                { backgroundColor: activeWhyData.badgeBg },
+                {
+                  backgroundColor: modalTokens.badgeBg,
+                  borderColor: modalTokens.badgeBorder,
+                  borderWidth: isDark ? 1 : 0,
+                },
               ]}
             >
               <View
                 style={[
                   styles.modalBadgeDot,
-                  { backgroundColor: activeWhyData.badgeDotColor },
+                  { backgroundColor: modalTokens.badgeDot },
                 ]}
               />
               <Text
                 style={[
                   styles.modalBadgeText,
-                  { color: activeWhyData.badgeTextColor },
+                  { color: modalTokens.badgeText },
                 ]}
               >
                 {activeWhyData.badgeLabel}
@@ -181,37 +253,70 @@ export default function TodayScreen() {
             </View>
 
             <Text style={styles.modalHeading}>
-              <Text style={styles.modalHeadingDark}>
+              <Text style={{ color: modalTokens.headingDark }}>
                 {activeWhyData.headingPrefix}{" "}
               </Text>
-              <Text style={styles.modalHeadingAccent}>
+              <Text style={{ color: modalTokens.headingAccent }}>
                 {activeWhyData.headingAccent}
               </Text>
             </Text>
 
-            <Text style={styles.modalSubtitle}>
+            <Text
+              style={[
+                styles.modalSubtitle,
+                { color: modalTokens.subtitle },
+              ]}
+            >
               {activeWhyData.subtitleText}
             </Text>
 
             <View style={styles.modalItemsList}>
               {activeWhyData.items.map((item) => (
                 <View key={item.id} style={styles.modalItemRow}>
-                  <View style={styles.modalIconBadge}>
+                  <View
+                    style={[
+                      styles.modalIconBadge,
+                      {
+                        backgroundColor: modalTokens.iconBg,
+                        borderColor: modalTokens.iconBorder,
+                        borderWidth: isDark ? 1 : 0,
+                      },
+                    ]}
+                  >
                     <SymbolView
                       name={item.icon as any}
                       size={18}
-                      tintColor="#785344"
+                      tintColor={modalTokens.iconTint}
                     />
                   </View>
                   <View style={styles.modalItemTextBlock}>
-                    <Text style={styles.modalItemTitle}>{item.title}</Text>
-                    <Text style={styles.modalItemDesc}>{item.description}</Text>
+                    <Text
+                      style={[
+                        styles.modalItemTitle,
+                        { color: modalTokens.itemTitle },
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.modalItemDesc,
+                        { color: modalTokens.itemDesc },
+                      ]}
+                    >
+                      {item.description}
+                    </Text>
                   </View>
                 </View>
               ))}
             </View>
 
-            <Text style={styles.modalReassurance}>
+            <Text
+              style={[
+                styles.modalReassurance,
+                { color: modalTokens.reassurance },
+              ]}
+            >
               {activeWhyData.reassuranceText}
             </Text>
 
@@ -225,9 +330,13 @@ export default function TodayScreen() {
               accessibilityLabel="Okay"
             >
               <LinearGradient
-                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                colors={
+                  isDark
+                    ? ["#634256", "#8A5D7C", "#9E768E"]
+                    : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+                }
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
                 style={styles.modalOkayBtnGradient}
               >
                 <Text style={styles.modalOkayBtnText}>Okay</Text>
@@ -255,7 +364,6 @@ const styles = StyleSheet.create({
 
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(74, 58, 57, 0.34)",
     justifyContent: "flex-end",
   },
 
@@ -264,14 +372,13 @@ const styles = StyleSheet.create({
   },
 
   modalSheetContainer: {
-    backgroundColor: "#fbf3ec",
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingTop: 14,
     paddingHorizontal: 24,
-    shadowColor: "#785A5A",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: -12 },
-    shadowOpacity: 0.22,
+    shadowOpacity: 0.35,
     shadowRadius: 34,
     elevation: 16,
   },
@@ -280,7 +387,6 @@ const styles = StyleSheet.create({
     width: 38,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "rgba(120, 90, 90, 0.2)",
     alignSelf: "center",
     marginBottom: 16,
   },
@@ -289,10 +395,10 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 14,
+    gap: 7,
+    paddingVertical: 5.5,
+    paddingHorizontal: 13,
+    borderRadius: 16,
     marginBottom: 12,
   },
 
@@ -303,7 +409,7 @@ const styles = StyleSheet.create({
   },
 
   modalBadgeText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: "700",
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -311,43 +417,33 @@ const styles = StyleSheet.create({
 
   modalHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 25,
-    lineHeight: 30,
+    fontSize: 27,
+    lineHeight: 32,
     letterSpacing: -0.25,
     marginBottom: 8,
   },
 
-  modalHeadingDark: {
-    color: INK.display,
-  },
-
-  modalHeadingAccent: {
-    color: CORAL.terracottaDeep,
-  },
-
   modalSubtitle: {
-    fontSize: 14.5,
-    lineHeight: 22,
-    color: "rgba(74, 58, 57, 0.72)",
-    marginBottom: 18,
+    fontSize: 17,
+    lineHeight: 25,
+    marginBottom: 20,
   },
 
   modalItemsList: {
-    gap: 14,
-    marginBottom: 18,
+    gap: 16,
+    marginBottom: 20,
   },
 
   modalItemRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 13,
   },
 
   modalIconBadge: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#F3E3D6",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
@@ -355,53 +451,50 @@ const styles = StyleSheet.create({
 
   modalItemTextBlock: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
 
   modalItemTitle: {
-    fontSize: 14.5,
+    fontSize: 15.5,
     fontWeight: "600",
-    lineHeight: 20,
-    color: INK.display,
+    lineHeight: 21,
   },
 
   modalItemDesc: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.66)",
+    fontSize: 14,
+    lineHeight: 20,
   },
 
   modalReassurance: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.6)",
-    marginBottom: 18,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 22,
     textAlign: "center",
   },
 
   modalOkayBtnWrapper: {
     width: "100%",
-    height: 54,
-    borderRadius: 27,
-    shadowColor: "#6E5656",
+    height: 58,
+    borderRadius: 29,
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.22,
     shadowRadius: 14,
     elevation: 5,
   },
 
   modalOkayBtnGradient: {
     flex: 1,
-    borderRadius: 27,
+    borderRadius: 29,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.4)",
+    borderColor: "rgba(255, 255, 255, 0.25)",
   },
 
   modalOkayBtnText: {
-    color: "#fff8f4",
-    fontSize: 16,
+    color: "#FFF6F1",
+    fontSize: 17,
     fontWeight: "600",
     letterSpacing: -0.15,
   },

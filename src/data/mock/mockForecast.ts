@@ -18,6 +18,7 @@ export const MOCK_STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
     ctaText: "Start your first check-in",
     footerNote: "You can do this lying down.",
     isFirstDay: true,
+    orbSize: 152,
     waterState: "empty",
   },
   "fd-wearable": {
@@ -27,8 +28,9 @@ export const MOCK_STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
     indicatorDotColor: "#7E9B6A",
     microText: "A first read from your wearable.",
     noteText: "These get sharper as I learn you.",
-    ctaText: "How is it going?",
+    ctaText: "What's going on",
     isFirstDay: true,
+    orbSize: 254,
     waterState: "wearableRead",
     forecast: [
       { dayLabel: "TODAY", value: "Steady", dotColor: COLORS.greenDot },

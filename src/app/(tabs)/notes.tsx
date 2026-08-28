@@ -1,19 +1,63 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import React from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
-import { useNotes } from '@/hooks/data';
+import { DawnBackground } from "@/components/core";
+import { Fonts } from "@/constants/theme";
+import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
+import { useNotes } from "@/hooks/data";
+
+// ─── Notes Card Component (.sx-card with subtle gradient) ─────────────────────
+
+function NotesCard({
+  children,
+  isDark,
+  style,
+}: {
+  children: React.ReactNode;
+  isDark: boolean;
+  style?: any;
+}) {
+  const cardGradientColors: [string, string, string] = isDark
+    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
+    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+
+  return (
+    <LinearGradient
+      colors={cardGradientColors}
+      start={{ x: 0, y: 0.3 }}
+      end={{ x: 1, y: 0.7 }}
+      style={[
+        styles.card,
+        {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          shadowColor: isDark ? '#000000' : '#BE968C',
+          shadowOpacity: isDark ? 0.24 : 0.08,
+        },
+        style,
+      ]}>
+      {children}
+    </LinearGradient>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useAppTheme();
+  const { isDark } = useThemeMode();
+
   const {
     userName,
     dateRange,
@@ -25,156 +69,267 @@ export default function NotesScreen() {
   } = useNotes();
 
   const handleBack = () => {
-    router.replace('/(tabs)/patterns');
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)/patterns" as any);
+    }
   };
+
+  // Theme-aware tokens
+  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
+  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.75)";
+  const cardHeaderLabelColor = isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.5)";
+  const userNameColor = isDark ? "#F3E7E1" : theme.ink.display;
+  const cardHeaderDateColor = isDark ? "rgba(199, 180, 191, 0.85)" : "rgba(74, 58, 57, 0.74)";
+  const checkInsCountColor = isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.58)";
+  const metricLabelColor = isDark ? "#FFFFFF" : "rgba(120, 72, 48, 0.72)";
+  const metricValueColor = isDark ? "#FFFFFF" : "#463130";
+  const metricSubtextColor = isDark ? "#FFFFFF" : "rgba(74, 58, 57, 0.6)";
+  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const triggerTitleColor = isDark ? "#F3E7E1" : theme.ink.display;
+  const triggerSubtitleColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.6)";
+  const impactTextColor = isDark ? "#E8907A" : "#b6634a";
+  const dividerColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(120, 90, 80, 0.13)";
+  const summaryTextColor = isDark ? "rgba(199, 180, 191, 0.9)" : "rgba(74, 58, 57, 0.82)";
+  const disclaimerTextColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.6)";
+  const personalNoteColor = isDark ? "#E8907A" : theme.coral.terracottaDeep;
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Atmosphere Background */}
       <DawnBackground />
 
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingTop: 8, paddingBottom: insets.bottom + 190 },
-          ]}
-          showsVerticalScrollIndicator={false}
-          bounces={true}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 170 },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
+        {/* ── Back Chevron (.sx-nav) ─────────────────────────────────── */}
+        <View style={styles.topRow}>
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
+          </Pressable>
+        </View>
 
-          {/* ── Back Chevron (.sx-nav) ─────────────────────────────────── */}
-          <View style={styles.topRow}>
-            <Pressable
-              onPress={handleBack}
-              style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Go back">
-              <Text style={styles.backChevron}>‹</Text>
-            </Pressable>
-          </View>
+        {/* ── Category Label & Heading (.nt-eyebrow & .nt-title) ─────── */}
+        <Text style={[styles.categoryLabel, { color: eyebrowColor }]}>FOR YOUR APPOINTMENT</Text>
 
-          {/* ── Category Label & Heading (.nt-eyebrow & .nt-title) ─────── */}
-          <Text style={styles.categoryLabel}>FOR YOUR APPOINTMENT</Text>
+        <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>Your notes</Text>
 
-          <Text style={styles.mainHeading}>Your notes</Text>
+        <Text style={[styles.subtitleText, { color: subtitleColor }]}>
+          {"Everything you've been living, now on one page."}
+        </Text>
 
-          <Text style={styles.subtitleText}>
-            {"Everything you've been living, now on one page."}
-          </Text>
-
-          {/* ── 90-DAY SUMMARY Card (.nt-card) ─────────────────────────── */}
-          <View style={styles.summary90Card}>
-            {/* Header Row (.nt-card-head) */}
-            <View style={styles.cardHeaderRow}>
-              <View>
-                <Text style={styles.cardHeaderLabel}>90-DAY SUMMARY</Text>
-                <Text style={styles.userNameText}>{userName}</Text>
-              </View>
-              <View style={styles.metaRight}>
-                <Text style={styles.cardHeaderDate}>{dateRange}</Text>
-                <Text style={styles.checkInsText}>{totalCheckInsCount} daily check-ins</Text>
-              </View>
+        {/* ── 90-DAY SUMMARY Card (.nt-card) ─────────────────────────── */}
+        <NotesCard isDark={isDark} style={styles.summary90Card}>
+          {/* Header Row (.nt-card-head) */}
+          <View style={styles.cardHeaderRow}>
+            <View>
+              <Text style={[styles.cardHeaderLabel, { color: cardHeaderLabelColor }]}>
+                90-DAY SUMMARY
+              </Text>
+              <Text style={[styles.userNameText, { color: userNameColor }]}>
+                {userName}
+              </Text>
             </View>
-
-            {/* 3 Metric Tiles Row (.nt-tiles) */}
-            <View style={styles.metricsRow}>
-              {metrics.map((metric, idx) => (
-                <LinearGradient
-                  key={idx}
-                  colors={['#f8d9bf', '#f3c7a6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.metricBox}>
-                  <Text style={styles.metricLabel}>{metric.label}</Text>
-                  <Text style={styles.metricValue}>{metric.value}</Text>
-                  <Text style={styles.metricSubtext}>{metric.subtext}</Text>
-                </LinearGradient>
-              ))}
+            <View style={styles.metaRight}>
+              <Text style={[styles.cardHeaderDate, { color: cardHeaderDateColor }]}>
+                {dateRange}
+              </Text>
+              <Text style={[styles.checkInsText, { color: checkInsCountColor }]}>
+                {totalCheckInsCount} daily check-ins
+              </Text>
             </View>
           </View>
 
-          {/* ── TOP TRIGGERS Section (.nt-sec--sp) ─────────────────────── */}
-          <Text style={styles.groupHeaderLabel}>TOP TRIGGERS</Text>
-
-          <View style={styles.triggersBlock}>
-            {triggers.map((trigger, index) => (
-              <View key={trigger.id}>
-                <View style={styles.triggerRow}>
-                  <View style={styles.triggerLeftBlock}>
-                    <Text style={styles.triggerTitle}>{trigger.title}</Text>
-                    <Text style={styles.triggerSubtitle}>{trigger.subtitle}</Text>
-                  </View>
-                  <Text style={styles.impactText}>{trigger.impactText}</Text>
-                </View>
-                {index < triggers.length - 1 && <View style={styles.divider} />}
+          {/* 3 Metric Tiles Row (.nt-tiles) */}
+          <View style={styles.metricsRow}>
+            {metrics.map((metric, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.metricBox,
+                  {
+                    backgroundColor: isDark
+                      ? "rgba(112, 72, 94, 0.65)"
+                      : "#f8d9bf",
+                    borderColor: isDark
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(255, 255, 255, 0.6)",
+                  },
+                ]}
+              >
+                <Text style={[styles.metricLabel, { color: metricLabelColor }]}>
+                  {metric.label}
+                </Text>
+                <Text
+                  style={[
+                    styles.metricValue,
+                    { color: metricValueColor },
+                    metric.value.length > 4 && { fontSize: 18 },
+                  ]}
+                >
+                  {metric.value}
+                </Text>
+                <Text style={[styles.metricSubtext, { color: metricSubtextColor }]}>
+                  {metric.subtext}
+                </Text>
               </View>
             ))}
           </View>
+        </NotesCard>
 
-          {/* ── SUMMARY Section (.nt-sec--summary & .nt-card--summary) ──── */}
-          <Text style={styles.groupHeaderLabel}>SUMMARY</Text>
+        {/* ── TOP TRIGGERS Section (.nt-sec--sp) ─────────────────────── */}
+        <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>TOP TRIGGERS</Text>
 
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryParagraphText}>
-              {summaryParagraph}
-            </Text>
-          </View>
-
-          {/* Provenance note (.nt-prov) */}
-          <Text style={styles.disclaimerText}>
-            {generatedDateText}
-          </Text>
-
-          {/* ── Personal Note Link (.nt-addnote) ───────────────────────── */}
-          <Pressable
-            style={({ pressed }) => [styles.personalNoteContainer, pressed && styles.pressed]}
-            accessibilityRole="button"
-            accessibilityLabel="Add a personal note">
-            <Text style={styles.personalNoteText}>Add a personal note ›</Text>
-          </Pressable>
-
-        </ScrollView>
-
-        {/* ── Sticky Floating Bottom Action Panel (.nt-actions) ────────── */}
-        <View style={[styles.bottomPanel, { bottom: insets.bottom > 0 ? insets.bottom + 8 : 16 }]}>
-          {/* Main Appointment Button (.nt-primary) */}
-          <Pressable
-            style={({ pressed }) => [styles.appointmentButtonWrapper, pressed && styles.buttonPressed]}
-            onPress={() => router.push('/paywall' as any)}
-            accessibilityRole="button"
-            accessibilityLabel="Prepare for my appointment">
-            <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.appointmentButtonGradient}>
-              <SymbolView name="calendar" size={18} tintColor="#fff8f4" />
-              <Text style={styles.appointmentButtonText}>Prepare for my appointment</Text>
-            </LinearGradient>
-          </Pressable>
-
-          {/* Secondary Action Row: Export / Share & Copy Link (.nt-ghost) */}
-          <View style={styles.secondaryActionsRow}>
-            <Pressable
-              style={({ pressed }) => [styles.secondaryBtn, pressed && styles.buttonPressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Export / Share">
-              <SymbolView name="square.and.arrow.up" size={15} tintColor="#4f3c3a" />
-              <Text style={styles.secondaryBtnText}>Export / Share</Text>
-            </Pressable>
-
-            <Pressable
-              style={({ pressed }) => [styles.secondaryBtn, pressed && styles.buttonPressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Copy link">
-              <SymbolView name="link" size={15} tintColor="#4f3c3a" />
-              <Text style={styles.secondaryBtnText}>Copy link</Text>
-            </Pressable>
-          </View>
+        <View style={styles.triggersBlock}>
+          {triggers.map((trigger, index) => (
+            <View key={trigger.id}>
+              <View style={styles.triggerRow}>
+                <View style={styles.triggerLeftBlock}>
+                  <Text style={[styles.triggerTitle, { color: triggerTitleColor }]}>
+                    {trigger.title}
+                  </Text>
+                  <Text style={[styles.triggerSubtitle, { color: triggerSubtitleColor }]}>
+                    {trigger.subtitle}
+                  </Text>
+                </View>
+                <Text style={[styles.impactText, { color: impactTextColor }]}>
+                  {trigger.impactText}
+                </Text>
+              </View>
+              {index < triggers.length - 1 && (
+                <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+              )}
+            </View>
+          ))}
         </View>
 
-      </SafeAreaView>
+        {/* ── SUMMARY Section (.nt-sec--summary & .nt-card--summary) ──── */}
+        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>SUMMARY</Text>
+
+        <NotesCard isDark={isDark} style={styles.summaryCard}>
+          <Text style={[styles.summaryParagraphText, { color: summaryTextColor }]}>
+            {summaryParagraph}
+          </Text>
+        </NotesCard>
+
+        {/* Provenance note (.nt-prov) */}
+        <Text style={[styles.disclaimerText, { color: disclaimerTextColor }]}>
+          {generatedDateText}
+        </Text>
+
+        {/* ── Personal Note Link (.nt-addnote) ───────────────────────── */}
+        <Pressable
+          style={({ pressed }) => [styles.personalNoteContainer, pressed && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Add a personal note"
+        >
+          <Text style={[styles.personalNoteText, { color: personalNoteColor }]}>
+            Add a personal note ›
+          </Text>
+        </Pressable>
+      </ScrollView>
+
+      {/* ── Sticky Floating Bottom Action Panel (.nt-actions) ────────── */}
+      <View
+        style={[
+          styles.bottomPanel,
+          {
+            bottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+            backgroundColor: isDark
+              ? "rgba(38, 26, 42, 0.92)"
+              : "rgba(255, 255, 255, 0.75)",
+            borderColor: isDark
+              ? "rgba(255, 255, 255, 0.09)"
+              : "rgba(255, 255, 255, 0.85)",
+          },
+        ]}
+      >
+        {/* Main Appointment Button (.nt-primary) */}
+        <Pressable
+          style={({ pressed }) => [styles.appointmentButtonWrapper, pressed && styles.buttonPressed]}
+          onPress={() => router.push("/paywall" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Prepare for my appointment"
+        >
+          <LinearGradient
+            colors={isDark ? ["#634256", "#8A5D7C", "#9E768E"] : ["#f0a07e", "#e88970", "#e0735f"]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.appointmentButtonGradient}
+          >
+            <SymbolView name="calendar" size={18} tintColor="#FFF6F1" />
+            <Text style={styles.appointmentButtonText}>Prepare for my appointment</Text>
+          </LinearGradient>
+        </Pressable>
+
+        {/* Secondary Action Row: Export / Share & Copy Link (.nt-ghost) */}
+        <View style={styles.secondaryActionsRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryBtn,
+              {
+                backgroundColor: isDark
+                  ? "rgba(72, 48, 62, 0.7)"
+                  : "rgba(255, 255, 255, 0.75)",
+                borderColor: isDark
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "rgba(255, 255, 255, 0.85)",
+              },
+              pressed && styles.buttonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Export / Share"
+          >
+            <SymbolView
+              name="square.and.arrow.up"
+              size={15}
+              tintColor={isDark ? "#FFF6F1" : "#4f3c3a"}
+            />
+            <Text style={[styles.secondaryBtnText, { color: isDark ? "#FFF6F1" : "#4f3c3a" }]}>
+              Export / Share
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryBtn,
+              {
+                backgroundColor: isDark
+                  ? "rgba(72, 48, 62, 0.7)"
+                  : "rgba(255, 255, 255, 0.75)",
+                borderColor: isDark
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "rgba(255, 255, 255, 0.85)",
+              },
+              pressed && styles.buttonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Copy link"
+          >
+            <SymbolView
+              name="link"
+              size={15}
+              tintColor={isDark ? "#FFF6F1" : "#4f3c3a"}
+            />
+            <Text style={[styles.secondaryBtnText, { color: isDark ? "#FFF6F1" : "#4f3c3a" }]}>
+              Copy link
+            </Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -184,12 +339,6 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-  },
-
-  safeArea: {
-    flex: 1,
   },
 
   scrollView: {
@@ -197,7 +346,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
   },
 
   pressed: {
@@ -205,16 +354,16 @@ const styles = StyleSheet.create({
   },
 
   buttonPressed: {
-    opacity: 0.9,
+    opacity: 0.88,
     transform: [{ scale: 0.985 }],
   },
 
   // ── Top Header (.sx-nav) ─────────────────────────────────────────────────
 
   topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     height: 36,
     marginBottom: 8,
   },
@@ -223,168 +372,162 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     marginLeft: -6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   backChevron: {
     fontSize: 30,
     lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.62)',
   },
 
-  // .nt-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  // .nt-eyebrow: 11px, 600, 0.2em, uppercase
   categoryLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
+    fontWeight: "600",
     letterSpacing: 2.2,
-    textTransform: 'uppercase',
-    marginBottom: 7,
-  },
-
-  // .nt-title: Comfortaa 400, 30px, lineHeight 36px, #463332
-  mainHeading: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 30,
-    lineHeight: 36,
-    letterSpacing: -0.3,
-    color: INK.display,
+    textTransform: "uppercase",
     marginBottom: 6,
   },
 
-  // .nt-sub: 14.5px, 1.5, rgba(74,58,57,0.78)
+  // .nt-title: Comfortaa 400, 32px, lineHeight 38px
+  mainHeading: {
+    fontFamily: Fonts.display.regular,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.3,
+    marginBottom: 6,
+  },
+
+  // .nt-sub: 14.5px, 1.5
   subtitleText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    color: 'rgba(74, 58, 57, 0.78)',
-    marginBottom: 16,
+    lineHeight: 21,
+    marginBottom: 18,
+  },
+
+  // ── Cards (.sx-card) ─────────────────────────────────────────────────────
+
+  card: {
+    borderRadius: 22,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 18,
+    elevation: 3,
   },
 
   // ── 90-Day Summary Card (.nt-card) ───────────────────────────────────────
 
   summary90Card: {
-    backgroundColor: 'rgba(255, 252, 248, 0.82)',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
     padding: 18,
     marginBottom: 20,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 3,
   },
 
   cardHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     gap: 14,
   },
 
   cardHeaderLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.76,
-    textTransform: 'uppercase',
-    color: 'rgba(74, 58, 57, 0.5)',
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
   },
 
   userNameText: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 19,
-    color: INK.display,
+    fontSize: 19.5,
+    fontWeight: "600",
+    letterSpacing: -0.2,
     marginTop: 4,
   },
 
   metaRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
 
   cardHeaderDate: {
     fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.74)',
+    fontWeight: "600",
     lineHeight: 18,
   },
 
   checkInsText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.58)',
+    fontSize: 11.5,
+    fontWeight: "500",
     lineHeight: 18,
   },
 
   // ── 3 Metric Tiles (.nt-tiles & .nt-tile) ─────────────────────────────────
 
   metricsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    marginTop: 16,
+    marginTop: 18,
   },
 
   metricBox: {
     flex: 1,
-    borderRadius: 16,
-    paddingVertical: 13,
-    paddingHorizontal: 11,
-    alignItems: 'flex-start',
-    shadowColor: '#E0735F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 1,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: "flex-start",
   },
 
-  // .nt-tile-label: 9.5px, 600, 0.13em, uppercase, rgba(120,72,48,0.72)
   metricLabel: {
     fontSize: 9.5,
-    fontWeight: '600',
-    letterSpacing: 1.23,
-    textTransform: 'uppercase',
-    color: 'rgba(120, 72, 48, 0.72)',
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
     marginBottom: 8,
   },
 
-  // .nt-tile-val: 21px, 700, -0.015em, #463130
   metricValue: {
-    fontSize: 21,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-    color: '#463130',
-    lineHeight: 22,
+    fontSize: 23,
+    fontWeight: "700",
+    letterSpacing: -0.4,
+    lineHeight: 26,
   },
 
-  // .nt-tile-cap: 11px, 500, rgba(74,58,57,0.6)
   metricSubtext: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.6)',
-    marginTop: 7,
+    fontSize: 11.5,
+    fontWeight: "500",
+    marginTop: 6,
   },
 
   // ── Top Triggers (.nt-sec--sp & .nt-trig) ─────────────────────────────────
 
   groupHeaderLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.76,
-    textTransform: 'uppercase',
-    color: 'rgba(74, 58, 57, 0.5)',
-    marginBottom: 8,
-    marginTop: 10,
+    fontWeight: "600",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    marginTop: 6,
+    marginBottom: 6,
+    paddingLeft: 2,
+  },
+
+  groupHeaderLabelSpacing: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    marginTop: 20,
+    marginBottom: 10,
+    paddingLeft: 2,
   },
 
   triggersBlock: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
 
   triggerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 16,
     paddingVertical: 14,
   },
@@ -392,150 +535,118 @@ const styles = StyleSheet.create({
   triggerLeftBlock: {
     flex: 1,
     minWidth: 0,
+    gap: 3,
   },
 
-  // .nt-trig-title: 15px, 600, #463332
   triggerTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: INK.display,
+    fontWeight: "600",
+    letterSpacing: -0.15,
   },
 
-  // .nt-trig-detail: 12.5px, rgba(74,58,57,0.6)
   triggerSubtitle: {
-    fontSize: 12.5,
-    color: 'rgba(74, 58, 57, 0.6)',
-    marginTop: 4,
+    fontSize: 13,
+    fontWeight: "400",
   },
 
-  // .nt-trig-badge: 12.5px, 600, #b6634a
   impactText: {
     fontSize: 12.5,
-    fontWeight: '600',
-    color: '#b6634a',
+    fontWeight: "600",
   },
 
   divider: {
     height: 1,
-    backgroundColor: 'rgba(120, 90, 80, 0.13)',
   },
 
   // ── Summary Card (.nt-card--summary) ─────────────────────────────────────
 
   summaryCard: {
-    backgroundColor: 'rgba(255, 252, 248, 0.82)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
+    padding: 18,
+    marginBottom: 14,
   },
 
-  // .nt-para: 13.5px, 1.62 (22px), rgba(74,58,57,0.82)
   summaryParagraphText: {
-    fontSize: 13.5,
+    fontSize: 14.5,
     lineHeight: 22,
-    color: 'rgba(74, 58, 57, 0.82)',
-    fontWeight: '400',
+    fontWeight: "400",
   },
 
-  // .nt-prov: 12.5px, 1.55, rgba(74,58,57,0.6)
   disclaimerText: {
-    fontSize: 12.5,
-    lineHeight: 19.5,
-    color: 'rgba(74, 58, 57, 0.6)',
-    fontWeight: '500',
-    marginBottom: 20,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "400",
+    marginBottom: 18,
+    paddingHorizontal: 2,
   },
 
-  // .nt-addnote: 14.5px, 600, #b0532f
   personalNoteContainer: {
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingVertical: 6,
     marginBottom: 12,
   },
 
   personalNoteText: {
     fontSize: 14.5,
-    fontWeight: '600',
-    color: CORAL.terracottaDeep,
+    fontWeight: "600",
   },
 
   // ── Floating Action Panel (.nt-actions) ───────────────────────────────────
 
   bottomPanel: {
-    position: 'absolute',
+    position: "absolute",
     left: 18,
     right: 18,
     zIndex: 20,
     padding: 10,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.75)',
     gap: 8,
-    shadowColor: '#B48282',
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 26,
-    elevation: 6,
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 12,
   },
 
   appointmentButtonWrapper: {
-    width: '100%',
+    width: "100%",
     height: 52,
     borderRadius: 26,
-    shadowColor: '#6E5656',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 4,
   },
 
   appointmentButtonGradient: {
     flex: 1,
     borderRadius: 26,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   appointmentButtonText: {
-    color: '#fff8f4',
+    color: "#FFF6F1",
     fontSize: 15.5,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   secondaryActionsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
 
-  // .nt-ghost: 40px height, radius 20px, bg rgba(255,255,255,0.7)
   secondaryBtn: {
     flex: 1,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
   },
 
   secondaryBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#4f3c3a',
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

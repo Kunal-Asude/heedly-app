@@ -1,3 +1,4 @@
+import { useTheme } from "@/constants/themes";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodaySecondaryLinkProps {
@@ -11,6 +12,8 @@ export function TodaySecondaryLink({
   isLink = false,
   onPress,
 }: TodaySecondaryLinkProps) {
+  const theme = useTheme();
+
   return (
     <View style={styles.secondarySlot}>
       {text ? (
@@ -24,12 +27,29 @@ export function TodaySecondaryLink({
             accessibilityRole="button"
             accessibilityLabel={text}
           >
-            <Text style={styles.linkText}>
-              {text}
-            </Text>
+            <View
+              style={[
+                styles.linkUnderlineWrapper,
+                { borderBottomColor: `${theme.coral.terracottaDeep}90` },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.linkText,
+                  { color: theme.coral.terracottaDeep },
+                ]}
+              >
+                {text}
+              </Text>
+            </View>
           </Pressable>
         ) : (
-          <Text style={styles.staticText}>
+          <Text
+            style={[
+              styles.staticText,
+              { color: theme.components.supportingText.noteColor },
+            ]}
+          >
             {text}
           </Text>
         )
@@ -40,32 +60,39 @@ export function TodaySecondaryLink({
 
 const styles = StyleSheet.create({
   secondarySlot: {
-    height: 24,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
-    marginTop: 6,
-    marginBottom: 4,
   },
 
   linkContainer: {
     alignSelf: "center",
   },
 
-  // .qlink: 13px, 500, color rgba(176,83,52,0.78), letter-spacing 0.01em, underline
-  linkText: {
-    fontSize: 13,
-    fontWeight: "500",
-    letterSpacing: 0.13,
-    color: "rgba(176, 83, 52, 0.78)",
-    textDecorationLine: "underline",
+  linkUnderlineWrapper: {
+    borderBottomWidth: 1.2,
+    paddingBottom: 0,
+    alignSelf: "center",
   },
 
-  staticText: {
-    fontSize: 13,
+  // Secondary action link (15.5px, lowered underline)
+  linkText: {
+    fontSize: 15.5,
     fontWeight: "500",
-    color: "rgba(74, 58, 57, 0.66)",
+    lineHeight: 22,
+    letterSpacing: 0,
     textAlign: "center",
+    textDecorationLine: "none",
+  },
+
+  // Secondary note text (17px, line-height 25px, matching onboarding description)
+  staticText: {
+    fontSize: 17,
+    fontWeight: "400",
+    lineHeight: 25,
+    letterSpacing: 0,
+    textAlign: "center",
+    maxWidth: 330,
   },
 
   pressed: {

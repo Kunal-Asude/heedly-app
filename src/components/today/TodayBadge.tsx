@@ -1,3 +1,4 @@
+import { useTheme } from "@/constants/themes";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodayBadgeProps {
@@ -13,32 +14,97 @@ export function TodayBadge({
   indicatorDotColor,
   onPress,
 }: TodayBadgeProps) {
+  const theme = useTheme();
+  const badgeTokens = theme.components.badge;
+
+  // Resolve state dot color to theme-specific state palette
+  const dotColorLower = indicatorDotColor.toLowerCase();
+  let resolvedDotColor = indicatorDotColor;
+  if (
+    dotColorLower.includes("7e9b6a") ||
+    dotColorLower.includes("86c4b4") ||
+    dotColorLower.includes("steady")
+  ) {
+    resolvedDotColor = theme.states.steady.color;
+  } else if (
+    dotColorLower.includes("d99843") ||
+    dotColorLower.includes("e8a87c") ||
+    dotColorLower.includes("caution")
+  ) {
+    resolvedDotColor = theme.states.caution.color;
+  } else if (
+    dotColorLower.includes("e0735f") ||
+    dotColorLower.includes("e27a6c") ||
+    dotColorLower.includes("rest")
+  ) {
+    resolvedDotColor = theme.states.rest.color;
+  }
+
   return (
     <View style={styles.badgeSlot}>
       {isFirstDay ? (
-        /* .fd-chip: padding 5px 12px 5px 11px, radius 20, bg rgba(126,155,106,0.15), border 1px rgba(126,155,106,0.24) */
+        /* .fd-chip: padding 6px 14px, radius 20, composite halo dot */
         <Pressable
           onPress={onPress}
-          style={styles.learningChip}
+          style={[
+            styles.learningChip,
+            {
+              backgroundColor: badgeTokens.learning.background,
+              borderColor: badgeTokens.learning.border,
+            },
+          ]}
         >
-          <View style={styles.learningDot} />
-          <Text style={styles.learningText}>
+          <View
+            style={[
+              styles.learningDotHalo,
+              {
+                backgroundColor: `${badgeTokens.learning.dot}2E`,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.learningDotCenter,
+                { backgroundColor: badgeTokens.learning.dot },
+              ]}
+            />
+          </View>
+          <Text
+            style={[
+              styles.learningText,
+              { color: badgeTokens.learning.text },
+            ]}
+          >
             LEARNING
           </Text>
         </Pressable>
       ) : (
-        /* .state: single tidy line, dot 7x7 with subtle halo, label 13px 600 rgba(74,58,57,0.72) */
+        /* .state: single tidy line, composite dot with halo ring */
         <Pressable onPress={onPress} style={styles.standardBadgeRow}>
           <View
             style={[
-              styles.statusDot,
+              styles.statusDotHalo,
               {
-                backgroundColor: indicatorDotColor,
-                shadowColor: indicatorDotColor,
+                backgroundColor: `${resolvedDotColor}2E`,
+                borderColor: `${resolvedDotColor}38`,
               },
             ]}
-          />
-          <Text style={styles.standardBadgeText}>{indicatorText}</Text>
+          >
+            <View
+              style={[
+                styles.statusDotCenter,
+                { backgroundColor: resolvedDotColor },
+              ]}
+            />
+          </View>
+          <Text
+            style={[
+              styles.standardBadgeText,
+              { color: badgeTokens.statusText },
+            ]}
+          >
+            {indicatorText}
+          </Text>
         </Pressable>
       )}
     </View>
@@ -47,7 +113,7 @@ export function TodayBadge({
 
 const styles = StyleSheet.create({
   badgeSlot: {
-    height: 26,
+    height: 28,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "stretch",
@@ -55,34 +121,39 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // .fd-chip: padding 5px 12px 5px 11px, radius 20px, bg rgba(126,155,106,0.15), border 1px rgba(126,155,106,0.24)
+  // .fd-chip: padding 6px 14px, radius 20px, gap 8px
   learningChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
+    gap: 8,
+    paddingVertical: 5.5,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    backgroundColor: "rgba(126, 155, 106, 0.15)",
     borderWidth: 1,
-    borderColor: "rgba(126, 155, 106, 0.24)",
   },
 
-  // .fd-chip i: 6x6, radius 50%, bg #7e9b6a, box-shadow 0 0 0 3px rgba(126,155,106,0.18)
-  learningDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#7e9b6a",
+  // Composite dot outer halo: 14x14
+  learningDotHalo: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  // .fd-chip span: 10.5px, 700, letter-spacing 0.16em, uppercase, color #5d7a52
+  // Composite dot solid center: 6.5x6.5
+  learningDotCenter: {
+    width: 6.5,
+    height: 6.5,
+    borderRadius: 3.25,
+  },
+
+  // .fd-chip span: 10.5px, 700, letter-spacing 0.16em (1.68), uppercase
   learningText: {
     fontSize: 10.5,
     fontWeight: "700",
     letterSpacing: 1.68,
     textTransform: "uppercase",
-    color: "#5d7a52",
   },
 
   standardBadgeRow: {
@@ -91,22 +162,27 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  // .state .dot: 7x7, radius 50%
-  statusDot: {
+  // .state .dot outer translucent halo ring: 16x16, radius 8
+  statusDotHalo: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // .state .dot inner solid center: 7x7, radius 3.5
+  statusDotCenter: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
-    elevation: 1,
   },
 
-  // .state .label: 13px, 600, letter-spacing 0.02em, color rgba(74,58,57,0.72)
+  // .state .label: 15px, 600
   standardBadgeText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "600",
-    letterSpacing: 0.26,
-    color: "rgba(74, 58, 57, 0.72)",
+    letterSpacing: 0.15,
   },
 });

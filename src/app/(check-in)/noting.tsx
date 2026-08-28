@@ -11,11 +11,13 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
 import { DawnBackground } from "@/components/core";
 import { CORAL, Fonts, INK } from "@/constants/theme";
+import { useTheme } from "@/constants/themes";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { useCheckInConfig } from "@/hooks/data";
 
 // ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
@@ -44,6 +46,9 @@ const COLORS = {
 
 export default function NotingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
   const { categories, allTags, initialSelectedTags, periodDays } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
@@ -81,8 +86,14 @@ export default function NotingScreen() {
     const next = new Set(selectedTags);
     if (next.has(tag)) {
       next.delete(tag);
+      if (tag === 'period') {
+        setSelectedPeriodDay(null);
+      }
     } else {
       next.add(tag);
+      if (tag === 'period') {
+        setIsPeriodModalVisible(true);
+      }
     }
     setSelectedTags(next);
   };
@@ -112,7 +123,13 @@ export default function NotingScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/(tabs)");
+      router.push({
+        pathname: "/(check-in)/body",
+        params: {
+          ...params,
+          isFirstTime: params.isFirstTime,
+        },
+      });
     }
   };
 
@@ -179,7 +196,7 @@ export default function NotingScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Exact Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
@@ -195,15 +212,32 @@ export default function NotingScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back to Question 2"
           >
-            <Text style={styles.backChevron}>‹</Text>
+            <Text
+              style={[
+                styles.backChevron,
+                { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' },
+              ]}
+            >
+              ‹
+            </Text>
           </Pressable>
 
           {/* Progress indicator (Question 3 of 3: dot, dot, active pill) */}
           <View style={styles.progressRow}>
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
+            <View
+              style={[
+                styles.progressDot,
+                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+              ]}
+            />
+            <View
+              style={[
+                styles.progressDot,
+                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+              ]}
+            />
             <LinearGradient
-              colors={['#f0a07e', '#e0735f']}
+              colors={['#E28266', '#D9735A']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.progressActive}
@@ -220,23 +254,42 @@ export default function NotingScreen() {
             accessibilityRole="button"
             accessibilityLabel="Skip"
           >
-            <Text style={styles.skipText}>Skip</Text>
+            <Text
+              style={[
+                styles.skipText,
+                { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+              ]}
+            >
+              Skip
+            </Text>
           </Pressable>
         </View>
 
         {/* ── Fixed Viewport Content ──────────────────────────────────── */}
         <View style={[styles.contentArea, isPeriodModalVisible && styles.bgDimmed]}>
-          {/* ── Question Label (.ci-eyebrow) ───────────────────────────── */}
-          <Text style={styles.questionLabel}>QUESTION 3 OF 3</Text>
-
-          {/* ── Question Heading (.ob-h: 31px, Comfortaa 400) ──────────── */}
-          <Text style={styles.questionHeading}>
-            <Text style={styles.headingDark}>Anything from{"\n"}</Text>
-            <Text style={styles.headingAccent}>today worth noting?</Text>
+          {/* ── Question Eyebrow (.ci-eyebrow) ─────────────────────────── */}
+          <Text
+            style={[
+              styles.questionLabel,
+              { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+            ]}
+          >
+            QUESTION 3 OF 3
           </Text>
 
-          {/* ── Supporting Subtitle (.ob-sub: 14.5px) ──────────────────── */}
-          <Text style={styles.supportingText}>
+          {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
+          <Text style={styles.questionHeading}>
+            <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>Anything from{"\n"}</Text>
+            <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>today worth noting?</Text>
+          </Text>
+
+          {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
+          <Text
+            style={[
+              styles.supportingText,
+              { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+            ]}
+          >
             Tap any that apply. Skip if nothing fits.
           </Text>
 
@@ -247,7 +300,22 @@ export default function NotingScreen() {
               onPress={handleToggleCategoryDrawer}
               style={({ pressed }) => [
                 styles.filterButton,
-                isCategoryDrawerOpen && styles.filterButtonActive,
+                {
+                  backgroundColor: isDark
+                    ? isCategoryDrawerOpen
+                      ? "rgba(226, 122, 108, 0.18)"
+                      : "rgba(51, 37, 56, 0.72)"
+                    : isCategoryDrawerOpen
+                    ? "rgba(244, 164, 126, 0.25)"
+                    : "rgba(255, 252, 248, 0.82)",
+                  borderColor: isDark
+                    ? isCategoryDrawerOpen
+                      ? "rgba(226, 122, 108, 0.42)"
+                      : "rgba(255, 255, 255, 0.09)"
+                    : isCategoryDrawerOpen
+                    ? "rgba(224, 115, 95, 0.4)"
+                    : "rgba(255, 255, 255, 0.8)",
+                },
                 pressed && styles.pressed,
               ]}
               accessibilityRole="button"
@@ -256,21 +324,40 @@ export default function NotingScreen() {
               <SymbolView
                 name="slider.horizontal.3"
                 size={20}
-                tintColor={isCategoryDrawerOpen ? "#c9603f" : "rgba(74, 58, 57, 0.6)"}
+                tintColor={
+                  isCategoryDrawerOpen
+                    ? isDark
+                      ? "#E8907A"
+                      : "#c9603f"
+                    : isDark
+                    ? "rgba(199, 180, 191, 0.65)"
+                    : "rgba(74, 58, 57, 0.6)"
+                }
               />
             </Pressable>
 
             {/* Search Input bar (.ci-search) */}
-            <View style={styles.searchBar}>
+            <View
+              style={[
+                styles.searchBar,
+                {
+                  backgroundColor: isDark ? "rgba(51, 37, 56, 0.72)" : "rgba(255, 252, 248, 0.82)",
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(255, 255, 255, 0.8)",
+                },
+              ]}
+            >
               <SymbolView
                 name="magnifyingglass"
                 size={17}
-                tintColor="rgba(74, 58, 57, 0.42)"
+                tintColor={isDark ? "rgba(199, 180, 191, 0.54)" : "rgba(74, 58, 57, 0.42)"}
               />
               <TextInput
-                style={styles.searchInput}
+                style={[
+                  styles.searchInput,
+                  { color: isDark ? "#F3E7E1" : "#463332" },
+                ]}
                 placeholder="Search tags..."
-                placeholderTextColor="rgba(74, 58, 57, 0.4)"
+                placeholderTextColor={isDark ? "rgba(199, 180, 191, 0.54)" : "rgba(74, 58, 57, 0.4)"}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCorrect={false}
@@ -281,8 +368,23 @@ export default function NotingScreen() {
 
           {/* ── Browse by Category Drawer (.ci-browse) ────────────────── */}
           {isCategoryDrawerOpen && (
-            <View style={styles.categoryDrawer}>
-              <Text style={styles.categoryDrawerTitle}>BROWSE BY CATEGORY</Text>
+            <View
+              style={[
+                styles.categoryDrawer,
+                {
+                  backgroundColor: isDark ? "rgba(51, 37, 56, 0.95)" : "rgba(255, 252, 248, 0.92)",
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(255, 255, 255, 0.8)",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.categoryDrawerTitle,
+                  { color: isDark ? "rgba(199, 180, 191, 0.68)" : "rgba(74, 58, 57, 0.5)" },
+                ]}
+              >
+                BROWSE BY CATEGORY
+              </Text>
               <View style={styles.categoryPillsRow}>
                 {categories.map((cat) => {
                   const isSelected = selectedCategoryId === cat.id;
@@ -292,7 +394,22 @@ export default function NotingScreen() {
                       onPress={() => handleSelectCategory(cat.id)}
                       style={({ pressed }) => [
                         styles.categoryPill,
-                        isSelected && styles.categoryPillSelected,
+                        {
+                          backgroundColor: isSelected
+                            ? isDark
+                              ? "rgba(226, 122, 108, 0.22)"
+                              : "rgba(244, 164, 126, 0.24)"
+                            : isDark
+                            ? "rgba(42, 29, 46, 0.7)"
+                            : "rgba(255, 255, 255, 0.75)",
+                          borderColor: isSelected
+                            ? isDark
+                              ? "rgba(226, 122, 108, 0.42)"
+                              : "rgba(224, 115, 95, 0.45)"
+                            : isDark
+                            ? "rgba(199, 180, 191, 0.14)"
+                            : "rgba(212, 184, 174, 0.35)",
+                        },
                         pressed && styles.pressed,
                       ]}
                       accessibilityRole="button"
@@ -302,7 +419,15 @@ export default function NotingScreen() {
                       <Text
                         style={[
                           styles.categoryPillText,
-                          isSelected && styles.categoryPillTextSelected,
+                          {
+                            color: isSelected
+                              ? isDark
+                                ? "#F3E7E1"
+                                : "#4f3c3a"
+                              : isDark
+                              ? "rgba(199, 180, 191, 0.85)"
+                              : "#5a4644",
+                          },
                         ]}
                       >
                         {cat.label}
@@ -328,9 +453,22 @@ export default function NotingScreen() {
                   onPress={() => handleToggleTag(tag)}
                   style={({ pressed }) => [
                     styles.tagChip,
-                    isSelected
-                      ? styles.tagChipSelected
-                      : styles.tagChipUnselected,
+                    {
+                      backgroundColor: isSelected
+                        ? isDark
+                          ? "rgba(226, 122, 108, 0.18)"
+                          : "rgba(244, 164, 126, 0.2)"
+                        : isDark
+                        ? "rgba(51, 37, 56, 0.72)"
+                        : "rgba(255, 252, 248, 0.76)",
+                      borderColor: isSelected
+                        ? isDark
+                          ? "rgba(226, 122, 108, 0.42)"
+                          : "rgba(224, 115, 95, 0.42)"
+                        : isDark
+                        ? "rgba(255, 255, 255, 0.09)"
+                        : "rgba(255, 255, 255, 0.8)",
+                    },
                     pressed && styles.pressed,
                   ]}
                   accessibilityRole="checkbox"
@@ -338,14 +476,22 @@ export default function NotingScreen() {
                   accessibilityLabel={tag}
                 >
                   {isSelected && (
-                    <Text style={styles.tagCheckIcon}>✓ </Text>
+                    <Text style={[styles.tagCheckIcon, { color: isDark ? "#E8907A" : "#b0532f" }]}>
+                      ✓{" "}
+                    </Text>
                   )}
                   <Text
                     style={[
                       styles.tagText,
-                      isSelected
-                        ? styles.tagTextSelected
-                        : styles.tagTextUnselected,
+                      {
+                        color: isSelected
+                          ? isDark
+                            ? "#F3E7E1"
+                            : "#4f3c3a"
+                          : isDark
+                          ? "rgba(199, 180, 191, 0.95)"
+                          : "#5a4644",
+                      },
                     ]}
                   >
                     {tag}
@@ -368,9 +514,13 @@ export default function NotingScreen() {
             accessibilityLabel="Save and continue"
           >
             <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+              colors={
+                isDark
+                  ? ["#634256", "#8A5D7C", "#9E768E"]
+                  : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+              }
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
               style={styles.saveButtonGradient}
             >
               <Text style={styles.saveButtonText}>Save</Text>
@@ -388,7 +538,12 @@ export default function NotingScreen() {
             </LinearGradient>
           </Pressable>
 
-          <Text style={styles.bottomHelperText}>
+          <Text
+            style={[
+              styles.bottomHelperText,
+              { color: isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.5)" },
+            ]}
+          >
             You can do this lying down.
           </Text>
         </View>
@@ -401,23 +556,74 @@ export default function NotingScreen() {
         animationType="slide"
         onRequestClose={handlePeriodSkip}
       >
-        <View style={styles.modalOverlay}>
+        <View
+          style={[
+            styles.modalOverlay,
+            {
+              backgroundColor: isDark
+                ? "rgba(18, 10, 20, 0.62)"
+                : "rgba(74, 58, 57, 0.34)",
+            },
+          ]}
+        >
           {/* Dismissible Backdrop */}
           <Pressable style={styles.modalDismissArea} onPress={handlePeriodSkip} />
 
           {/* Bottom Sheet Container */}
-          <View style={styles.periodSheetContainer}>
+          <View
+            style={[
+              styles.periodSheetContainer,
+              {
+                backgroundColor: isDark ? "#332538" : "#fbf3ec",
+                borderTopColor: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
+                borderTopWidth: isDark ? 1 : 0,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28,
+              },
+            ]}
+          >
             {/* Sheet Drag Handle Bar (.nd-grip) */}
-            <View style={styles.handleBar} />
+            <View
+              style={[
+                styles.handleBar,
+                {
+                  backgroundColor: isDark
+                    ? "rgba(199, 180, 191, 0.28)"
+                    : "rgba(120, 90, 90, 0.2)",
+                },
+              ]}
+            />
 
-            {/* Sheet Title (.nd-sheet h3: Comfortaa 400, 25px) */}
+            {/* Sheet Title (.nd-sheet h3: Comfortaa 400, 26px) */}
             <Text style={styles.sheetHeading}>
-              <Text style={styles.sheetHeadingDark}>What day of your </Text>
-              <Text style={styles.sheetHeadingAccent}>period?</Text>
+              <Text
+                style={[
+                  styles.sheetHeadingDark,
+                  { color: isDark ? "#F3E7E1" : theme.ink.display },
+                ]}
+              >
+                What day of your{" "}
+              </Text>
+              <Text
+                style={[
+                  styles.sheetHeadingAccent,
+                  { color: isDark ? "#E8907A" : theme.coral.terracottaDeep },
+                ]}
+              >
+                period?
+              </Text>
             </Text>
 
-            {/* Helper Description (.nd-body: 14.5px, line-height 22px) */}
-            <Text style={styles.sheetDescription}>
+            {/* Helper Description (.nd-body: 14.5px, line-height 21px) */}
+            <Text
+              style={[
+                styles.sheetDescription,
+                {
+                  color: isDark
+                    ? "rgba(199, 180, 191, 0.95)"
+                    : "rgba(74, 58, 57, 0.72)",
+                },
+              ]}
+            >
               Day 1 = first day of bleeding. This helps heedly understand your cycle over time. Skippable anytime.
             </Text>
 
@@ -431,7 +637,23 @@ export default function NotingScreen() {
                     onPress={() => setSelectedPeriodDay(isSelected ? null : day)}
                     style={({ pressed }) => [
                       styles.dayNumberBtn,
-                      isSelected && styles.dayNumberBtnSelected,
+                      {
+                        backgroundColor: isDark
+                          ? isSelected
+                            ? "rgba(226, 122, 108, 0.22)"
+                            : "rgba(51, 37, 56, 0.72)"
+                          : isSelected
+                          ? theme.coral.primary
+                          : "rgba(255, 255, 255, 0.95)",
+                        borderColor: isDark
+                          ? isSelected
+                            ? "rgba(226, 122, 108, 0.5)"
+                            : "rgba(199, 180, 191, 0.14)"
+                          : isSelected
+                          ? "transparent"
+                          : "rgba(212, 184, 174, 0.45)",
+                      },
+                      isSelected && styles.dayNumberBtnSelectedShadow,
                       pressed && styles.pressed,
                     ]}
                     accessibilityRole="button"
@@ -441,7 +663,16 @@ export default function NotingScreen() {
                     <Text
                       style={[
                         styles.dayNumberText,
-                        isSelected && styles.dayNumberTextSelected,
+                        {
+                          color: isDark
+                            ? isSelected
+                              ? "#F3E7E1"
+                              : "rgba(199, 180, 191, 0.88)"
+                            : isSelected
+                            ? "#FFFFFF"
+                            : "#4f3c3a",
+                          fontWeight: isSelected ? "700" : "600",
+                        },
                       ]}
                     >
                       {day}
@@ -462,17 +693,28 @@ export default function NotingScreen() {
               accessibilityLabel="Save period entry"
             >
               <LinearGradient
-                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.sheetSaveBtnGradient}
+                colors={
+                  isDark
+                    ? ["#634256", "#8A5D7C", "#9E768E"]
+                    : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+                }
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={[
+                  styles.sheetSaveBtnGradient,
+                  {
+                    borderColor: isDark
+                      ? "rgba(199, 180, 191, 0.15)"
+                      : "rgba(255, 255, 255, 0.4)",
+                  },
+                ]}
               >
                 <Text style={styles.sheetSaveBtnText}>Save</Text>
-                <View style={styles.saveArrowContainer}>
+                <View style={styles.sheetSaveArrowContainer}>
                   <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                     <Path
                       d="M8 5l7 7-7 7"
-                      stroke="#fff8f4"
+                      stroke="#FFF6F1"
                       strokeWidth={2.4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -482,14 +724,25 @@ export default function NotingScreen() {
               </LinearGradient>
             </Pressable>
 
-            {/* Sheet Skip Link (.nd-skip: 14px, 600, color rgba(74,58,57,0.5)) */}
+            {/* Sheet Skip Link */}
             <Pressable
               onPress={handlePeriodSkip}
               style={({ pressed }) => [styles.sheetSkipBtn, pressed && styles.pressed]}
               accessibilityRole="button"
-              accessibilityLabel="Skip period entry"
+              accessibilityLabel="Skip"
             >
-              <Text style={styles.sheetSkipText}>Skip for now</Text>
+              <Text
+                style={[
+                  styles.sheetSkipText,
+                  {
+                    color: isDark
+                      ? "rgba(199, 180, 191, 0.68)"
+                      : "rgba(74, 58, 57, 0.55)",
+                  },
+                ]}
+              >
+                Skip
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -855,7 +1108,6 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(74, 58, 57, 0.34)",
     justifyContent: "flex-end",
   },
 
@@ -864,33 +1116,31 @@ const styles = StyleSheet.create({
   },
 
   periodSheetContainer: {
-    backgroundColor: COLORS.modalBg,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingHorizontal: 24,
-    paddingTop: 14,
-    paddingBottom: 30,
-    shadowColor: "#785A5A",
+    paddingTop: 12,
+    paddingBottom: 28,
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: -12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 34,
-    elevation: 16,
+    shadowOpacity: 0.35,
+    shadowRadius: 36,
+    elevation: 20,
   },
 
   handleBar: {
-    width: 38,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "rgba(120, 90, 90, 0.2)",
     alignSelf: "center",
-    marginBottom: 18,
+    marginBottom: 20,
   },
 
   sheetHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 25,
-    lineHeight: 30,
-    letterSpacing: -0.25,
+    fontSize: 27,
+    lineHeight: 33,
+    letterSpacing: -0.3,
     marginBottom: 10,
   },
 
@@ -904,60 +1154,48 @@ const styles = StyleSheet.create({
 
   sheetDescription: {
     fontSize: 14.5,
-    lineHeight: 22,
-    color: "rgba(74, 58, 57, 0.72)",
-    marginBottom: 20,
+    lineHeight: 21,
+    marginBottom: 24,
   },
 
   dayNumbersRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
+    marginBottom: 26,
   },
 
   dayNumberBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     borderWidth: 1,
-    borderColor: "rgba(212, 184, 174, 0.45)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#8C6A6A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 1,
   },
 
-  dayNumberBtnSelected: {
-    backgroundColor: CORAL.primary,
-    borderColor: "transparent",
+  dayNumberBtnSelectedShadow: {
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   dayNumberText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#4f3c3a",
-  },
-
-  dayNumberTextSelected: {
-    color: "#FFFFFF",
+    fontSize: 16,
   },
 
   sheetSaveBtnWrapper: {
     width: "100%",
     height: 58,
     borderRadius: 29,
-    shadowColor: "#6E5656",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 5,
-    marginTop: 4,
-    marginBottom: 14,
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    elevation: 6,
+    marginBottom: 16,
   },
 
   sheetSaveBtnGradient: {
@@ -967,28 +1205,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.4)",
   },
 
   sheetSaveBtnText: {
-    color: "#fff8f4",
-    fontSize: 16.5,
+    color: "#FFF6F1",
+    fontSize: 17,
     fontWeight: "600",
     letterSpacing: -0.15,
-    textAlign: "center",
+  },
+
+  sheetSaveArrowContainer: {
+    position: "absolute",
+    right: 24,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
   },
 
   sheetSkipBtn: {
     alignSelf: "center",
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 20,
   },
 
   sheetSkipText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "rgba(74, 58, 57, 0.5)",
+    fontSize: 15,
+    fontWeight: "500",
     textAlign: "center",
   },
 });

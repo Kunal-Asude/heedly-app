@@ -7,17 +7,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
+import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
 
-// ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
-
-const CHIP_GAP = 16;   // .ob-chips gap: 16px
-
-// ─── Component ────────────────────────────────────────────────────────────────
+const CHIP_GAP = 16;
 
 export default function ConditionsScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
+  const ctaTokens = theme.components.cta;
   const { conditions } = useUserSettings();
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
@@ -35,8 +36,8 @@ export default function ConditionsScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
-      <DawnBackground />
+      {/* Atmosphere Background (no orb on conditions screen) */}
+      <DawnBackground hasOrb={false} />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -47,19 +48,19 @@ export default function ConditionsScreen() {
 
           {/* ── Progress indicator (.ob-progress, step 3 active) ─────── */}
           <View style={styles.progressRow}>
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
-            <View style={styles.progressActive} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressActive, { backgroundColor: theme.coral.primary }]} />
           </View>
 
-          {/* ── Heading (.ob-h: Comfortaa 400, 31px, #463332 / em #b0532f) ── */}
+          {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
-            <Text style={styles.headingDark}>What are you{'\n'}</Text>
-            <Text style={styles.headingAccent}>living with?</Text>
+            <Text style={[styles.headingDark, { color: theme.ink.display }]}>What are you{'\n'}</Text>
+            <Text style={[styles.headingAccent, { color: theme.coral.terracottaDeep }]}>living with?</Text>
           </Text>
 
           {/* ── Supporting text (.ob-sub) ──────────────────────────────── */}
-          <Text style={styles.supportingText}>
+          <Text style={[styles.supportingText, { color: theme.components.supportingText.noteColor }]}>
             Select all that apply. You can change this{'\n'}later.
           </Text>
 
@@ -67,12 +68,23 @@ export default function ConditionsScreen() {
           <View style={styles.grid}>
             {conditions.map((condition) => {
               const isSelected = selectedConditions.includes(condition);
+              const chipTokens = theme.components.onboarding.chip;
+
               return (
                 <Pressable
                   key={condition}
                   style={({ pressed }) => [
                     styles.chip,
-                    isSelected && styles.chipSelected,
+                    {
+                      backgroundColor: chipTokens.background,
+                      borderColor: chipTokens.border,
+                      shadowColor: isDark ? '#000000' : '#BE968C',
+                      shadowOpacity: isDark ? 0.18 : 0.08,
+                    },
+                    isSelected && {
+                      backgroundColor: chipTokens.selectedBackground,
+                      borderColor: chipTokens.selectedBorder,
+                    },
                     pressed && !isSelected && styles.chipPressed,
                   ]}
                   onPress={() => toggleCondition(condition)}
@@ -84,7 +96,13 @@ export default function ConditionsScreen() {
                   <View
                     style={[
                       styles.checkbox,
-                      isSelected && styles.checkboxSelected,
+                      {
+                        borderColor: chipTokens.checkboxBorder,
+                      },
+                      isSelected && {
+                        backgroundColor: theme.coral.primary,
+                        borderColor: 'transparent',
+                      },
                     ]}>
                     {isSelected && (
                       <SymbolView
@@ -97,38 +115,42 @@ export default function ConditionsScreen() {
                   </View>
 
                   {/* Condition Label */}
-                  <Text style={styles.chipText}>{condition}</Text>
+                  <Text style={[styles.chipText, { color: chipTokens.textColor }]}>{condition}</Text>
                 </Pressable>
               );
             })}
           </View>
 
-          {/* ── Information note (.ob-help: 11.5px, rgba(74,58,57,0.52)) ── */}
-          <Text style={styles.infoText}>
+          {/* ── Information note (.ob-help) ── */}
+          <Text style={[styles.infoText, { color: theme.ink.muted }]}>
             This helps heedly understand your experience and personalize{'\n'}
             your patterns. You can update this any time.
           </Text>
 
-          {/* ── Continue Button (.ob-cta gradient) ────────────────────── */}
+          {/* ── Continue Button (Theme-aware CTA) ────────────────────── */}
           <Pressable
             style={({ pressed }) => [
               styles.continueWrapper,
+              {
+                shadowColor: ctaTokens.shadowColor,
+                shadowOpacity: ctaTokens.shadowOpacity,
+              },
               pressed && styles.continueButtonPressed,
             ]}
             onPress={handleContinue}
             accessibilityRole="button"
             accessibilityLabel="Continue">
             <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              colors={ctaTokens.gradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={styles.continueGradient}>
-              <Text style={styles.continueButtonText}>Continue</Text>
+              style={[styles.continueGradient, { borderColor: ctaTokens.borderColor }]}>
+              <Text style={[styles.continueButtonText, { color: ctaTokens.textColor }]}>Continue</Text>
               <View style={styles.continueArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke="#fff8f4"
+                    stroke={ctaTokens.textColor}
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -161,7 +183,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // .ob: padding 70px 26px 42px
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 26,
@@ -169,7 +190,7 @@ const styles = StyleSheet.create({
     paddingBottom: 42,
   },
 
-  // ── Progress indicator (.ob-progress: gap 6px, margin-bottom 30px) ─────
+  // ── Progress indicator (.ob-progress) ─────
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -178,23 +199,19 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
 
-  // .ob-progress i: 6px, radius 50%, bg rgba(74,58,57,0.18)
   progressDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(74, 58, 57, 0.18)',
   },
 
-  // .ob-progress i.on: width 20px, radius 3px, gradient
   progressActive: {
     width: 20,
     height: 6,
     borderRadius: 3,
-    backgroundColor: CORAL.primary,
   },
 
-  // ── Heading (.ob-h: Comfortaa 400, 31px, line-height 1.15, letter-spacing -0.01em) ──
+  // ── Heading (.ob-h) ──
   heading: {
     fontFamily: Fonts.display.regular,
     fontSize: 31,
@@ -203,26 +220,19 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
 
-  headingDark: {
-    color: INK.display,
-  },
+  headingDark: {},
+  headingAccent: {},
 
-  // .ob-h em: color #b0532f
-  headingAccent: {
-    color: CORAL.terracottaDeep,
-  },
-
-  // ── Supporting text (.ob-sub: 14.5px, line-height 1.5, rgba(74,58,57,0.66), weight 450)
+  // ── Supporting text (17px, line-height 25px) ──────
   supportingText: {
-    fontSize: 14.5,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.66)',
     marginTop: 12,
-    maxWidth: 310,
+    maxWidth: 330,
   },
 
-  // ── Chip grid (.ob-chips: grid 1fr 1fr, gap 16px, margin-top 26px) ────
+  // ── Chip grid (.ob-chips) ────
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -230,21 +240,16 @@ const styles = StyleSheet.create({
     marginTop: 26,
   },
 
-  // .ob-chip: padding 15px 18px, radius 999px, bg rgba(255,252,248,0.74), border 1px rgba(255,255,255,0.75)
   chip: {
     width: '47%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 252, 248, 0.74)',
     borderRadius: 999,
     paddingVertical: 15,
     paddingHorizontal: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.75)',
     gap: 10,
-    shadowColor: '#BE968C',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 2,
   },
@@ -253,68 +258,48 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
-  // .ob-chip.sel: gradient bg, border rgba(224,115,95,0.42)
-  chipSelected: {
-    backgroundColor: 'rgba(244, 164, 126, 0.16)',
-    borderColor: 'rgba(224, 115, 95, 0.42)',
-  },
-
-  // .ob-chip .ring: 20px, radius 50%, border 1.6px rgba(120,90,90,0.32)
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 1.6,
-    borderColor: 'rgba(120, 90, 90, 0.32)',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // .ob-chip.sel .ring: gradient bg, no border
-  checkboxSelected: {
-    backgroundColor: CORAL.primary,
-    borderColor: 'transparent',
-  },
-
-  // .ob-chip text: 14.5px, 600, #4f3c3a
   chipText: {
     fontSize: 14.5,
     fontWeight: '600',
-    color: '#4f3c3a',
     flexShrink: 1,
   },
 
-  // ── Information text (.ob-help: 11.5px, line-height 1.5, rgba(74,58,57,0.52), margin 30px 0 0)
+  // ── Information text (13px, line-height 19px) ──────────
   infoText: {
-    fontSize: 11.5,
-    lineHeight: 17,
-    color: 'rgba(74, 58, 57, 0.52)',
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: 'left',
     marginTop: 30,
   },
 
-  // ── Continue CTA (.ob-cta: height 58px, radius 29px, gradient, shadow, margin-top auto) ──
+  // ── Continue CTA (height 62px, radius 31px) ──
   continueWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
+    height: 62,
+    borderRadius: 31,
     marginTop: 'auto',
-    shadowColor: '#6E5656',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
     shadowRadius: 20,
     elevation: 5,
   },
 
   continueGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 31,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   continueButtonPressed: {
@@ -322,19 +307,16 @@ const styles = StyleSheet.create({
     opacity: 0.94,
   },
 
-  // .ob-cta text: 16.5px, 600, #fff8f4
   continueButtonText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    fontSize: 19,
     fontWeight: '600',
-    letterSpacing: -0.15,
+    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
-  // .ob-cta .arr: position absolute, right 20px
   continueArrowContainer: {
     position: 'absolute',
-    right: 20,
+    right: 22,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

@@ -3,14 +3,34 @@ import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useRouter } from 'expo-r
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
+function RootNavigator() {
+  const { isDark } = useThemeMode();
+
+  return (
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <AnimatedSplashOverlay />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(check-in)" />
+        <Stack.Screen
+          name="paywall"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+      </Stack>
+    </ThemeProvider>
+  );
+}
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
 
   const [loaded, error] = useFonts({
@@ -59,20 +79,9 @@ export default function RootLayout() {
   }, [router]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(check-in)" />
-        <Stack.Screen
-          name="paywall"
-          options={{
-            animation: "slide_from_right",
-          }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <AppThemeProvider initialMode="system">
+      <RootNavigator />
+    </AppThemeProvider>
   );
 }
 

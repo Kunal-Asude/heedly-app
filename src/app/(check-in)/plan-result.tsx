@@ -7,13 +7,47 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
+import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
+
+// ─── Forecast Card Component (.pl-card with subtle gradient) ──────────────────
+
+function ForecastCard({
+  children,
+  isDark,
+}: {
+  children: React.ReactNode;
+  isDark: boolean;
+}) {
+  const cardGradientColors: [string, string, string] = isDark
+    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
+    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+
+  return (
+    <LinearGradient
+      colors={cardGradientColors}
+      start={{ x: 0, y: 0.3 }}
+      end={{ x: 1, y: 0.7 }}
+      style={[
+        styles.forecastCard,
+        {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          shadowColor: isDark ? '#000000' : '#BE968C',
+          shadowOpacity: isDark ? 0.24 : 0.08,
+        },
+      ]}>
+      {children}
+    </LinearGradient>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PlanResultScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
+  const { isDark } = useThemeMode();
   const { defaultPlanningPrediction } = useCheckInConfig();
   const params = useLocalSearchParams<{ dayName?: string; activityLabel?: string }>();
 
@@ -30,9 +64,15 @@ export default function PlanResultScreen() {
     router.replace('/(tabs)');
   };
 
+  // Theme-aware tokens
+  const eyebrowColor = isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.55)';
+  const mainHeadingColor = isDark ? '#F3E7E1' : theme.ink.display;
+  const explanationColor = isDark ? '#F3E7E1' : 'rgba(74, 58, 57, 0.82)';
+  const reminderLinkColor = isDark ? '#E8907A' : 'rgba(176, 83, 52, 0.85)';
+
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Exact Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
@@ -45,53 +85,78 @@ export default function PlanResultScreen() {
               style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Go back to Planning">
-              <Text style={styles.backChevron}>‹</Text>
+              <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : 'rgba(74, 58, 57, 0.62)' }]}>‹</Text>
             </Pressable>
 
-            {/* .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
-            <Text style={styles.sectionLabel}>LOOKING AHEAD</Text>
-
-            {/* .pl-rtitle: Comfortaa 400, 27px, lineHeight 34px, #463332 */}
-            <Text style={styles.mainHeading}>
+            <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>LOOKING AHEAD</Text>
+            <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>
               {dayName} · {activityLabel}
             </Text>
           </View>
 
           {/* ── Main Forecast Card (.pl-card) ─────────────────────────────── */}
-          <View style={styles.forecastCard}>
-            {/* Hero Orb (.pl-gauge: 138x138) */}
+          <ForecastCard isDark={isDark}>
+            {/* Hero Orb (.pl-gauge: 140x140) */}
             <View style={styles.orbContainer}>
-              <EnergyOrb state="caution" size={138} />
+              <EnergyOrb state="caution" size={140} />
             </View>
 
             {/* Caution Badge (.pl-pill) */}
-            <View style={styles.badgeContainer}>
+            <View
+              style={[
+                styles.badgeContainer,
+                {
+                  backgroundColor: isDark ? 'rgba(92, 60, 52, 0.65)' : 'rgba(217, 152, 67, 0.16)',
+                  borderColor: isDark ? 'rgba(236, 200, 128, 0.35)' : 'rgba(217, 152, 67, 0.3)',
+                },
+              ]}>
               <View style={styles.badgeDot} />
-              <Text style={styles.badgeText}>Caution</Text>
+              <Text
+                style={[
+                  styles.badgeText,
+                  { color: isDark ? '#F5DDC4' : '#9a6a2a' },
+                ]}>
+                Caution
+              </Text>
             </View>
 
             {/* Main Explanation Copy (.pl-read) */}
-            <Text style={styles.explanationText}>
+            <Text style={[styles.explanationText, { color: explanationColor }]}>
               {explanationText}
             </Text>
-          </View>
+          </ForecastCard>
 
           {/* ── Recommendation Box (.pl-tip) ─────────────────────────────── */}
-          <View style={styles.recommendationBox}>
+          <View
+            style={[
+              styles.recommendationBox,
+              {
+                backgroundColor: isDark ? 'rgba(32, 54, 46, 0.78)' : 'rgba(126, 155, 106, 0.14)',
+                borderColor: isDark ? 'rgba(134, 196, 180, 0.35)' : 'rgba(126, 155, 106, 0.3)',
+              },
+            ]}>
             <View style={styles.tipIconContainer}>
               <SymbolView
-                name="waveform.path.ecg"
+                name="waveform.path"
                 size={18}
-                tintColor="#5d7a52"
+                tintColor={isDark ? '#86C4B4' : '#5d7a52'}
               />
             </View>
-            <Text style={styles.recommendationText}>
+            <Text
+              style={[
+                styles.recommendationText,
+                { color: isDark ? '#C8EADB' : '#4f5a45' },
+              ]}>
               {recommendationText}
             </Text>
           </View>
 
           {/* ── Footer Estimate Notice (.pl-caveat) ───────────────────────── */}
-          <Text style={styles.estimateNotice}>
+          <Text
+            style={[
+              styles.estimateNotice,
+              { color: isDark ? 'rgba(199, 180, 191, 0.75)' : 'rgba(74, 58, 57, 0.7)' },
+            ]}>
             Days further out are a rougher estimate.
           </Text>
 
@@ -106,16 +171,16 @@ export default function PlanResultScreen() {
               accessibilityRole="button"
               accessibilityLabel="Done">
               <LinearGradient
-                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                colors={isDark ? ['#634256', '#8A5D7C', '#9E768E'] : ['#f0a07e', '#e88970', '#e0735f']}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
                 style={styles.doneButtonGradient}>
                 <Text style={styles.doneButtonText}>Done</Text>
                 <View style={styles.checkmarkIconContainer}>
                   <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                     <Path
                       d="M20 6L9 17l-5-5"
-                      stroke="#fff8f4"
+                      stroke="#FFF6F1"
                       strokeWidth={2.4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -130,7 +195,15 @@ export default function PlanResultScreen() {
               style={({ pressed }) => [styles.reminderContainer, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Remind me to ease up before">
-              <Text style={styles.reminderText}>Remind me to ease up before</Text>
+              <View
+                style={[
+                  styles.linkUnderlineWrapper,
+                  { borderBottomColor: `${reminderLinkColor}90` },
+                ]}>
+                <Text style={[styles.reminderText, { color: reminderLinkColor }]}>
+                  Remind me to ease up before
+                </Text>
+              </View>
             </Pressable>
           </View>
 
@@ -145,8 +218,6 @@ export default function PlanResultScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
 
   safeArea: {
@@ -155,18 +226,18 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     paddingTop: 8,
-    paddingBottom: 24,
+    paddingBottom: 20,
   },
 
   pressed: {
-    opacity: 0.8,
+    opacity: 0.75,
   },
 
   buttonPressed: {
     transform: [{ scale: 0.985 }],
-    opacity: 0.94,
+    opacity: 0.92,
   },
 
   flexSpacer: {
@@ -185,60 +256,53 @@ const styles = StyleSheet.create({
     marginLeft: -6,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   backChevron: {
     fontSize: 30,
     lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.62)',
   },
 
-  // .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  // .pl-eyebrow: 11px, 600, 0.2em, uppercase
   sectionLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 7,
+    marginBottom: 6,
   },
 
-  // .pl-rtitle: Comfortaa 400, 27px, lineHeight 34px, #463332
+  // .pl-rtitle: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 27,
-    lineHeight: 34,
+    fontSize: 32,
+    lineHeight: 38,
     letterSpacing: -0.3,
-    color: INK.display,
   },
 
   // ── Main Forecast Card (.pl-card) ────────────────────────────────────────
 
   forecastCard: {
-    backgroundColor: 'rgba(250, 244, 236, 0.88)',
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
     paddingVertical: 22,
     paddingHorizontal: 20,
     alignItems: 'center',
     marginBottom: 14,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 18,
     elevation: 3,
   },
 
   orbContainer: {
-    width: 138,
-    height: 138,
+    width: 140,
+    height: 140,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // .pl-pill: padding 7px 16px, radius 999px, bg rgba(217,152,67,0.16), border 1px rgba(217,152,67,0.3)
+  // .pl-pill: padding 6px 14px, radius 14px
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -246,33 +310,28 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 12,
     paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: 'rgba(217, 152, 67, 0.16)',
+    paddingHorizontal: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(217, 152, 67, 0.3)',
   },
 
   badgeDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#d99843',
+    backgroundColor: '#ECC880',
   },
 
-  // .pl-pill text: 14px, 600, #9a6a2a
   badgeText: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '600',
-    color: '#9a6a2a',
   },
 
-  // .pl-read: 14.5px, 1.55, rgba(74,58,57,0.82)
+  // .pl-read: 15px, 1.55
   explanationText: {
-    fontSize: 14.5,
-    lineHeight: 22.5,
-    color: 'rgba(74, 58, 57, 0.82)',
-    fontWeight: '500',
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '400',
     textAlign: 'center',
   },
 
@@ -280,37 +339,34 @@ const styles = StyleSheet.create({
 
   recommendationBox: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 11,
-    backgroundColor: 'rgba(126, 155, 106, 0.1)',
+    alignItems: 'center',
+    gap: 12,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(126, 155, 106, 0.2)',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 16,
   },
 
   tipIconContainer: {
-    marginTop: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  // .pl-tip p: 13.5px, 1.5, #4f5a45, 500
   recommendationText: {
     flex: 1,
-    fontSize: 13.5,
-    lineHeight: 20,
-    color: '#4f5a45',
-    fontWeight: '500',
+    fontSize: 14.5,
+    lineHeight: 21.5,
+    fontWeight: '400',
   },
 
-  // .pl-caveat: 13px, 1.5, rgba(74,58,57,0.62)
+  // .pl-caveat: 14px
   estimateNotice: {
-    fontSize: 13,
-    lineHeight: 19.5,
-    color: 'rgba(74, 58, 57, 0.62)',
-    fontWeight: '500',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
     textAlign: 'center',
+    marginBottom: 8,
   },
 
   // ── Bottom Action Area ───────────────────────────────────────────────────
@@ -321,32 +377,31 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  // .pl-done: 58px, 29px radius, gradient, shadow
   doneButtonWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowColor: '#6E5656',
+    height: 54,
+    borderRadius: 27,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+    elevation: 8,
   },
 
   doneButtonGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 27,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
 
   doneButtonText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    color: '#FFF6F1',
+    fontSize: 16,
     fontWeight: '600',
     letterSpacing: -0.15,
   },
@@ -360,15 +415,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // .pl-relink: 13.5px, 500, rgba(176,83,52,0.85), underline
   reminderContainer: {
+    alignSelf: 'center',
     paddingVertical: 4,
   },
 
+  linkUnderlineWrapper: {
+    borderBottomWidth: 1.2,
+    paddingBottom: 0,
+    alignSelf: 'center',
+  },
+
   reminderText: {
-    fontSize: 13.5,
+    fontSize: 15.5,
     fontWeight: '500',
-    color: 'rgba(176, 83, 52, 0.85)',
-    textDecorationLine: 'underline',
+    lineHeight: 22,
+    textAlign: 'center',
+    textDecorationLine: 'none',
+    letterSpacing: 0,
   },
 });

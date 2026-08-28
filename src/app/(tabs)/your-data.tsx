@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import React, { useState } from "react";
@@ -12,11 +13,50 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DawnBackground } from "@/components/core";
-import { CORAL, Fonts, INK } from "@/constants/theme";
+import { Fonts } from "@/constants/theme";
+import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
+
+// ─── Data Card Component (.sx-card with subtle gradient) ─────────────────────
+
+function DataCard({
+  children,
+  isDark,
+  style,
+}: {
+  children: React.ReactNode;
+  isDark: boolean;
+  style?: any;
+}) {
+  const cardGradientColors: [string, string, string] = isDark
+    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
+    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+
+  return (
+    <LinearGradient
+      colors={cardGradientColors}
+      start={{ x: 0, y: 0.3 }}
+      end={{ x: 1, y: 0.7 }}
+      style={[
+        styles.card,
+        {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          shadowColor: isDark ? '#000000' : '#BE968C',
+          shadowOpacity: isDark ? 0.24 : 0.08,
+        },
+        style,
+      ]}>
+      {children}
+    </LinearGradient>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function YourDataScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useAppTheme();
+  const { isDark } = useThemeMode();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   const handleBack = () => {
@@ -33,9 +73,21 @@ export default function YourDataScreen() {
     router.replace("/(tabs)?mode=fd-empty" as any);
   };
 
+  // Theme-aware tokens
+  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
+  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.7)";
+  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const itemTitleColor = isDark ? "#F3E7E1" : "#4f3c3a";
+  const itemDescColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.62)";
+  const dividerColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(120, 90, 90, 0.1)";
+  const chevronColor = isDark ? "rgba(199, 180, 191, 0.45)" : "rgba(74, 58, 57, 0.34)";
+  const actionDeleteColor = isDark ? "#E8907A" : "#c0533c";
+  const footnoteColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.55)";
+
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Atmosphere Background */}
       <DawnBackground />
 
       <ScrollView
@@ -48,194 +100,195 @@ export default function YourDataScreen() {
         bounces={true}
       >
         {/* ── Top Header Navigation (.sx-nav) ──────────────────────────── */}
-        <View style={[styles.topRow, isDeleteModalVisible && styles.bgDimmed]}>
+        <View style={styles.topRow}>
           <Pressable
             onPress={handleBack}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel="Go back to Settings"
           >
-            <Text style={styles.backChevron}>‹</Text>
+            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
 
         {/* ── Screen Title Header ──────────────────────────────────────── */}
-        <View style={isDeleteModalVisible && styles.bgDimmed}>
-          {/* .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
-          <Text style={styles.sectionLabel}>PRIVACY</Text>
+        <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PRIVACY</Text>
+        <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>Your data</Text>
+        <Text style={[styles.supportingSubtitle, { color: subtitleColor }]}>
+          {"Here's everything heedly keeps, in plain English."}
+        </Text>
 
-          {/* .sx-title: Comfortaa 400, 31px, lineHeight 36px, #463332 */}
-          <Text style={styles.mainHeading}>Your data</Text>
+        {/* ── 1. WHAT HEEDLY KEEPS (.sx-sec) ─────────────────────────── */}
+        <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>WHAT HEEDLY KEEPS</Text>
 
-          {/* .sx-intro: 14.5px, 1.5, rgba(74,58,57,0.7) */}
-          <Text style={styles.supportingSubtitle}>
-            {"Here's everything heedly keeps, in plain English."}
-          </Text>
-
-          {/* ── 1. WHAT HEEDLY KEEPS (.sx-sec) ─────────────────────────── */}
-          <Text style={styles.groupHeaderLabel}>WHAT HEEDLY KEEPS</Text>
-
-          <View style={styles.card}>
-            {/* Wearable data */}
-            <View style={styles.itemRow}>
-              <View style={styles.coralBadge}>
-                <SymbolView
-                  name="waveform.path.ecg"
-                  size={16}
-                  tintColor={CORAL.terracottaDeep}
-                />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>Wearable data</Text>
-                <Text style={styles.itemDescription}>
-                  Heart rate, HRV, sleep and activity from your connected device.
-                </Text>
-              </View>
+        <DataCard isDark={isDark}>
+          {/* Wearable data */}
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+              <SymbolView
+                name="waveform.path.ecg"
+                size={17}
+                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+              />
             </View>
-
-            <View style={styles.divider} />
-
-            {/* Daily check-ins */}
-            <View style={styles.itemRow}>
-              <View style={styles.coralBadge}>
-                <SymbolView
-                  name="list.clipboard"
-                  size={16}
-                  tintColor={CORAL.terracottaDeep}
-                />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>Daily check-ins</Text>
-                <Text style={styles.itemDescription}>
-                  Your energy, body and the things you note each day.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* Conditions */}
-            <View style={styles.itemRow}>
-              <View style={styles.coralBadge}>
-                <SymbolView name="heart" size={16} tintColor={CORAL.terracottaDeep} />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>Conditions</Text>
-                <Text style={styles.itemDescription}>
-                  {"What you're living with, to shape your patterns."}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* Period days */}
-            <View style={styles.itemRow}>
-              <View style={styles.coralBadge}>
-                <SymbolView name="moon" size={16} tintColor={CORAL.terracottaDeep} />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>Period days</Text>
-                <Text style={styles.itemDescription}>
-                  {"The cycle days you've logged, if you've added any."}
-                </Text>
-              </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Wearable data</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                Heart rate, HRV, sleep and activity from your connected device.
+              </Text>
             </View>
           </View>
 
-          {/* ── 2. WHERE IT LIVES (.sx-sec) ────────────────────────────── */}
-          <Text style={styles.groupHeaderLabelSpacing}>WHERE IT LIVES</Text>
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
+          {/* Daily check-ins */}
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+              <SymbolView
+                name="list.clipboard"
+                size={17}
+                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+              />
+            </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Daily check-ins</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                Your energy, body and the things you note each day.
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+          {/* Conditions */}
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+              <SymbolView
+                name="heart"
+                size={17}
+                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+              />
+            </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Conditions</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                {"What you're living with, to shape your patterns."}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+          {/* Period days */}
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+              <SymbolView
+                name="moon"
+                size={17}
+                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+              />
+            </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Period days</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                {"The cycle days you've logged, if you've added any."}
+              </Text>
+            </View>
+          </View>
+        </DataCard>
+
+        {/* ── 2. WHERE IT LIVES (.sx-sec) ────────────────────────────── */}
+        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHERE IT LIVES</Text>
+
+        <DataCard isDark={isDark}>
           {/* On your device */}
-          <View style={styles.cardSeparate}>
-            <View style={styles.itemRow}>
-              <View style={styles.greenBadge}>
-                <SymbolView
-                  name="iphone"
-                  size={16}
-                  tintColor="#5d7a52"
-                />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>On your device</Text>
-                <Text style={styles.itemDescription}>
-                  Patterns are detected here, on your phone.
-                </Text>
-              </View>
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
+              <SymbolView
+                name="iphone"
+                size={17}
+                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
+              />
+            </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>On your device</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                Patterns are detected here, on your phone.
+              </Text>
             </View>
           </View>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
           {/* Encrypted backup */}
-          <View style={styles.cardSeparate}>
-            <View style={styles.itemRow}>
-              <View style={styles.greenBadge}>
-                <SymbolView
-                  name="lock"
-                  size={16}
-                  tintColor="#5d7a52"
-                />
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemTitle}>Encrypted backup</Text>
-                <Text style={styles.itemDescription}>
-                  {"Stored privately in iCloud, so it's there when you change phones."}
-                </Text>
-              </View>
+          <View style={styles.itemRow}>
+            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
+              <SymbolView
+                name="lock"
+                size={17}
+                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
+              />
+            </View>
+            <View style={styles.itemTextContainer}>
+              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Encrypted backup</Text>
+              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
+                {"Stored privately in iCloud, so it's there when you change phones."}
+              </Text>
             </View>
           </View>
+        </DataCard>
 
-          {/* ── 3. WHO ELSE SEES IT (.sx-sec) ──────────────────────────── */}
-          <Text style={styles.groupHeaderLabelSpacing}>WHO ELSE SEES IT</Text>
+        {/* ── 3. WHO ELSE SEES IT (.sx-sec) ──────────────────────────── */}
+        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHO ELSE SEES IT</Text>
 
-          <View style={styles.cardPadding}>
-            <Text style={styles.itemTitle}>Private by default.</Text>
-            <Text style={styles.paragraphDescription}>
-              {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
-            </Text>
-          </View>
-
-          {/* ── 4. ACTIONS ─────────────────────────────────────────────── */}
-          <View style={[styles.card, { marginTop: 24 }]}>
-            {/* Export my data */}
-            <Pressable
-              style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Export my data"
-            >
-              <Text style={styles.actionText}>Export my data</Text>
-              <Text style={styles.actionChevron}>›</Text>
-            </Pressable>
-
-            <View style={styles.divider} />
-
-            {/* Delete all my data */}
-            <Pressable
-              style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
-              onPress={() => setIsDeleteModalVisible(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Delete all my data"
-            >
-              <Text style={styles.actionDeleteText}>Delete all my data</Text>
-            </Pressable>
-
-            <View style={styles.divider} />
-
-            {/* Read full privacy policy */}
-            <Pressable
-              style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Read full privacy policy"
-            >
-              <Text style={styles.actionText}>Read full privacy policy</Text>
-              <Text style={styles.actionChevron}>›</Text>
-            </Pressable>
-          </View>
-
-          {/* Footnote */}
-          <Text style={styles.footnoteText}>
-            {"Deleting asks you to confirm first — it can't be undone."}
+        <DataCard isDark={isDark} style={{ paddingVertical: 14 }}>
+          <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Private by default.</Text>
+          <Text style={[styles.paragraphDescription, { color: itemDescColor }]}>
+            {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
           </Text>
-        </View>
+        </DataCard>
+
+        {/* ── 4. ACTIONS ─────────────────────────────────────────────── */}
+        <DataCard isDark={isDark} style={{ marginTop: 18 }}>
+          {/* Export my data */}
+          <Pressable
+            style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Export my data"
+          >
+            <Text style={[styles.actionText, { color: itemTitleColor }]}>Export my data</Text>
+            <Text style={[styles.actionChevron, { color: chevronColor }]}>›</Text>
+          </Pressable>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+          {/* Delete all my data */}
+          <Pressable
+            style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+            onPress={() => setIsDeleteModalVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Delete all my data"
+          >
+            <Text style={[styles.actionDeleteText, { color: actionDeleteColor }]}>Delete all my data</Text>
+          </Pressable>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+          {/* Read full privacy policy */}
+          <Pressable
+            style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Read full privacy policy"
+          >
+            <Text style={[styles.actionText, { color: itemTitleColor }]}>Read full privacy policy</Text>
+            <Text style={[styles.actionChevron, { color: chevronColor }]}>›</Text>
+          </Pressable>
+        </DataCard>
+
+        {/* Footnote */}
+        <Text style={[styles.footnoteText, { color: footnoteColor }]}>
+          {"Deleting asks you to confirm first — it can't be undone."}
+        </Text>
       </ScrollView>
 
       {/* ── "Delete everything?" Bottom Sheet Modal ──────────────────── */}
@@ -245,7 +298,16 @@ export default function YourDataScreen() {
         animationType="slide"
         onRequestClose={() => setIsDeleteModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View
+          style={[
+            styles.modalOverlay,
+            {
+              backgroundColor: isDark
+                ? "rgba(18, 10, 20, 0.65)"
+                : "rgba(74, 58, 57, 0.34)",
+            },
+          ]}
+        >
           <Pressable
             style={styles.modalDismissArea}
             onPress={() => setIsDeleteModalVisible(false)}
@@ -254,45 +316,111 @@ export default function YourDataScreen() {
           <View
             style={[
               styles.sheetContainer,
-              { paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28 },
+              {
+                backgroundColor: isDark ? "#332538" : "#fbf3ec",
+                borderTopColor: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
+                borderTopWidth: isDark ? 1 : 0,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28,
+              },
             ]}
           >
-            <View style={styles.handleBar} />
+            <View
+              style={[
+                styles.handleBar,
+                {
+                  backgroundColor: isDark
+                    ? "rgba(199, 180, 191, 0.28)"
+                    : "rgba(120, 90, 90, 0.2)",
+                },
+              ]}
+            />
 
-            <Text style={styles.sheetTitle}>Delete everything?</Text>
+            <Text
+              style={[
+                styles.sheetTitle,
+                { color: isDark ? "#F3E7E1" : theme.ink.display },
+              ]}
+            >
+              Delete everything?
+            </Text>
 
-            <Text style={styles.sheetBodyText}>
+            <Text
+              style={[
+                styles.sheetBodyText,
+                {
+                  color: isDark
+                    ? "rgba(199, 180, 191, 0.95)"
+                    : "rgba(74, 58, 57, 0.72)",
+                },
+              ]}
+            >
               {"This erases everything heedly keeps — every check-in and all your patterns, on this phone and in your iCloud backup. It can't be undone."}
             </Text>
 
-            <Text style={styles.sheetHelperText}>
+            <Text
+              style={[
+                styles.sheetHelperText,
+                {
+                  color: isDark
+                    ? "rgba(199, 180, 191, 0.68)"
+                    : "rgba(74, 58, 57, 0.55)",
+                },
+              ]}
+            >
               {"If you have a subscription, cancel it separately in the App Store. Deleting here won't stop billing."}
             </Text>
 
+            {/* Delete everything button (Destructive Outline) */}
             <Pressable
               style={({ pressed }) => [
                 styles.deleteOutlineButton,
+                {
+                  backgroundColor: isDark
+                    ? "rgba(51, 37, 56, 0.85)"
+                    : "#FCE4E6",
+                  borderColor: isDark
+                    ? "rgba(226, 122, 108, 0.38)"
+                    : "#c0533c",
+                },
                 pressed && styles.buttonPressed,
               ]}
               onPress={handleConfirmDelete}
               accessibilityRole="button"
               accessibilityLabel="Confirm delete everything"
             >
-              <Text style={styles.deleteOutlineButtonText}>
+              <Text
+                style={[
+                  styles.deleteOutlineButtonText,
+                  { color: isDark ? "#E8907A" : "#c0533c" },
+                ]}
+              >
                 Delete everything
               </Text>
             </Pressable>
 
+            {/* Keep my data button (Solid Dark Mauve) */}
             <Pressable
               style={({ pressed }) => [
                 styles.keepDataButton,
+                {
+                  backgroundColor: isDark
+                    ? "#5C3E50"
+                    : "rgba(120, 90, 80, 0.12)",
+                },
                 pressed && styles.buttonPressed,
               ]}
               onPress={() => setIsDeleteModalVisible(false)}
               accessibilityRole="button"
               accessibilityLabel="Keep my data"
             >
-              <Text style={styles.keepDataButtonText}>Keep my data</Text>
+              <Text
+                style={[
+                  styles.keepDataButtonText,
+                  { color: isDark ? "#FFF6F1" : "#4f3c3a" },
+                ]}
+              >
+                Keep my data
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -306,7 +434,6 @@ export default function YourDataScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "transparent",
   },
 
   scrollView: {
@@ -314,7 +441,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
   },
 
   pressed: {
@@ -324,10 +451,6 @@ const styles = StyleSheet.create({
   buttonPressed: {
     opacity: 0.88,
     transform: [{ scale: 0.985 }],
-  },
-
-  bgDimmed: {
-    opacity: 0.12,
   },
 
   // ── Header Navigation (.sx-nav) ──────────────────────────────────────────
@@ -351,163 +474,112 @@ const styles = StyleSheet.create({
   backChevron: {
     fontSize: 30,
     lineHeight: 30,
-    color: "rgba(74, 58, 57, 0.62)",
   },
 
-  // .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  // .sx-eyebrow: 11px, 600, 0.2em, uppercase
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: "rgba(74, 58, 57, 0.5)",
     letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 7,
+    marginBottom: 6,
   },
 
-  // .sx-title: Comfortaa 400, 31px, lineHeight 36px, #463332
+  // .sx-title: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 31,
-    lineHeight: 36,
+    fontSize: 32,
+    lineHeight: 38,
     letterSpacing: -0.3,
-    color: INK.display,
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
-  // .sx-intro: 14.5px, 1.5, rgba(74,58,57,0.7)
+  // .sx-intro: 14.5px, 1.5
   supportingSubtitle: {
     fontSize: 14.5,
-    lineHeight: 22,
-    color: "rgba(74, 58, 57, 0.7)",
-    marginBottom: 20,
+    lineHeight: 21,
+    marginBottom: 16,
   },
 
-  // .sx-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
+  // .sx-sec: 11px, 600, letter-spacing 0.16em, uppercase
   groupHeaderLabel: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.76,
-    color: "rgba(74, 58, 57, 0.5)",
+    letterSpacing: 1.8,
     textTransform: "uppercase",
-    marginBottom: 8,
+    marginTop: 18,
+    marginBottom: 10,
+    paddingLeft: 4,
   },
 
   groupHeaderLabelSpacing: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.76,
-    color: "rgba(74, 58, 57, 0.5)",
+    letterSpacing: 1.8,
     textTransform: "uppercase",
-    marginBottom: 8,
-    marginTop: 24,
+    marginTop: 22,
+    marginBottom: 10,
+    paddingLeft: 4,
   },
 
   // ── Cards (.sx-card) ─────────────────────────────────────────────────────
 
   card: {
-    backgroundColor: "rgba(255, 252, 248, 0.82)",
-    borderRadius: 18,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.85)",
     paddingVertical: 4,
-    paddingHorizontal: 16,
-    shadowColor: "#BE968C",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-
-  cardPadding: {
-    backgroundColor: "rgba(255, 252, 248, 0.82)",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.85)",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    shadowColor: "#BE968C",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-
-  cardSeparate: {
-    backgroundColor: "rgba(255, 252, 248, 0.82)",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.85)",
-    paddingVertical: 4,
-    paddingHorizontal: 16,
-    marginBottom: 10,
-    shadowColor: "#BE968C",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
+    paddingHorizontal: 18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 18,
+    elevation: 3,
   },
 
   // .sx-keep: padding 14px 0
   itemRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 13,
+    gap: 14,
     paddingVertical: 14,
   },
 
-  coralBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    backgroundColor: "rgba(244, 164, 126, 0.18)",
+  iconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 1,
-  },
-
-  greenBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    backgroundColor: "rgba(126, 155, 106, 0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 1,
+    marginTop: 2,
   },
 
   itemTextContainer: {
     flex: 1,
-    gap: 3,
+    gap: 4,
   },
 
-  // .sx-row-title: 14.5px, 600, #4f3c3a
+  // .sx-row-title: 15.5px, 600
   itemTitle: {
-    fontSize: 14.5,
+    fontSize: 15.5,
     fontWeight: "600",
     letterSpacing: -0.15,
-    color: "#4f3c3a",
-    lineHeight: 20,
+    lineHeight: 21,
   },
 
-  // .sx-row-desc: 12.5px, 450, color rgba(74,58,57,0.62)
+  // .sx-row-desc: 13.5px, 400
   itemDescription: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     fontWeight: "400",
-    lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.62)",
+    lineHeight: 19.5,
   },
 
   paragraphDescription: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     fontWeight: "400",
-    lineHeight: 19,
-    color: "rgba(74, 58, 57, 0.62)",
-    marginTop: 6,
+    lineHeight: 20,
+    marginTop: 8,
   },
 
   divider: {
     height: 1,
-    backgroundColor: "rgba(120, 90, 80, 0.1)",
   },
 
   // ── Actions Card ─────────────────────────────────────────────────────────
@@ -520,30 +592,27 @@ const styles = StyleSheet.create({
   },
 
   actionText: {
-    fontSize: 14.5,
+    fontSize: 15.5,
     fontWeight: "600",
     letterSpacing: -0.15,
-    color: "#4f3c3a",
   },
 
   actionDeleteText: {
-    fontSize: 14.5,
+    fontSize: 15.5,
     fontWeight: "600",
     letterSpacing: -0.15,
-    color: "#c0533c",
   },
 
   actionChevron: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "600",
-    color: "rgba(74, 58, 57, 0.34)",
+    paddingLeft: 4,
   },
 
   footnoteText: {
     fontSize: 12.5,
     lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.55)",
-    marginTop: 12,
+    marginTop: 14,
     textAlign: "center",
   },
 
@@ -551,7 +620,6 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(74, 58, 57, 0.34)",
     justifyContent: "flex-end",
   },
 
@@ -560,77 +628,68 @@ const styles = StyleSheet.create({
   },
 
   sheetContainer: {
-    backgroundColor: "#fbf3ec",
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingTop: 14,
     paddingHorizontal: 24,
-    shadowColor: "#785A5A",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: -12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 34,
-    elevation: 16,
+    shadowOpacity: 0.35,
+    shadowRadius: 36,
+    elevation: 20,
   },
 
   handleBar: {
-    width: 38,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "rgba(120, 90, 90, 0.2)",
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   sheetTitle: {
     fontFamily: Fonts.display.regular,
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.2,
-    color: INK.display,
-    marginBottom: 10,
+    fontSize: 27,
+    lineHeight: 33,
+    letterSpacing: -0.3,
+    marginBottom: 12,
   },
 
   sheetBodyText: {
-    fontSize: 14,
+    fontSize: 14.5,
     lineHeight: 21,
-    color: "rgba(74, 58, 57, 0.72)",
     marginBottom: 12,
   },
 
   sheetHelperText: {
     fontSize: 12.5,
     lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.55)",
     marginBottom: 24,
   },
 
   deleteOutlineButton: {
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1.5,
-    borderColor: "#c0533c",
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
   },
 
   deleteOutlineButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#c0533c",
   },
 
   keepDataButton: {
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "rgba(120, 90, 80, 0.12)",
+    height: 54,
+    borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
   },
 
   keepDataButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#4f3c3a",
   },
 });

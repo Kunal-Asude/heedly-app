@@ -1,97 +1,186 @@
-import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import React, { useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
-import { usePatterns } from '@/hooks/data';
+import { DawnBackground } from "@/components/core";
+import { Fonts } from "@/constants/theme";
+import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
+import { usePatterns } from "@/hooks/data";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design Tokens ────────────────────────────────────────────────────────────
 
 const STATE_COLORS = {
-  steady: '#94b094',
-  caution: '#f0c59e',
-  rest: '#da6d82',
+  steady: "#8FB996",
+  caution: "#ECC880",
+  rest: "#E27A6C",
 };
+
+// ─── Pattern Card Component (.sx-card with subtle gradient) ───────────────────
+
+function PatternCard({
+  children,
+  isDark,
+  style,
+}: {
+  children: React.ReactNode;
+  isDark: boolean;
+  style?: any;
+}) {
+  const cardGradientColors: [string, string, string] = isDark
+    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
+    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+
+  return (
+    <LinearGradient
+      colors={cardGradientColors}
+      start={{ x: 0, y: 0.3 }}
+      end={{ x: 1, y: 0.7 }}
+      style={[
+        styles.card,
+        {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          shadowColor: isDark ? '#000000' : '#BE968C',
+          shadowOpacity: isDark ? 0.24 : 0.08,
+        },
+        style,
+      ]}>
+      {children}
+    </LinearGradient>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PatternsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useAppTheme();
+  const { isDark } = useThemeMode();
   const [isTankTooltipVisible, setIsTankTooltipVisible] = useState(false);
+
   const {
     thisWeekDays,
     helpPatterns,
     costPatterns,
-    learningSinceText,
-    subtitleLeftText,
     tankTooltipTitle,
     tankTooltipBody,
   } = usePatterns();
 
+  // Dynamic Theme Colors
+  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
+  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.75)";
+  const learningSinceLabelColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.5)";
+  const learningSinceDateColor = isDark ? "#F3E7E1" : "#4F3C3A";
+  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
+  const cardTitleColor = isDark ? "#F3E7E1" : "#4F3C3A";
+  const bodyTextColor = isDark ? "#F3E7E1" : "#4F3C3A";
+  const subtextColor = isDark ? "rgba(199, 180, 191, 0.68)" : "rgba(74, 58, 57, 0.62)";
+  const legendTextColor = isDark ? "rgba(199, 180, 191, 0.8)" : "rgba(74, 58, 57, 0.75)";
+  const footnoteColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.6)";
+
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Atmosphere Background */}
       <DawnBackground />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 112 },
+          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 120 },
         ]}
         showsVerticalScrollIndicator={false}
-        bounces={true}>
-
-        {/* ── Back Chevron / Top Spacing (.sx-nav) ─────────────────────── */}
+        bounces={true}
+      >
+        {/* ── Back Chevron (.sx-nav) ──────────────────────────────────── */}
         <View style={styles.topRow}>
           <Pressable
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => router.replace("/(tabs)")}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back to Today">
-            <Text style={styles.backChevron}>‹</Text>
+            accessibilityLabel="Go back to Today"
+          >
+            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
 
         {/* ── Section Label & Heading (.sx-eyebrow & .sx-title) ────────── */}
-        <Text style={styles.sectionLabel}>PATTERNS</Text>
+        <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PATTERNS</Text>
 
-        <Text style={styles.mainHeading}>
+        <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>
           {"What we've noticed"}
         </Text>
 
         {/* ── Subtitle Block (.pt-sub) ─────────────────────────────────── */}
         <View style={styles.subtitleRow}>
-          <Text style={styles.subtitleLeft}>{subtitleLeftText}</Text>
-          <Text style={styles.subtitleRight}>{learningSinceText}</Text>
+          <Text style={[styles.subtitleLeft, { color: subtitleColor }]}>
+            {"A few small things we're\nlearning about you."}
+          </Text>
+          <View style={styles.subtitleRightContainer}>
+            <Text style={[styles.subtitleRightLabel, { color: learningSinceLabelColor }]}>
+              LEARNING SINCE
+            </Text>
+            <Text style={[styles.subtitleRightDate, { color: learningSinceDateColor }]}>
+              MARCH 14
+            </Text>
+          </View>
         </View>
 
         {/* ── "This week" 7-Day Card (.pt-week) ────────────────────────── */}
-        <View style={styles.thisWeekCard}>
+        <PatternCard isDark={isDark} style={styles.thisWeekCard}>
           {/* Card Header */}
           <View style={styles.cardHeaderRow}>
-            <Text style={styles.thisWeekTitle}>This week</Text>
+            <Text style={[styles.thisWeekTitle, { color: cardTitleColor }]}>This week</Text>
             <View style={styles.thisWeekRightHeader}>
-              <Text style={styles.sevenDaysText}>7 DAYS</Text>
+              <Text style={[styles.sevenDaysText, { color: eyebrowColor }]}>7 DAYS</Text>
               <Pressable
                 onPress={() => setIsTankTooltipVisible(!isTankTooltipVisible)}
                 style={({ pressed }) => [
                   styles.infoCircleButton,
-                  isTankTooltipVisible && styles.infoCircleButtonActive,
+                  {
+                    borderColor: isDark
+                      ? isTankTooltipVisible
+                        ? "rgba(226, 122, 108, 0.6)"
+                        : "rgba(199, 180, 191, 0.35)"
+                      : isTankTooltipVisible
+                      ? "rgba(224, 115, 95, 0.6)"
+                      : "rgba(74, 58, 57, 0.28)",
+                    backgroundColor: isTankTooltipVisible
+                      ? isDark
+                        ? "rgba(226, 122, 108, 0.15)"
+                        : "rgba(224, 115, 95, 0.1)"
+                      : "transparent",
+                  },
                   pressed && styles.pressed,
                 ]}
                 hitSlop={10}
                 accessibilityRole="button"
-                accessibilityLabel="How is the tank measured?">
+                accessibilityLabel="How is the tank measured?"
+              >
                 <Text
                   style={[
                     styles.infoCircleText,
-                    isTankTooltipVisible && styles.infoCircleTextActive,
-                  ]}>
+                    {
+                      color: isTankTooltipVisible
+                        ? isDark
+                          ? "#E8907A"
+                          : "#c9603f"
+                        : isDark
+                        ? "rgba(199, 180, 191, 0.75)"
+                        : "rgba(74, 58, 57, 0.55)",
+                    },
+                  ]}
+                >
                   i
                 </Text>
               </Pressable>
@@ -100,9 +189,24 @@ export default function PatternsScreen() {
 
           {/* Popover Tooltip when Info Icon is Pressed (.pt-popover) */}
           {isTankTooltipVisible && (
-            <View style={styles.tankTooltipPopover}>
+            <View
+              style={[
+                styles.tankTooltipPopover,
+                {
+                  backgroundColor: isDark ? "#3D293E" : "#fffefb",
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(220, 190, 180, 0.5)",
+                },
+              ]}
+            >
               <View style={styles.tankTooltipHeader}>
-                <Text style={styles.tankTooltipTitle}>{tankTooltipTitle}</Text>
+                <Text
+                  style={[
+                    styles.tankTooltipTitle,
+                    { color: isDark ? "rgba(199, 180, 191, 0.75)" : "rgba(74, 58, 57, 0.7)" },
+                  ]}
+                >
+                  {tankTooltipTitle}
+                </Text>
                 <Pressable
                   onPress={() => setIsTankTooltipVisible(false)}
                   style={({ pressed }) => [
@@ -111,12 +215,22 @@ export default function PatternsScreen() {
                   ]}
                   hitSlop={8}
                   accessibilityRole="button"
-                  accessibilityLabel="Close tooltip">
-                  <Text style={styles.tankTooltipCloseText}>✕</Text>
+                  accessibilityLabel="Close tooltip"
+                >
+                  <Text style={[styles.tankTooltipCloseText, { color: isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.5)" }]}>
+                    ✕
+                  </Text>
                 </Pressable>
               </View>
 
-              <Text style={styles.tankTooltipBody}>{tankTooltipBody}</Text>
+              <Text
+                style={[
+                  styles.tankTooltipBody,
+                  { color: isDark ? "rgba(199, 180, 191, 0.92)" : "rgba(74, 58, 57, 0.8)" },
+                ]}
+              >
+                {tankTooltipBody}
+              </Text>
             </View>
           )}
 
@@ -124,9 +238,9 @@ export default function PatternsScreen() {
           <View style={styles.daysRow}>
             {thisWeekDays.map((dayItem, index) => {
               const dotColor =
-                dayItem.color.includes('Green') || dayItem.color === '#85B58E' || dayItem.color === '#7E9B6A'
+                dayItem.type === "steady"
                   ? STATE_COLORS.steady
-                  : dayItem.color.includes('Yellow') || dayItem.color === '#E5B87E' || dayItem.color === '#D99843'
+                  : dayItem.type === "caution"
                   ? STATE_COLORS.caution
                   : STATE_COLORS.rest;
 
@@ -145,7 +259,9 @@ export default function PatternsScreen() {
                       ]}
                     />
                   </View>
-                  <Text style={styles.dayLabel}>{dayItem.day}</Text>
+                  <Text style={[styles.dayLabel, { color: isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)" }]}>
+                    {dayItem.day}
+                  </Text>
                 </View>
               );
             })}
@@ -155,71 +271,95 @@ export default function PatternsScreen() {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.steady }]} />
-              <Text style={styles.legendText}>Steady</Text>
+              <Text style={[styles.legendText, { color: legendTextColor }]}>Steady</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.caution }]} />
-              <Text style={styles.legendText}>Caution</Text>
+              <Text style={[styles.legendText, { color: legendTextColor }]}>Caution</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.rest }]} />
-              <Text style={styles.legendText}>Rest day</Text>
+              <Text style={[styles.legendText, { color: legendTextColor }]}>Rest day</Text>
             </View>
           </View>
 
           {/* Card Footer Note */}
-          <Text style={styles.cardFooterNote}>
+          <Text style={[styles.cardFooterNote, { color: subtextColor }]}>
             Bigger dot = more energy.
           </Text>
-        </View>
+          <Text style={[styles.cardFooterSecondary, { color: subtextColor }]}>
+            Your tank reflects your recent weeks, not a fixed ceiling.
+          </Text>
+        </PatternCard>
 
         {/* ── "WHAT SEEMS TO HELP" Section (.pt-sec) ───────────────────── */}
-        <Text style={styles.groupHeaderLabel}>WHAT SEEMS TO HELP</Text>
+        <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>
+          WHAT SEEMS TO HELP
+        </Text>
 
         {helpPatterns.map((pattern) => (
-          <Pressable
+          <PatternCard
             key={pattern.id}
-            style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
-            <View style={styles.helpBadge}>
+            isDark={isDark}
+            style={styles.patternCard}
+          >
+            <View style={[styles.helpBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
               <SymbolView
-                name={pattern.icon}
-                size={16}
-                tintColor="#5d7a52"
+                name={pattern.icon === "moon.fill" ? "moon" : "clock"}
+                size={17}
+                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
               />
             </View>
             <View style={styles.cardTextBlock}>
-              <Text style={styles.cardBodyText}>{pattern.bodyText}</Text>
-              <Text style={styles.cardSubtitleText}>{pattern.subtitleText}</Text>
+              <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
+                {pattern.bodyText}
+              </Text>
+              <Text style={[styles.cardSubtitleText, { color: subtextColor }]}>
+                {pattern.subtitleText}
+              </Text>
             </View>
-          </Pressable>
+          </PatternCard>
         ))}
 
         {/* ── "WHAT SEEMS TO COST YOU" Section (.pt-sec) ───────────────── */}
-        <Text style={styles.groupHeaderLabelSpacing}>WHAT SEEMS TO COST YOU</Text>
+        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>
+          WHAT SEEMS TO COST YOU
+        </Text>
 
         {costPatterns.map((pattern) => (
-          <Pressable
+          <PatternCard
             key={pattern.id}
-            style={({ pressed }) => [styles.patternCard, pressed && styles.pressed]}>
-            <View style={styles.costBadge}>
+            isDark={isDark}
+            style={styles.patternCard}
+          >
+            <View style={[styles.costBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
               <SymbolView
-                name={pattern.icon}
-                size={16}
-                tintColor={CORAL.terracottaDeep}
+                name={
+                  pattern.icon === "person.2.fill"
+                    ? "person.2"
+                    : pattern.icon === "bolt.fill"
+                    ? "bolt"
+                    : "sun.max"
+                }
+                size={17}
+                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
               />
             </View>
             <View style={styles.cardTextBlock}>
-              <Text style={styles.cardBodyText}>{pattern.bodyText}</Text>
-              <Text style={styles.cardSubtitleText}>{pattern.subtitleText}</Text>
+              <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
+                {pattern.bodyText}
+              </Text>
+              <Text style={[styles.cardSubtitleText, { color: subtextColor }]}>
+                {pattern.subtitleText}
+              </Text>
             </View>
-          </Pressable>
+          </PatternCard>
         ))}
 
         {/* ── Bottom Explanatory Text (.pt-foot) ───────────────────────── */}
-        <Text style={styles.bottomExplanatoryText}>
+        <Text style={[styles.bottomExplanatoryText, { color: footnoteColor }]}>
           {"We only share patterns we're reasonably sure about. Tap a card to see the days behind it."}
         </Text>
-
       </ScrollView>
     </View>
   );
@@ -230,7 +370,6 @@ export default function PatternsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
 
   scrollView: {
@@ -238,7 +377,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
   },
 
   pressed: {
@@ -248,9 +387,9 @@ const styles = StyleSheet.create({
   // ── Header (.sx-nav) ────────────────────────────────────────────────────
 
   topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     height: 36,
     marginBottom: 12,
   },
@@ -259,348 +398,324 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     marginLeft: -6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   backChevron: {
     fontSize: 30,
     lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.62)',
   },
 
-  // .sx-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  // .sx-eyebrow: 11px, 600, 0.2em, uppercase
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
+    fontWeight: "600",
     letterSpacing: 2.2,
-    textTransform: 'uppercase',
-    marginBottom: 7,
+    textTransform: "uppercase",
+    marginBottom: 6,
   },
 
-  // .sx-title: Comfortaa 400, 30px, lineHeight 36px, #463332
+  // .sx-title: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 32,
+    lineHeight: 38,
     letterSpacing: -0.3,
-    color: INK.display,
     marginBottom: 8,
   },
 
   // .pt-sub: flex, gap 18px, margin-top 12px
   subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     gap: 16,
     marginBottom: 20,
   },
 
-  // .pt-sub-text: 14.5px, 1.45, rgba(74,58,57,0.8)
   subtitleLeft: {
     fontSize: 14.5,
     lineHeight: 21,
-    color: 'rgba(74, 58, 57, 0.8)',
     flex: 1,
   },
 
-  // .pt-since: 10.5px, 600, 0.13em, uppercase, rgba(74,58,57,0.5)
-  subtitleRight: {
-    fontSize: 10.5,
-    fontWeight: '600',
-    letterSpacing: 1.37,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textAlign: 'right',
-    textTransform: 'uppercase',
+  subtitleRightContainer: {
+    alignItems: "flex-end",
+    gap: 2,
     marginTop: 2,
+  },
+
+  subtitleRightLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+  },
+
+  subtitleRightDate: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+
+  // ── Cards (.sx-card) ─────────────────────────────────────────────────────
+
+  card: {
+    borderRadius: 22,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 18,
+    elevation: 3,
   },
 
   // ── "This week" Card (.pt-week) ──────────────────────────────────────────
 
   thisWeekCard: {
-    backgroundColor: 'rgba(255, 252, 248, 0.82)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 18,
     marginBottom: 20,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
   },
 
   cardHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
 
-  // .pt-week-title: Comfortaa 500, 20px, #463332
   thisWeekTitle: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 20,
-    color: INK.display,
+    fontSize: 18.5,
+    fontWeight: "600",
+    letterSpacing: -0.2,
   },
 
   thisWeekRightHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
 
-  // .pt-week-days: 10.5px, 600, uppercase, rgba(74,58,57,0.5)
   sevenDaysText: {
     fontSize: 10.5,
-    fontWeight: '600',
-    letterSpacing: 1.37,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
   },
 
-  // .pt-info: 22x22, radius 11, border 1px rgba(74,58,57,0.28)
   infoCircleButton: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: 'rgba(74, 58, 57, 0.28)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  infoCircleButtonActive: {
-    borderColor: 'rgba(224, 115, 95, 0.6)',
-    backgroundColor: 'rgba(224, 115, 95, 0.1)',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   infoCircleText: {
     fontFamily: Fonts.display.regular,
     fontSize: 13,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.55)',
+    fontWeight: "600",
     lineHeight: 15,
   },
 
-  infoCircleTextActive: {
-    color: '#c9603f',
-  },
-
   tankTooltipPopover: {
-    position: 'absolute',
-    top: 44,
+    position: "absolute",
+    top: 48,
     right: 14,
-    width: 260,
-    backgroundColor: '#fffefb',
-    borderRadius: 18,
-    paddingHorizontal: 15,
-    paddingTop: 14,
-    paddingBottom: 15,
+    width: 275,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
-    shadowColor: '#785A5A',
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.28,
-    shadowRadius: 40,
-    elevation: 12,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.42,
+    shadowRadius: 30,
+    elevation: 14,
     zIndex: 100,
   },
 
   tankTooltipHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
 
   tankTooltipTitle: {
     fontSize: 10.5,
-    fontWeight: '700',
-    letterSpacing: 1.26,
-    color: 'rgba(74, 58, 57, 0.7)',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
     flex: 1,
   },
 
   tankTooltipCloseBtn: {
     width: 20,
     height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   tankTooltipCloseText: {
     fontSize: 14,
-    color: 'rgba(74, 58, 57, 0.5)',
   },
 
   tankTooltipBody: {
-    fontSize: 13,
-    lineHeight: 19.5,
-    color: 'rgba(74, 58, 57, 0.8)',
+    fontSize: 14.5,
+    lineHeight: 21,
+    fontWeight: "400",
   },
 
   // .pt-chart: grid 7 cols
   daysRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
     paddingHorizontal: 4,
-    marginBottom: 16,
-    height: 48,
+    height: 52,
+    marginBottom: 14,
   },
 
   dayColumn: {
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "flex-end",
     gap: 8,
-    flex: 1,
+    width: 36,
   },
 
   dayDotContainer: {
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   dayDot: {
-    shadowColor: '#785046',
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
 
-  // .pt-day: 11.5px, 600, rgba(74,58,57,0.5)
   dayLabel: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
+    fontSize: 12,
+    fontWeight: "600",
   },
 
-  // .pt-legend: 12px, 600, rgba(74,58,57,0.7)
+  // .pt-legend
   legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
-    marginTop: 6,
-    marginBottom: 8,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.06)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.06)",
+    marginVertical: 10,
   },
 
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
 
   legendDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
   legendText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.7)',
+    fontSize: 12.5,
+    fontWeight: "500",
   },
 
   cardFooterNote: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.55)',
+    fontSize: 13.5,
+    fontWeight: "400",
+    lineHeight: 19.5,
     marginTop: 4,
   },
 
-  // ── Insight Cards (.pt-card3) ────────────────────────────────────────────
+  cardFooterSecondary: {
+    fontSize: 13.5,
+    fontWeight: "400",
+    lineHeight: 19.5,
+    marginTop: 4,
+  },
 
-  // .pt-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
+  // ── Pattern Cards (.pt-sec) ──────────────────────────────────────────────
+
   groupHeaderLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.76,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textTransform: 'uppercase',
-    marginBottom: 8,
+    fontWeight: "600",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    marginTop: 18,
+    marginBottom: 10,
+    paddingLeft: 4,
   },
 
   groupHeaderLabelSpacing: {
     fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.76,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginTop: 24,
+    fontWeight: "600",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    marginTop: 22,
+    marginBottom: 10,
+    paddingLeft: 4,
   },
 
   patternCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 13,
-    backgroundColor: 'rgba(255, 252, 248, 0.82)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    paddingVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    marginBottom: 10,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
+    gap: 14,
+    marginBottom: 12,
   },
 
   helpBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    backgroundColor: 'rgba(126, 155, 106, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   costBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    backgroundColor: 'rgba(244, 164, 126, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   cardTextBlock: {
     flex: 1,
-    gap: 5,
+    gap: 6,
   },
 
-  // .pt-card3-text: 14px, 1.5, #463332
   cardBodyText: {
-    fontSize: 14,
+    fontSize: 14.5,
     lineHeight: 21,
-    color: INK.display,
-    fontWeight: '400',
+    fontWeight: "500",
   },
 
-  // .pt-card3-ev: 12.5px, 1.45, rgba(74,58,57,0.66)
   cardSubtitleText: {
     fontSize: 12.5,
-    lineHeight: 18,
-    color: 'rgba(74, 58, 57, 0.66)',
+    fontWeight: "400",
   },
 
-  // .pt-foot: 13px, 1.5, rgba(74,58,57,0.78)
   bottomExplanatoryText: {
-    fontSize: 13,
-    lineHeight: 19.5,
-    color: 'rgba(74, 58, 57, 0.78)',
-    marginTop: 14,
-    paddingHorizontal: 2,
+    fontSize: 12.5,
+    lineHeight: 19,
+    marginTop: 16,
+    paddingHorizontal: 4,
   },
 });

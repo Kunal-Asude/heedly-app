@@ -7,13 +7,15 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
+import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
 import type { DeviceId } from '@/types/user';
 
-// ─── Design tokens (from Aubade Dawn HTML / surfaces.css / colors.css) ─────────
+// ─── Design tokens ────────────────────────────────────────────────────────────
 
-const CARD_GAP = 11;        // .ob-grid gap: 11px
+const CARD_GAP = 11;
 const TOTAL_COLUMNS = 3;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -21,6 +23,9 @@ const TOTAL_COLUMNS = 3;
 export default function ConnectWearableScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
+  const ctaTokens = theme.components.cta;
   const { wearables } = useUserSettings();
   const [selectedDevice, setSelectedDevice] = useState<DeviceId | null>(null);
   const [isNoDataSheetVisible, setIsNoDataSheetVisible] = useState(false);
@@ -47,8 +52,8 @@ export default function ConnectWearableScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
-      <DawnBackground />
+      {/* Exact Atmosphere Background (no orb on connect screen) */}
+      <DawnBackground hasOrb={false} />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -59,19 +64,19 @@ export default function ConnectWearableScreen() {
 
           {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
           <View style={styles.progressRow}>
-            <View style={styles.progressActive} />
-            <View style={styles.progressDot} />
-            <View style={styles.progressDot} />
+            <View style={[styles.progressActive, { backgroundColor: theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
           </View>
 
-          {/* ── Heading (.ob-h: Comfortaa 400, 31px, #463332 / em #b0532f) ── */}
+          {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
-            <Text style={styles.headingDark}>Connect your{'\n'}</Text>
-            <Text style={styles.headingAccent}>wearable.</Text>
+            <Text style={[styles.headingDark, { color: theme.ink.display }]}>Connect your{'\n'}</Text>
+            <Text style={[styles.headingAccent, { color: theme.coral.terracottaDeep }]}>wearable.</Text>
           </Text>
 
-          {/* ── Supporting text (.ob-sub: 14.5px, rgba(74,58,57,0.66)) ──── */}
-          <Text style={styles.supportingText}>
+          {/* ── Supporting text (.ob-sub) ──── */}
+          <Text style={[styles.supportingText, { color: theme.components.supportingText.noteColor }]}>
             heedly reads your data quietly in the{'\n'}background.
           </Text>
 
@@ -80,13 +85,27 @@ export default function ConnectWearableScreen() {
             {wearables.map((card) => {
               const isSelected = selectedDevice === card.id;
               const isWaiting = isSelected && isNoDataSheetVisible;
+              const cardTokens = theme.components.onboarding.card;
+
               return (
                 <Pressable
                   key={card.id}
                   style={({ pressed }) => [
                     styles.card,
-                    isSelected && styles.cardSelected,
-                    isWaiting && styles.cardWaiting,
+                    {
+                      backgroundColor: cardTokens.background,
+                      borderColor: cardTokens.border,
+                      shadowColor: cardTokens.shadowColor,
+                      shadowOpacity: cardTokens.shadowOpacity,
+                    },
+                    isSelected && {
+                      backgroundColor: cardTokens.selectedBackground,
+                      borderColor: cardTokens.selectedBorder,
+                    },
+                    isWaiting && {
+                      backgroundColor: cardTokens.waitingBackground,
+                      borderColor: cardTokens.waitingBorder,
+                    },
                     pressed && !isSelected && styles.cardPressed,
                   ]}
                   onPress={() => handleCardPress(card.id)}
@@ -95,21 +114,39 @@ export default function ConnectWearableScreen() {
                     isSelected ? `${card.label} connected` : `Connect ${card.label}`
                   }>
                   {/* Icon circle (.ob-card .ic) */}
-                  <View style={[styles.iconCircle, isWaiting && styles.iconCircleWaiting]}>
+                  <View
+                    style={[
+                      styles.iconCircle,
+                      {
+                        backgroundColor: isWaiting
+                          ? cardTokens.waitingIconBackground
+                          : isSelected
+                            ? cardTokens.selectedIconBackground
+                            : cardTokens.iconBackground,
+                      },
+                    ]}>
                     <SymbolView
                       name={card.icon}
                       size={20}
-                      tintColor={isWaiting ? 'rgba(74, 58, 57, 0.5)' : '#9a6a52'}
+                      tintColor={
+                        isWaiting
+                          ? cardTokens.waitingIconColor
+                          : isSelected
+                            ? cardTokens.selectedIconColor
+                            : cardTokens.iconColor
+                      }
                     />
                   </View>
 
-                  {/* Label (.ob-card .nm: 13px, 600, #4f3c3a) */}
-                  <Text style={styles.cardLabel}>{card.label}</Text>
+                  {/* Label (.ob-card .nm) */}
+                  <Text style={[styles.cardLabel, { color: isSelected ? cardTokens.selectedTextColor : theme.ink.display }]}>
+                    {card.label}
+                  </Text>
 
                   {/* Reserved 25px meta-information slot (.ob-card .meta) */}
                   <View style={styles.metaSlot}>
                     {card.subtitle ? (
-                      <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+                      <Text style={[styles.cardSubtitle, { color: theme.ink.muted }]}>{card.subtitle}</Text>
                     ) : null}
                   </View>
 
@@ -117,8 +154,9 @@ export default function ConnectWearableScreen() {
                   <Text
                     style={[
                       styles.cardConnect,
-                      isSelected && styles.cardConnectActive,
-                      isWaiting && styles.cardConnectWaiting,
+                      { color: theme.coral.terracottaDeep },
+                      isSelected && { color: cardTokens.selectedActionColor },
+                      isWaiting && { color: cardTokens.waitingActionColor },
                     ]}>
                     {isWaiting ? 'No data yet' : isSelected ? '✓ Connected' : 'Connect'}
                   </Text>
@@ -127,22 +165,36 @@ export default function ConnectWearableScreen() {
             })}
           </View>
 
-          {/* ── Skip text (.ob-foot: 12.5px, rgba(74,58,57,0.5)) ────────── */}
+          {/* ── Skip text (.ob-foot with offset underline) ────────── */}
           <Pressable
             style={styles.skipContainer}
             onPress={() => router.push('/(onboarding)/conditions')}
             accessibilityRole="button"
-            accessibilityLabel="Skip for now">
-            <Text style={styles.skipText}>
-              Skip for now — {' '}
-              <Text style={styles.skipLink}>you can connect later</Text>
-            </Text>
+            accessibilityLabel="Skip for now, you can connect later">
+            <View style={styles.skipRow}>
+              <Text style={[styles.skipText, { color: theme.ink.muted }]}>
+                Skip for now —{' '}
+              </Text>
+              <View
+                style={[
+                  styles.linkUnderlineWrapper,
+                  { borderBottomColor: `${theme.coral.terracottaDeep}80` },
+                ]}>
+                <Text style={[styles.skipLink, { color: theme.coral.terracottaDeep }]}>
+                  you can connect later
+                </Text>
+              </View>
+            </View>
           </Pressable>
 
-          {/* ── Continue button (.ob-cta gradient, height 58, radius 29) ── */}
+          {/* ── Continue button (Theme-aware CTA) ── */}
           <Pressable
             style={({ pressed }) => [
               styles.continueWrapper,
+              {
+                shadowColor: ctaTokens.shadowColor,
+                shadowOpacity: ctaTokens.shadowOpacity,
+              },
               selectedDevice === null && styles.continueButtonHidden,
               pressed && selectedDevice !== null && styles.continueButtonPressed,
             ]}
@@ -151,16 +203,16 @@ export default function ConnectWearableScreen() {
             accessibilityRole="button"
             accessibilityLabel="Continue">
             <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+              colors={ctaTokens.gradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={styles.continueGradient}>
-              <Text style={styles.continueButtonText}>Continue</Text>
+              style={[styles.continueGradient, { borderColor: ctaTokens.borderColor }]}>
+              <Text style={[styles.continueButtonText, { color: ctaTokens.textColor }]}>Continue</Text>
               <View style={styles.continueArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke="#fff8f4"
+                    stroke={ctaTokens.textColor}
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -179,7 +231,7 @@ export default function ConnectWearableScreen() {
         animationType="slide"
         transparent={true}
         onRequestClose={handleDismissSheet}>
-        <View style={styles.modalBackdrop}>
+        <View style={[styles.modalBackdrop, { backgroundColor: isDark ? 'rgba(18, 10, 20, 0.58)' : 'rgba(74, 58, 57, 0.34)' }]}>
           <Pressable
             style={styles.modalOverlayDismiss}
             onPress={handleDismissSheet}
@@ -188,21 +240,26 @@ export default function ConnectWearableScreen() {
           <View
             style={[
               styles.modalSheetContainer,
-              { paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 34 },
+              {
+                backgroundColor: isDark ? '#332538' : '#fbf3ec',
+                borderTopColor: isDark ? 'rgba(199, 180, 191, 0.14)' : 'transparent',
+                borderTopWidth: isDark ? 1 : 0,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 34,
+              },
             ]}>
             {/* Grip Handle (.nd-grip) */}
-            <View style={styles.modalHandle} />
+            <View style={[styles.modalHandle, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.28)' : 'rgba(120, 90, 90, 0.2)' }]} />
 
-            {/* Title: Comfortaa 400, 25px */}
+            {/* Title: Comfortaa 400, 27px */}
             <Text style={styles.sheetTitle}>
-              <Text style={styles.sheetTitleDark}>No data </Text>
-              <Text style={styles.sheetTitleAccent}>coming through.</Text>
+              <Text style={{ color: theme.ink.display }}>No data </Text>
+              <Text style={{ color: theme.coral.terracottaDeep }}>coming through.</Text>
             </Text>
 
-            {/* Subtitle / Body text (.nd-body) */}
-            <Text style={styles.sheetBody}>
+            {/* Subtitle / Body text (.nd-body: 17px, matching description text) */}
+            <Text style={[styles.sheetBody, { color: theme.components.supportingText.noteColor }]}>
               {`heedly reads your ${deviceName} data through `}
-              <Text style={styles.sheetBodyBold}>Apple Health</Text>
+              <Text style={[styles.sheetBodyBold, { color: theme.ink.display }]}>Apple Health</Text>
               {', and nothing has arrived yet.'}
             </Text>
 
@@ -210,12 +267,12 @@ export default function ConnectWearableScreen() {
             <View style={styles.stepsContainer}>
               {/* Step 1 */}
               <View style={styles.stepRow}>
-                <View style={styles.stepBadge}>
-                  <Text style={styles.stepBadgeText}>1</Text>
+                <View style={[styles.stepBadge, { backgroundColor: isDark ? 'rgba(226, 122, 108, 0.18)' : 'rgba(244, 164, 126, 0.20)' }]}>
+                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracottaDeep }]}>1</Text>
                 </View>
-                <Text style={styles.stepText}>
+                <Text style={[styles.stepText, { color: isDark ? 'rgba(199, 180, 191, 0.90)' : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'In '}
-                  <Text style={styles.stepTextBold}>
+                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>
                     Apple Health → Sharing → Apps → heedly
                   </Text>
                   {', turn on sleep, heart rate and activity.'}
@@ -224,12 +281,12 @@ export default function ConnectWearableScreen() {
 
               {/* Step 2 */}
               <View style={styles.stepRow}>
-                <View style={styles.stepBadge}>
-                  <Text style={styles.stepBadgeText}>2</Text>
+                <View style={[styles.stepBadge, { backgroundColor: isDark ? 'rgba(226, 122, 108, 0.18)' : 'rgba(244, 164, 126, 0.20)' }]}>
+                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracottaDeep }]}>2</Text>
                 </View>
-                <Text style={styles.stepText}>
+                <Text style={[styles.stepText, { color: isDark ? 'rgba(199, 180, 191, 0.90)' : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'Open the '}
-                  <Text style={styles.stepTextBold}>{`${deviceName} app`}</Text>
+                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{`${deviceName} app`}</Text>
                   {' once so it writes today\'s data across.'}
                 </Text>
               </View>
@@ -239,21 +296,25 @@ export default function ConnectWearableScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.sheetCtaWrapper,
+                {
+                  shadowColor: ctaTokens.shadowColor,
+                  shadowOpacity: ctaTokens.shadowOpacity,
+                },
                 pressed && styles.sheetCtaPressed,
               ]}
               onPress={handleProceedToConditions}
               accessibilityRole="button"
               accessibilityLabel="Open Apple Health">
               <LinearGradient
-                colors={[CORAL.light, CORAL.mid, CORAL.primary]}
+                colors={ctaTokens.gradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.sheetCtaGradient}>
-                <Text style={styles.sheetCtaText}>Open Apple Health</Text>
+                style={[styles.sheetCtaGradient, { borderColor: ctaTokens.borderColor }]}>
+                <Text style={[styles.sheetCtaText, { color: ctaTokens.textColor }]}>Open Apple Health</Text>
               </LinearGradient>
             </Pressable>
 
-            {/* Secondary Action Link: Check again (.nd-skip) */}
+            {/* Check again / Skip button (.nd-skip) */}
             <Pressable
               style={({ pressed }) => [
                 styles.sheetSkipButton,
@@ -262,7 +323,7 @@ export default function ConnectWearableScreen() {
               onPress={handleProceedToConditions}
               accessibilityRole="button"
               accessibilityLabel="Check again">
-              <Text style={styles.sheetSkipText}>Check again</Text>
+              <Text style={[styles.sheetSkipText, { color: theme.ink.muted }]}>Check again</Text>
             </Pressable>
           </View>
         </View>
@@ -304,23 +365,21 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
 
-  // .ob-progress i.on: width 20px, height 6px, radius 3px, gradient
+  // .ob-progress i.on: width 20px, height 6px, radius 3px
   progressActive: {
     width: 20,
     height: 6,
     borderRadius: 3,
-    backgroundColor: CORAL.primary,
   },
 
-  // .ob-progress i: width 6px, height 6px, radius 50%, bg rgba(74,58,57,0.18)
+  // .ob-progress i: width 6px, height 6px, radius 50%
   progressDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(74, 58, 57, 0.18)',
   },
 
-  // ── Heading (.ob-h: Comfortaa 400, 31px, line-height 1.15, #463332) ────
+  // ── Heading (.ob-h: Comfortaa 400, 31px, line-height 1.15) ────
   heading: {
     fontFamily: Fonts.display.regular,
     fontSize: 31,
@@ -329,24 +388,17 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
 
-  headingDark: {
-    color: INK.display,
-  },
+  headingDark: {},
+  headingAccent: {},
 
-  // .ob-h em: color #b0532f
-  headingAccent: {
-    color: CORAL.terracottaDeep,
-  },
-
-  // ── Supporting text (.ob-sub: 14.5px, line-height 1.5, rgba(74,58,57,0.66), weight 450, margin 12px 0 0)
+  // ── Supporting text (17px, line-height 25px, margin 12px 0 0)
   supportingText: {
-    fontSize: 14.5,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.66)',
     marginTop: 12,
     marginBottom: 0,
-    maxWidth: 310,
+    maxWidth: 330,
   },
 
   // ── Card grid (.ob-grid: gap 11px, margin-top 26px) ───────────────────
@@ -358,12 +410,11 @@ const styles = StyleSheet.create({
     marginBottom: 26,
   },
 
-  // .ob-card: fixed height 150px, bg rgba(255,252,248,0.82), border 1px rgba(255,255,255,0.75), radius 20px, shadow
+  // .ob-card: fixed height 150px, radius 20px, shadow
   card: {
     flexBasis: `${(100 - ((TOTAL_COLUMNS - 1) * CARD_GAP * 100) / 342) / TOTAL_COLUMNS}%`,
     flexGrow: 1,
     height: 150,
-    backgroundColor: 'rgba(255, 252, 248, 0.82)',
     borderRadius: 20,
     paddingTop: 15,
     paddingBottom: 12,
@@ -371,10 +422,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.75)',
-    shadowColor: '#BE968C',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
     shadowRadius: 16,
     elevation: 2,
   },
@@ -383,28 +431,20 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
-  // .ob-card.connected: bg rgba(244,164,126,0.14), border-color rgba(224,115,95,0.5)
-  cardSelected: {
-    backgroundColor: 'rgba(244, 164, 126, 0.14)',
-    borderColor: 'rgba(224, 115, 95, 0.5)',
-  },
-
-  // .ob-card .ic: 42px, radius 50%, gradient bg, shadow
+  // .ob-card .ic: 42px, radius 50%
   iconCircle: {
     width: 42,
     height: 42,
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f6cdb8',
     marginBottom: 6,
   },
 
-  // .ob-card .nm: 13px, 600, #4f3c3a, line-height 1.1
+  // .ob-card .nm: 13px, 600, line-height 1.1
   cardLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#4f3c3a',
     textAlign: 'center',
     lineHeight: 14,
     height: 14,
@@ -419,70 +459,73 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // .ob-card .meta: 9.5px, line-height 1.3, color rgba(74,58,57,0.5)
+  // .ob-card .meta: 9.5px, line-height 1.3
   cardSubtitle: {
     fontSize: 9.5,
     lineHeight: 12,
-    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 
-  // .ob-card .act: 11.5px, 600, color rgba(176,83,52,0.85)
+  // .ob-card .act: 11.5px, 600
   cardConnect: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: 'rgba(176, 83, 52, 0.85)',
     textAlign: 'center',
     lineHeight: 15,
   },
 
-  // .ob-card.connected .act: color #cf6a4c
-  cardConnectActive: {
-    color: '#cf6a4c',
-  },
+  // .ob-card.connected .act
+  cardConnectActive: {},
 
-  // ── Skip (.ob-foot: 12.5px, line-height 1.5, rgba(74,58,57,0.5), margin-top from layout)
+  // ── Skip (.ob-foot: 14.5px, line-height 21px, margin-top: 26px) ───────────
   skipContainer: {
     alignSelf: 'center',
-    marginTop: 0,
+    marginTop: 8,
     marginBottom: 20,
   },
 
+  skipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   skipText: {
-    fontSize: 12.5,
-    lineHeight: 19,
-    color: 'rgba(74, 58, 57, 0.5)',
+    fontSize: 14.5,
+    lineHeight: 21,
     textAlign: 'center',
   },
 
-  // .ob-link: color #b05334, underline
+  linkUnderlineWrapper: {
+    borderBottomWidth: 1.2,
+    paddingBottom: 0,
+  },
+
+  // .ob-link: 14.5px, 500
   skipLink: {
-    color: '#b05334',
-    textDecorationLine: 'underline',
+    fontSize: 14.5,
+    lineHeight: 21,
     fontWeight: '500',
   },
 
-  // ── Continue CTA (.ob-cta: height 58px, radius 29px, gradient, shadow) ──
+  // ── Continue CTA (height 62px, radius 31px) ──
   continueWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowColor: '#6E5656',
+    height: 62,
+    borderRadius: 31,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
     shadowRadius: 20,
     elevation: 5,
   },
 
   continueGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 31,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   continueButtonHidden: {
@@ -494,12 +537,10 @@ const styles = StyleSheet.create({
     opacity: 0.94,
   },
 
-  // .ob-cta text: 16.5px, 600, #fff8f4
   continueButtonText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    fontSize: 19,
     fontWeight: '600',
-    letterSpacing: -0.15,
+    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
@@ -521,7 +562,6 @@ const styles = StyleSheet.create({
 
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(74, 58, 57, 0.34)',
     justifyContent: 'flex-end',
   },
 
@@ -530,7 +570,6 @@ const styles = StyleSheet.create({
   },
 
   modalSheetContainer: {
-    backgroundColor: '#fbf3ec',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     paddingTop: 14,
@@ -546,45 +585,36 @@ const styles = StyleSheet.create({
     width: 38,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(120, 90, 90, 0.2)',
     alignSelf: 'center',
-    marginBottom: 18,
+    marginBottom: 20,
   },
 
   sheetTitle: {
     fontFamily: Fonts.display.regular,
-    fontSize: 25,
-    lineHeight: 30,
-    letterSpacing: -0.25,
-    color: INK.display,
+    fontSize: 27,
+    lineHeight: 32,
+    letterSpacing: -0.3,
     marginBottom: 0,
   },
 
-  sheetTitleDark: {
-    color: INK.display,
-  },
-
-  sheetTitleAccent: {
-    color: CORAL.terracottaDeep,
-  },
+  sheetTitleDark: {},
+  sheetTitleAccent: {},
 
   sheetBody: {
-    fontSize: 14.5,
-    lineHeight: 22.5,
+    fontSize: 17,
+    lineHeight: 25,
     fontWeight: '400',
-    color: 'rgba(74, 58, 57, 0.72)',
-    marginTop: 12,
-    marginBottom: 20,
+    marginTop: 14,
+    marginBottom: 22,
   },
 
   sheetBodyBold: {
     fontWeight: '600',
-    color: '#463332',
   },
 
   stepsContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: 16,
+    marginBottom: 26,
   },
 
   stepRow: {
@@ -594,41 +624,35 @@ const styles = StyleSheet.create({
   },
 
   stepBadge: {
-    width: 23,
-    height: 23,
-    borderRadius: 11.5,
-    backgroundColor: 'rgba(244, 164, 126, 0.2)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
   },
 
   stepBadgeText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#b0532f',
   },
 
   stepText: {
     flex: 1,
-    fontSize: 13.5,
-    lineHeight: 20,
-    color: 'rgba(74, 58, 57, 0.78)',
+    fontSize: 15,
+    lineHeight: 22,
     fontWeight: '400',
   },
 
   stepTextBold: {
     fontWeight: '600',
-    color: '#463332',
   },
 
   sheetCtaWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowColor: '#6E5656',
+    height: 60,
+    borderRadius: 30,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
     shadowRadius: 20,
     elevation: 5,
   },
@@ -640,25 +664,23 @@ const styles = StyleSheet.create({
 
   sheetCtaGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
 
   sheetCtaText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    fontSize: 19,
     fontWeight: '600',
-    letterSpacing: -0.15,
+    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
   sheetSkipButton: {
     alignSelf: 'center',
-    marginTop: 14,
+    marginTop: 16,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
@@ -668,16 +690,14 @@ const styles = StyleSheet.create({
   },
 
   sheetSkipText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     textAlign: 'center',
   },
 
-  // .ob-cta .arr: position absolute, right 20px
   continueArrowContainer: {
     position: 'absolute',
-    right: 20,
+    right: 22,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

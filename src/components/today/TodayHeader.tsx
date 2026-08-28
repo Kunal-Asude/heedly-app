@@ -1,3 +1,4 @@
+import { useTheme } from "@/constants/themes";
 import { SymbolView } from "expo-symbols";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -12,16 +13,28 @@ export function TodayHeader({
   greeting = "Hello, Sam.",
   onSettingsPress,
 }: TodayHeaderProps) {
+  const theme = useTheme();
+  const headerTokens = theme.components.header;
+
   return (
     <View style={styles.headerRow}>
       <View style={styles.headerTextBlock}>
-        <Text style={styles.dateText}>{dateText}</Text>
-        <Text style={styles.greeting}>{greeting}</Text>
+        <Text style={[styles.dateText, { color: headerTokens.dateColor }]}>
+          {dateText}
+        </Text>
+        <Text style={[styles.greeting, { color: headerTokens.greetingColor }]}>
+          {greeting}
+        </Text>
       </View>
 
       <Pressable
         style={({ pressed }) => [
           styles.settingsButton,
+          {
+            backgroundColor: headerTokens.settingsBg,
+            borderColor: headerTokens.settingsBorder,
+            shadowColor: headerTokens.settingsShadowColor,
+          },
           pressed && styles.pressed,
         ]}
         onPress={onSettingsPress}
@@ -29,7 +42,11 @@ export function TodayHeader({
         accessibilityRole="button"
         accessibilityLabel="Settings"
       >
-        <SymbolView name="gearshape" size={20} tintColor="rgba(74, 58, 57, 0.62)" />
+        <SymbolView
+          name="gearshape"
+          size={20}
+          tintColor={headerTokens.settingsIconColor}
+        />
       </Pressable>
     </View>
   );
@@ -51,39 +68,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // .date: 11.5px, letter-spacing 0.18em, uppercase, 600, rgba(74,58,57,0.5), margin: 0 0 7px
+  // .date: 11.5px, letter-spacing 0.18em, uppercase, 600, margin: 0 0 7px
   dateText: {
     fontSize: 11.5,
     fontWeight: "600",
     letterSpacing: 2.07,
     textTransform: "uppercase",
-    color: "rgba(74, 58, 57, 0.5)",
     marginBottom: 5,
   },
 
-  // .hello: 25px, 600, letter-spacing -0.01em, #4a3736
+  // .hello: 25px, 600, letter-spacing -0.01em
   greeting: {
     fontSize: 25,
     fontWeight: "600",
     letterSpacing: -0.25,
     lineHeight: 30,
-    color: "#4a3736",
   },
 
-  // .settings: 40x40, radius 20, bg rgba(255,255,255,0.38), border 1px rgba(255,255,255,0.55)
+  // .settings: 40x40, radius 20
   settingsButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.38)",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.55)",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
-    shadowColor: "#BE8C8C",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.14,
     shadowRadius: 8,
     elevation: 2,
   },

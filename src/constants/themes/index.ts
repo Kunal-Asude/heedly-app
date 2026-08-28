@@ -1,15 +1,19 @@
 /**
  * Centralized Theme System
  *
- * This module exports all available themes and provides a hook for using the current theme.
- * Themes support Light, Dark, and True Black variants.
+ * This module exports all available themes and provides a hook for using
+ * the current theme.  The canonical theme hook is useTheme(), which now
+ * reads from AppThemeContext so the user-selected preference (Light / Dark /
+ * System) is respected.
  *
- * For now, the system defaults to Light mode.
- * In the future, this can be connected to useColorScheme() from React Native
- * or a custom ThemeContext for full multi-theme support.
+ * Migration guide:
+ *  - Old: import { useTheme } from '@/constants/themes'
+ *  - New: same import — useTheme() is now context-aware.
+ *
+ * getTheme(mode) is still available for static/non-reactive usage.
  */
 
-import { useColorScheme } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 import { darkTheme } from "./dark";
 import { lightTheme } from "./light";
 import { DesignTokens } from "./tokens";
@@ -25,27 +29,20 @@ const themes: Record<ThemeMode, DesignTokens> = {
   trueBlack: trueBlackTheme,
 };
 
-// ─── Hook: Get Current Theme ─────────────────────────────────────────────
+// ─── Hook: Get Current Theme (context-aware) ─────────────────────────────
 
 /**
- * Get the current theme tokens based on the system color scheme.
- * Currently maps to Light/Dark; True Black would need explicit user selection.
+ * Returns the resolved DesignTokens for the currently active theme.
+ * Reads from AppThemeContext — honours the user's Light / Dark / System
+ * preference set in Settings.
  */
 export function useTheme(): DesignTokens {
-  const colorScheme = useColorScheme();
-
-  // For now: only Light and Dark
-  // True Black will be enabled when the design is finalized
-  if (colorScheme === "dark") {
-    return themes.dark;
-  }
-
-  return themes.light;
+  return useAppTheme();
 }
 
 /**
  * Get a specific theme without relying on system color scheme.
- * Useful for components that need explicit theme control.
+ * Useful for components that need explicit theme control or pre-rendering.
  */
 export function getTheme(mode: ThemeMode): DesignTokens {
   return themes[mode];
@@ -57,4 +54,3 @@ export { darkTheme } from "./dark";
 export { lightTheme } from "./light";
 export { DesignTokens } from "./tokens";
 export { trueBlackTheme } from "./trueBlack";
-

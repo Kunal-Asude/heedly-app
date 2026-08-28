@@ -1,3 +1,4 @@
+import { useTheme } from "@/constants/themes";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodayFooterNoteProps {
@@ -6,6 +7,7 @@ interface TodayFooterNoteProps {
 }
 
 export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
+  const theme = useTheme();
   const isPlanningLink = text === "Planning something this week?";
 
   return (
@@ -13,20 +15,44 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
       {text ? (
         onPress ? (
           <Pressable
-            style={({ pressed }) => [pressed && styles.pressed]}
+            style={({ pressed }) => [styles.linkContainer, pressed && styles.pressed]}
             onPress={onPress}
             accessibilityRole="button"
             accessibilityLabel={text}
           >
-            <Text
-              style={isPlanningLink ? styles.planningText : styles.neutralText}
-            >
-              {text}
-            </Text>
+            {isPlanningLink ? (
+              <View
+                style={[
+                  styles.linkUnderlineWrapper,
+                  { borderBottomColor: `${theme.coral.terracottaDeep}90` },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.planningText,
+                    { color: theme.coral.terracottaDeep },
+                  ]}
+                >
+                  {text}
+                </Text>
+              </View>
+            ) : (
+              <Text
+                style={[
+                  styles.neutralText,
+                  { color: theme.ink.muted },
+                ]}
+              >
+                {text}
+              </Text>
+            )}
           </Pressable>
         ) : (
           <Text
-            style={isPlanningLink ? styles.planningText : styles.neutralText}
+            style={[
+              styles.neutralText,
+              { color: theme.ink.muted },
+            ]}
           >
             {text}
           </Text>
@@ -46,22 +72,32 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // .qlink.below: 13px, 500, color rgba(176,83,52,0.85), underline
-  planningText: {
-    fontSize: 13,
-    fontWeight: "500",
-    lineHeight: 18,
-    color: "rgba(176, 83, 52, 0.85)",
-    textAlign: "center",
-    textDecorationLine: "underline",
-    letterSpacing: 0.13,
+  linkContainer: {
+    alignSelf: "center",
   },
 
-  neutralText: {
-    fontSize: 13,
+  linkUnderlineWrapper: {
+    borderBottomWidth: 1.2,
+    paddingBottom: 0,
+    alignSelf: "center",
+  },
+
+  // Planning link text (15.5px, lowered underline)
+  planningText: {
+    fontSize: 15.5,
     fontWeight: "500",
-    lineHeight: 18,
-    color: "rgba(74, 58, 57, 0.6)",
+    lineHeight: 22,
+    textAlign: "center",
+    textDecorationLine: "none",
+    letterSpacing: 0,
+  },
+
+  // Neutral footer note (15.5px)
+  neutralText: {
+    fontSize: 15.5,
+    fontWeight: "400",
+    lineHeight: 22,
+    letterSpacing: 0,
     textAlign: "center",
     textDecorationLine: "none",
   },

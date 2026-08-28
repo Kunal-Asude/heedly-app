@@ -6,13 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
+import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PlanScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
+  const { isDark } = useThemeMode();
   const { planningDays, planningActivities } = useCheckInConfig();
 
   // Selection states (pre-selected values matching reference screenshot)
@@ -67,9 +70,22 @@ export default function PlanScreen() {
     });
   };
 
+  // Theme-aware tokens
+  const eyebrowColor = isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.55)';
+  const mainHeadingColor = isDark ? '#F3E7E1' : theme.ink.display;
+  const subtitleColor = isDark ? 'rgba(199, 180, 191, 0.72)' : 'rgba(74, 58, 57, 0.78)';
+  const groupLabelColor = isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.55)';
+  const optionalLabelColor = isDark ? 'rgba(199, 180, 191, 0.5)' : 'rgba(74, 58, 57, 0.4)';
+
+  // Selection state colors matching noting.tsx (no border in dark mode when unselected)
+  const activeBg = isDark ? 'rgba(226, 122, 108, 0.18)' : 'rgba(244, 164, 126, 0.2)';
+  const activeBorder = isDark ? 'rgba(226, 122, 108, 0.45)' : 'rgba(224, 115, 95, 0.42)';
+  const inactiveBg = isDark ? 'rgba(51, 37, 56, 0.72)' : 'rgba(255, 252, 248, 0.76)';
+  const inactiveBorder = isDark ? 'transparent' : 'rgba(255, 255, 255, 0.8)';
+
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
+      {/* Exact Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
@@ -82,31 +98,30 @@ export default function PlanScreen() {
               style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Go back">
-              <Text style={styles.backChevron}>‹</Text>
+              <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : 'rgba(74, 58, 57, 0.62)' }]}>‹</Text>
             </Pressable>
 
-            {/* .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5) */}
-            <Text style={styles.sectionLabel}>PLAN AHEAD</Text>
-
-            {/* .pl-title: Comfortaa 400, 31px, lineHeight 36px, #463332 */}
-            <Text style={styles.mainHeading}>Planning something?</Text>
-
-            {/* .pl-sub: 14.5px, 1.5, rgba(74,58,57,0.78) */}
-            <Text style={styles.subtitleText}>
-              {"See what it might cost you — before you\nsay yes."}
+            <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PLAN AHEAD</Text>
+            <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>Planning something?</Text>
+            <Text style={[styles.subtitleText, { color: subtitleColor }]}>
+              {'See what it might cost you — before you say yes.'}
             </Text>
           </View>
 
           {/* ── PICK A DAY Section (.pl-sec) ─────────────────────────────── */}
           <View style={styles.sectionBlock}>
-            <Text style={styles.groupLabel}>PICK A DAY</Text>
+            <Text style={[styles.groupLabel, { color: groupLabelColor }]}>PICK A DAY</Text>
 
             {/* Presets Row (.pl-quick) */}
             <View style={styles.presetsRow}>
               <Pressable
                 style={({ pressed }) => [
                   styles.presetChip,
-                  selectedPreset === 'tomorrow' && styles.presetChipActive,
+                  {
+                    backgroundColor: selectedPreset === 'tomorrow' ? activeBg : inactiveBg,
+                    borderColor: selectedPreset === 'tomorrow' ? activeBorder : inactiveBorder,
+                    borderWidth: selectedPreset === 'tomorrow' ? 1.5 : (isDark ? 0 : 1),
+                  },
                   pressed && styles.pressed,
                 ]}
                 onPress={() => handleSelectPreset('tomorrow')}
@@ -115,7 +130,12 @@ export default function PlanScreen() {
                 <Text
                   style={[
                     styles.presetText,
-                    selectedPreset === 'tomorrow' && styles.presetTextActive,
+                    {
+                      color: selectedPreset === 'tomorrow'
+                        ? '#FFFFFF'
+                        : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                      fontWeight: selectedPreset === 'tomorrow' ? '600' : '500',
+                    },
                   ]}>
                   Tomorrow
                 </Text>
@@ -124,7 +144,11 @@ export default function PlanScreen() {
               <Pressable
                 style={({ pressed }) => [
                   styles.presetChip,
-                  selectedPreset === 'weekend' && styles.presetChipActive,
+                  {
+                    backgroundColor: selectedPreset === 'weekend' ? activeBg : inactiveBg,
+                    borderColor: selectedPreset === 'weekend' ? activeBorder : inactiveBorder,
+                    borderWidth: selectedPreset === 'weekend' ? 1.5 : (isDark ? 0 : 1),
+                  },
                   pressed && styles.pressed,
                 ]}
                 onPress={() => handleSelectPreset('weekend')}
@@ -133,7 +157,12 @@ export default function PlanScreen() {
                 <Text
                   style={[
                     styles.presetText,
-                    selectedPreset === 'weekend' && styles.presetTextActive,
+                    {
+                      color: selectedPreset === 'weekend'
+                        ? '#FFFFFF'
+                        : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                      fontWeight: selectedPreset === 'weekend' ? '600' : '500',
+                    },
                   ]}>
                   This weekend
                 </Text>
@@ -149,34 +178,38 @@ export default function PlanScreen() {
                     key={item.id}
                     style={({ pressed }) => [
                       styles.dateCardWrapper,
+                      {
+                        backgroundColor: isSelected ? activeBg : inactiveBg,
+                        borderColor: isSelected ? activeBorder : inactiveBorder,
+                        borderWidth: isSelected ? 1.5 : (isDark ? 0 : 1),
+                      },
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleSelectDay(item.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`${item.day} ${item.date}`}>
-                    {isSelected ? (
-                      <LinearGradient
-                        colors={[CORAL.light, CORAL.primary]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.dateCardSelectedGradient}>
-                        <Text style={styles.dateCardDayLabelSelected}>
-                          {item.day}
-                        </Text>
-                        <Text style={styles.dateCardNumberSelected}>
-                          {item.date}
-                        </Text>
-                      </LinearGradient>
-                    ) : (
-                      <View style={styles.dateCardInactive}>
-                        <Text style={styles.dateCardDayLabel}>
-                          {item.day}
-                        </Text>
-                        <Text style={styles.dateCardNumber}>
-                          {item.date}
-                        </Text>
-                      </View>
-                    )}
+                    <Text
+                      style={[
+                        styles.dateCardDayLabel,
+                        {
+                          color: isSelected
+                            ? '#FFFFFF'
+                            : isDark ? 'rgba(199, 180, 191, 0.6)' : 'rgba(74, 58, 57, 0.55)',
+                        },
+                      ]}>
+                      {item.day}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.dateCardNumber,
+                        {
+                          color: isSelected
+                            ? '#FFFFFF'
+                            : isDark ? '#F3E7E1' : '#4f3c3a',
+                        },
+                      ]}>
+                      {item.date}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -186,8 +219,8 @@ export default function PlanScreen() {
           {/* ── WHAT KIND OF THING? Section (.pl-sec) ────────────────────── */}
           <View style={styles.sectionBlock}>
             <View style={styles.groupLabelRow}>
-              <Text style={styles.groupLabel}>WHAT KIND OF THING?</Text>
-              <Text style={styles.optionalLabel}> (optional)</Text>
+              <Text style={[styles.groupLabel, { color: groupLabelColor }]}>WHAT KIND OF THING?</Text>
+              <Text style={[styles.optionalLabel, { color: optionalLabelColor }]}> (optional)</Text>
             </View>
 
             {/* Activity Type Chips Wrap (.pl-kinds) */}
@@ -199,28 +232,28 @@ export default function PlanScreen() {
                     key={activity}
                     style={({ pressed }) => [
                       styles.activityChipWrapper,
+                      {
+                        backgroundColor: isSelected ? activeBg : inactiveBg,
+                        borderColor: isSelected ? activeBorder : inactiveBorder,
+                        borderWidth: isSelected ? 1.5 : (isDark ? 0 : 1),
+                      },
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleToggleActivity(activity)}
                     accessibilityRole="button"
                     accessibilityLabel={activity}>
-                    {isSelected ? (
-                      <LinearGradient
-                        colors={[CORAL.light, CORAL.primary]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.activityChipSelectedGradient}>
-                        <Text style={styles.activityChipTextSelected}>
-                          {activity}
-                        </Text>
-                      </LinearGradient>
-                    ) : (
-                      <View style={styles.activityChipInactive}>
-                        <Text style={styles.activityChipText}>
-                          {activity}
-                        </Text>
-                      </View>
-                    )}
+                    <Text
+                      style={[
+                        styles.activityChipText,
+                        {
+                          color: isSelected
+                            ? '#FFFFFF'
+                            : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                          fontWeight: isSelected ? '600' : '500',
+                        },
+                      ]}>
+                      {activity}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -236,16 +269,16 @@ export default function PlanScreen() {
             accessibilityRole="button"
             accessibilityLabel="Check the cost">
             <LinearGradient
-              colors={[CORAL.light, CORAL.mid, CORAL.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+              colors={isDark ? ['#634256', '#8A5D7C', '#9E768E'] : ['#f0a07e', '#e88970', '#e0735f']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
               style={styles.ctaButtonGradient}>
               <Text style={styles.ctaButtonText}>Check the cost</Text>
               <View style={styles.ctaArrowContainer}>
-                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                   <Path
-                    d="M8 5l7 7-7 7"
-                    stroke="#fff8f4"
+                    d="M9 5l7 7-7 7"
+                    stroke="#FFF6F1"
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -266,8 +299,6 @@ export default function PlanScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
 
   safeArea: {
@@ -276,18 +307,18 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     paddingTop: 8,
-    paddingBottom: 24,
+    paddingBottom: 20,
   },
 
   pressed: {
-    opacity: 0.8,
+    opacity: 0.75,
   },
 
   buttonPressed: {
     transform: [{ scale: 0.985 }],
-    opacity: 0.94,
+    opacity: 0.92,
   },
 
   flexSpacer: {
@@ -306,270 +337,169 @@ const styles = StyleSheet.create({
     marginLeft: -6,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   backChevron: {
     fontSize: 30,
     lineHeight: 30,
-    color: 'rgba(74, 58, 57, 0.62)',
   },
 
-  // .pl-eyebrow: 11px, 600, 0.2em, uppercase, rgba(74,58,57,0.5)
+  // .pl-eyebrow: 11px, 600, 0.2em, uppercase
   sectionLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 7,
+    marginBottom: 6,
   },
 
-  // .pl-title: Comfortaa 400, 31px, lineHeight 36px, #463332
+  // .pl-title: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 31,
-    lineHeight: 36,
+    fontSize: 32,
+    lineHeight: 38,
     letterSpacing: -0.3,
-    color: INK.display,
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
-  // .pl-sub: 14.5px, 1.5, rgba(74,58,57,0.78)
+  // .pl-sub: 14.5px, 1.5
   subtitleText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    color: 'rgba(74, 58, 57, 0.78)',
+    lineHeight: 21,
   },
 
   // ── Sections ────────────────────────────────────────────────────────────
 
   sectionBlock: {
-    marginBottom: 20,
+    marginTop: 22,
+  },
+
+  groupLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    paddingLeft: 2,
   },
 
   groupLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-  },
-
-  // .pl-sec: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
-  groupLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.76,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textTransform: 'uppercase',
+    paddingLeft: 2,
   },
 
   optionalLabel: {
     fontSize: 11,
     fontWeight: '500',
-    color: 'rgba(74, 58, 57, 0.4)',
   },
 
-  // ── Presets (.pl-quick) ──────────────────────────────────────────────────
-
+  // Presets Row (.pl-quick)
   presetsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
-  // .pl-chip: padding 10px 17px, radius 999px, bg #fffdfa, border 1.5px rgba(120,90,80,0.16)
   presetChip: {
     paddingVertical: 10,
-    paddingHorizontal: 17,
-    borderRadius: 999,
-    backgroundColor: '#fffdfa',
-    borderWidth: 1.5,
-    borderColor: 'rgba(120, 90, 80, 0.16)',
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 9,
-    elevation: 1,
-  },
-
-  // .pl-chip.sel: bg linear-gradient(135deg, rgba(244,164,126,0.2), rgba(224,115,95,0.16)), border rgba(224,115,95,0.42)
-  presetChipActive: {
-    backgroundColor: 'rgba(244, 164, 126, 0.2)',
-    borderColor: 'rgba(224, 115, 95, 0.42)',
+    paddingHorizontal: 20,
+    borderRadius: 22,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   presetText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4f3c3a',
+    fontSize: 15,
+    letterSpacing: -0.15,
   },
 
-  presetTextActive: {
-    color: '#4f3c3a',
-  },
-
-  // ── Dates Grid (.pl-dates) ───────────────────────────────────────────────
-
+  // Date Cards Row (.pl-dates)
   dateCardsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 6,
+    justifyContent: 'space-between',
   },
 
   dateCardWrapper: {
     flex: 1,
+    height: 64,
     borderRadius: 16,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-
-  dateCardInactive: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 11,
-    borderRadius: 16,
-    backgroundColor: '#fffdfa',
-    borderWidth: 1.5,
-    borderColor: 'rgba(120, 90, 80, 0.13)',
     gap: 3,
   },
 
-  dateCardSelectedGradient: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 11,
-    borderRadius: 16,
-    gap: 3,
-    shadowColor: '#E0735F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    elevation: 4,
-  },
-
-  // .dow: 9.5px, 700, 0.1em, uppercase, rgba(74,58,57,0.46)
   dateCardDayLabel: {
-    fontSize: 9.5,
+    fontSize: 10.5,
     fontWeight: '700',
-    letterSpacing: 0.95,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
-    color: 'rgba(74, 58, 57, 0.46)',
   },
 
-  dateCardDayLabelSelected: {
-    fontSize: 9.5,
-    fontWeight: '700',
-    letterSpacing: 0.95,
-    textTransform: 'uppercase',
-    color: '#fff8f4',
-  },
-
-  // .num: 17px, 600, #463332
   dateCardNumber: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#463332',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
 
-  dateCardNumberSelected: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#fff8f4',
-  },
-
-  // ── Activity Chips (.pl-kinds) ───────────────────────────────────────────
-
+  // Activity Chips (.pl-kinds)
   activityWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
 
   activityChipWrapper: {
-    borderRadius: 999,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 9,
-    elevation: 1,
-  },
-
-  activityChipInactive: {
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: '#fffdfa',
-    borderWidth: 1.5,
-    borderColor: 'rgba(120, 90, 80, 0.16)',
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  activityChipSelectedGradient: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    shadowColor: '#E0735F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.26,
-    shadowRadius: 18,
-    elevation: 4,
-  },
-
-  // .pl-kind: 13.5px, 600, #4f3c3a
   activityChipText: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: '#4f3c3a',
+    fontSize: 15,
+    letterSpacing: -0.15,
   },
 
-  activityChipTextSelected: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: '#fff8f4',
-  },
-
-  // ── Primary CTA Button (.pl-cta) ─────────────────────────────────────────
+  // ── Bottom Action Button (.pl-cta gradient) ───────────────────
 
   ctaButtonWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowColor: '#6E5656',
+    height: 54,
+    borderRadius: 27,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+    elevation: 8,
   },
 
   ctaButtonGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 27,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
 
   ctaButtonText: {
-    color: '#fff8f4',
-    fontSize: 16.5,
+    color: '#FFF6F1',
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: -0.15,
-    textAlign: 'center',
   },
 
   ctaArrowContainer: {
-    position: 'absolute',
-    right: 22,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
   },
 });

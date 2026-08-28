@@ -1,3 +1,4 @@
+import { useTheme } from "@/constants/themes";
 import { StyleSheet, Text, View } from "react-native";
 
 interface TodaySupportingTextProps {
@@ -5,10 +6,17 @@ interface TodaySupportingTextProps {
 }
 
 export function TodaySupportingText({ text }: TodaySupportingTextProps) {
+  const theme = useTheme();
+
   return (
     <View style={styles.supportingSlot}>
       {text ? (
-        <Text style={styles.supportingText}>
+        <Text
+          style={[
+            styles.supportingText,
+            { color: theme.components.supportingText.noteColor },
+          ]}
+        >
           {text}
         </Text>
       ) : null}
@@ -24,13 +32,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // .fd-micro: 14px, 500, color rgba(74,58,57,0.7), letter-spacing -0.005em, text-align center
+  // Supporting micro text (17px, line-height 25px, matching onboarding description)
   supportingText: {
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 20,
-    letterSpacing: -0.07,
-    color: "rgba(74, 58, 57, 0.7)",
+    fontSize: 17,
+    fontWeight: "400",
+    lineHeight: 25,
     textAlign: "center",
+    maxWidth: 330,
   },
 });

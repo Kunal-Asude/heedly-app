@@ -21,7 +21,7 @@ const TABS: TabConfig[] = [
     name: "index",
     label: "Today",
     icon: "house" as SymbolName,
-    iconFocused: "house.fill" as SymbolName,
+    iconFocused: "house" as SymbolName,
   },
   {
     name: "patterns",
@@ -33,7 +33,7 @@ const TABS: TabConfig[] = [
     name: "notes",
     label: "Notes",
     icon: "doc.text" as SymbolName,
-    iconFocused: "doc.text.fill" as SymbolName,
+    iconFocused: "doc.text" as SymbolName,
   },
 ];
 
@@ -57,11 +57,15 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
     return null;
   }
 
+  const currentRouteName = currentRoute?.name;
+  // When in settings, highlight Today tab as active
+  const effectiveActiveTab = currentRouteName === "settings" ? "index" : currentRouteName;
+
   return (
     <View
       style={[
         styles.tabBarOuter,
-        { bottom: insets.bottom > 0 ? insets.bottom + 6 : 16 },
+        { bottom: insets.bottom > 0 ? insets.bottom - 2 : 12 },
       ]}
       pointerEvents="box-none"
     >
@@ -75,71 +79,75 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
           },
         ]}
       >
-        {state.routes.map(
-          (route: { key: string; name: string }, index: number) => {
-            const tabConfig = TABS.find((t) => t.name === route.name);
-            if (!tabConfig) return null;
+        {TABS.map((tabConfig) => {
+          const isFocused = tabConfig.name === effectiveActiveTab;
 
-            const isFocused = state.index === index;
-            const { options } = descriptors[route.key];
-
-            const handlePress = () => {
+          const handlePress = () => {
+            if (tabConfig.name === "index" && currentRouteName === "settings") {
+              navigation.navigate("index");
+              return;
+            }
+            const matchingRoute = state.routes.find(
+              (r: any) => r.name === tabConfig.name
+            );
+            if (matchingRoute) {
               const event = navigation.emit({
                 type: "tabPress",
-                target: route.key,
+                target: matchingRoute.key,
                 canPreventDefault: true,
               });
               if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
+                navigation.navigate(tabConfig.name);
               }
-            };
+            } else {
+              navigation.navigate(tabConfig.name);
+            }
+          };
 
-            return (
-              <Pressable
-                key={route.key}
-                style={[
-                  styles.tabItem,
-                  isFocused && [
-                    styles.tabItemFocused,
-                    {
-                      backgroundColor: theme.components.tabBar.selectedPill,
-                      borderColor: theme.components.tabBar.selectedPill,
-                    },
-                  ],
-                ]}
-                onPress={handlePress}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isFocused }}
-                accessibilityLabel={
-                  options.tabBarAccessibilityLabel ?? tabConfig.label
+          return (
+            <Pressable
+              key={tabConfig.name}
+              style={[
+                styles.tabItem,
+                isFocused && [
+                  styles.tabItemFocused,
+                  {
+                    backgroundColor: theme.components.tabBar.selectedPill,
+                    borderColor: theme.components.tabBar.selectedPill,
+                    shadowColor: theme.components.tabBar.shadowColor,
+                  },
+                ],
+              ]}
+              onPress={handlePress}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isFocused }}
+              accessibilityLabel={tabConfig.label}
+            >
+              <SymbolView
+                name={isFocused ? tabConfig.iconFocused : tabConfig.icon}
+                size={20}
+                tintColor={
+                  isFocused
+                    ? theme.components.tabBar.selectedText
+                    : theme.components.tabBar.unselectedText
                 }
-              >
-                <SymbolView
-                  name={isFocused ? tabConfig.iconFocused : tabConfig.icon}
-                  size={22}
-                  tintColor={
-                    isFocused
+              />
+              <Text
+                style={[
+                  styles.tabLabel,
+                  {
+                    color: isFocused
                       ? theme.components.tabBar.selectedText
-                      : theme.components.tabBar.unselectedText
-                  }
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    {
-                      color: isFocused
-                        ? theme.components.tabBar.selectedText
-                        : theme.components.tabBar.unselectedText,
-                    },
-                    isFocused && styles.tabLabelFocused,
-                  ]}
-                >
-                  {tabConfig.label}
-                </Text>
-              </Pressable>
-            );
-          },
-        )}
+                      : theme.components.tabBar.unselectedText,
+                  },
+                  isFocused && styles.tabLabelFocused,
+                ]}
+              >
+                {tabConfig.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -186,47 +194,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // .tabbar: padding 9px 12px, radius 28px, border 1px rgba(255,255,255,0.65), bg rgba(255,255,255,0.5), shadow
   tabBarContainer: {
     width: "100%",
-    maxWidth: 400,
+    maxWidth: 390,
+    height: 70,
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     alignSelf: "center",
-    borderRadius: 28,
+    borderRadius: 24,
     borderWidth: 1,
-    padding: 6,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    elevation: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 12,
   },
 
   tabItem: {
     flex: 1,
+    height: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 7,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    gap: 5,
+    paddingHorizontal: 8,
+    borderRadius: 18,
+    margin: 4
   },
 
   tabItemFocused: {
-    borderWidth: 1,
-    shadowColor: "#BE968C",
+    borderWidth: 0,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
     elevation: 2,
   },
 
-  // .tab: 13.5px, 600, letter-spacing -0.01em
   tabLabel: {
-    fontSize: 13.5,
+    fontSize: 16,
     fontWeight: "600",
-    letterSpacing: -0.13,
-    lineHeight: 18,
+    letterSpacing: -0.15,
   },
 
   tabLabelFocused: {

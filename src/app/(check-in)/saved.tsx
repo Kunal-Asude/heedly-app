@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import React from 'react';
@@ -5,31 +6,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
-import { CORAL, Fonts, INK } from '@/constants/theme';
-
-// ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b0532f',
-  bodyText: '#463332',
-  mutedText: 'rgba(74, 58, 57, 0.5)',
-  helperText: 'rgba(74, 58, 57, 0.5)',
-  buttonBg: 'rgba(255, 255, 255, 0.7)',
-  buttonBorder: 'rgba(255, 255, 255, 0.85)',
-  cardBg: 'rgba(255, 252, 248, 0.72)',
-  cardBorder: 'rgba(255, 255, 255, 0.8)',
-  divider: 'rgba(120, 90, 90, 0.1)',
-  checkBg: '#c1dac8',
-  checkIcon: '#4f7359',
-  activeDot: '#ec7d5e',
-  inactiveDot: 'rgba(120, 90, 90, 0.18)',
-};
+import { Fonts } from '@/constants/theme';
+import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
-function FiveDotRating({ value }: { value: number }) {
+function FiveDotRating({ value, isDark }: { value: number; isDark: boolean }) {
   return (
     <View style={styles.dotRatingRow}>
       {[1, 2, 3, 4, 5].map((idx) => (
@@ -37,7 +20,16 @@ function FiveDotRating({ value }: { value: number }) {
           key={idx}
           style={[
             styles.ratingDot,
-            { backgroundColor: idx <= value ? COLORS.activeDot : COLORS.inactiveDot },
+            {
+              backgroundColor:
+                idx <= value
+                  ? isDark
+                    ? '#E8907A'
+                    : '#ec7d5e'
+                  : isDark
+                  ? 'rgba(199, 180, 191, 0.24)'
+                  : 'rgba(120, 90, 90, 0.18)',
+            },
           ]}
         />
       ))}
@@ -49,6 +41,8 @@ function FiveDotRating({ value }: { value: number }) {
 
 export default function CheckInSavedScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const { isDark } = useThemeMode();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -59,8 +53,10 @@ export default function CheckInSavedScreen() {
     tags?: string;
     periodInfo?: string;
     isFirstTime?: string;
+    isCrash?: string;
   }>();
 
+  const isCrash = params.isCrash === 'true';
   const isFirstTime = params.isFirstTime === 'true';
 
   const yesterdayLabel = params.yesterdayLabel;
@@ -82,6 +78,7 @@ export default function CheckInSavedScreen() {
     periodInfo: params.periodInfo,
     isFirstTime: params.isFirstTime,
     isEditing: 'true',
+    isCrash: params.isCrash,
   };
 
   const handleEditEnergy = () => {
@@ -123,159 +120,300 @@ export default function CheckInSavedScreen() {
   };
 
   const handleBackToToday = () => {
-    router.replace('/(tabs)?mode=steady' as any);
+    if (isCrash) {
+      router.replace('/(tabs)?mode=rest' as any);
+    } else if (isFirstTime) {
+      router.replace('/(tabs)?mode=fd-wearable' as any);
+    } else {
+      router.replace('/(tabs)?mode=steady' as any);
+    }
   };
 
   return (
     <View style={styles.root}>
-      {/* Exact Aubade Dawn Atmosphere Background */}
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Fixed Viewport Content (.ci-done) ───────────────────────── */}
         <View style={styles.contentArea}>
-
-          {/* Green Check Icon Badge (.ci-done-icon.check) */}
           <View style={styles.iconContainer}>
-            <View style={styles.checkBadge}>
-              <SymbolView
-                name="checkmark"
-                size={22}
-                tintColor={COLORS.checkIcon}
-              />
-            </View>
+            {isCrash ? (
+              <View
+                style={[
+                  styles.iconBadge,
+                  {
+                    backgroundColor: isDark ? '#723E3A' : '#FCE4E6',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                  },
+                ]}
+              >
+                <SymbolView
+                  name="moon"
+                  size={23}
+                  tintColor={isDark ? '#F5D5C8' : '#DC6B76'}
+                />
+              </View>
+            ) : (
+              <View
+                style={[
+                  styles.iconBadge,
+                  {
+                    backgroundColor: isDark ? '#466650' : '#c1dac8',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#a0c4ab',
+                  },
+                ]}
+              >
+                <SymbolView
+                  name="checkmark"
+                  size={23}
+                  tintColor={isDark ? '#D2E8DA' : '#4f7359'}
+                />
+              </View>
+            )}
           </View>
 
-          {/* Conditional Heading (.ci-done .ob-h: 32px, Comfortaa 400) */}
-          {isFirstTime ? (
-            <Text style={styles.headingFirstTime}>
-              <Text style={styles.headingDark}>Thank you, </Text>
-              <Text style={styles.headingAccent}>Sam.</Text>
+          {isCrash ? (
+            <Text style={styles.heading}>
+              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Logged.\n'}</Text>
+              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Rest now, Sam.</Text>
+            </Text>
+          ) : isFirstTime ? (
+            <Text style={styles.heading}>
+              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Thank you, '}</Text>
+              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Sam.</Text>
             </Text>
           ) : (
-            <Text style={styles.headingRegular}>
-              <Text style={styles.headingDark}>Saved.{'\n'}</Text>
-              <Text style={styles.headingAccent}>Rest well, Sam.</Text>
+            <Text style={styles.heading}>
+              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Saved.\n'}</Text>
+              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Rest well, Sam.</Text>
             </Text>
           )}
 
-          {/* Conditional Description (.lead: 15px, line-height 23px) */}
-          {isFirstTime ? (
-            <Text style={styles.description}>
+          {isCrash ? (
+            <Text
+              style={[
+                styles.description,
+                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+              ]}
+            >
+              {"We've noted this as a crash day. No more questions."}
+            </Text>
+          ) : isFirstTime ? (
+            <Text
+              style={[
+                styles.description,
+                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+              ]}
+            >
               {"That's your first piece of the picture.\nEach check-in teaches heedly a little\nmore about you."}
             </Text>
           ) : (
-            <Text style={styles.description}>
+            <Text
+              style={[
+                styles.description,
+                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+              ]}
+            >
               {"We'll quietly watch for patterns and only\nping you if something matters."}
             </Text>
           )}
 
-          {/* Summary Card with Tappable Rows (.ci-summary) */}
-          <View style={styles.summaryCard}>
-            {/* FIRST ROW: FEELING (First Time) vs ENERGY (Recurring) */}
-            <Pressable
-              style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
-              onPress={handleEditEnergy}
-              accessibilityRole="button"
-              accessibilityLabel={`Edit ${isFirstTime ? 'feeling' : 'energy'}: ${energyLabel}`}
-            >
-              <Text style={styles.rowLabel}>{isFirstTime ? 'FEELING' : 'ENERGY'}</Text>
-              <View style={styles.rowValueBlock}>
-                <Text style={styles.rowValueText}>{energyLabel}</Text>
-                <FiveDotRating value={energyRating} />
-              </View>
-            </Pressable>
-
-            <View style={styles.divider} />
-
-            {/* SECOND ROW: BODY */}
-            <Pressable
-              style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
-              onPress={handleEditBody}
-              accessibilityRole="button"
-              accessibilityLabel={`Edit body: ${bodyLabel}`}
-            >
-              <Text style={styles.rowLabel}>BODY</Text>
-              <View style={styles.rowValueBlock}>
-                <Text style={styles.rowValueText}>{bodyLabel}</Text>
-                <FiveDotRating value={bodyRating} />
-              </View>
-            </Pressable>
-
-            <View style={styles.divider} />
-
-            {/* THIRD ROW: NOTABLE */}
-            <Pressable
-              style={({ pressed }) => [styles.summaryRowTopAligned, pressed && styles.rowPressed]}
-              onPress={handleEditNotable}
-              accessibilityRole="button"
-              accessibilityLabel={`Edit notable tags: ${tagsText}`}
-            >
-              <Text style={styles.rowLabelTop}>NOTABLE</Text>
-              <Text style={styles.rowValueTextNotable}>
-                {tagsText}
-              </Text>
-            </Pressable>
-
-            {/* FOURTH ROW: YESTERDAY (Shown on Regular / Recurring check-in) */}
-            {!isFirstTime && yesterdayLabel && (
-              <>
-                <View style={styles.divider} />
+          {!isCrash && (
+            <>
+              <View
+                style={[
+                  styles.summaryCard,
+                  {
+                    backgroundColor: isDark ? 'rgba(51, 37, 56, 0.72)' : 'rgba(255, 252, 248, 0.72)',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(255, 255, 255, 0.8)',
+                  },
+                ]}
+              >
                 <Pressable
                   style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
-                  onPress={handleEditYesterday}
+                  onPress={handleEditEnergy}
                   accessibilityRole="button"
-                  accessibilityLabel={`Edit yesterday: ${yesterdayLabel}`}
+                  accessibilityLabel={`Edit ${isFirstTime ? 'feeling' : 'energy'}: ${energyLabel}`}
                 >
-                  <Text style={styles.rowLabel}>YESTERDAY</Text>
-                  <Text style={styles.rowValueText}>{yesterdayLabel}</Text>
+                  <Text
+                    style={[
+                      styles.rowLabel,
+                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                    ]}
+                  >
+                    {isFirstTime ? 'FEELING' : 'ENERGY'}
+                  </Text>
+                  <View style={styles.rowValueBlock}>
+                    <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                      {energyLabel}
+                    </Text>
+                    <FiveDotRating value={energyRating} isDark={isDark} />
+                  </View>
                 </Pressable>
-              </>
-            )}
 
-            {/* CYCLE / PERIOD Row (if recorded) */}
-            {periodInfo && (
-              <>
-                <View style={styles.divider} />
+                <View
+                  style={[
+                    styles.divider,
+                    { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                  ]}
+                />
+
+                <Pressable
+                  style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
+                  onPress={handleEditBody}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit body: ${bodyLabel}`}
+                >
+                  <Text
+                    style={[
+                      styles.rowLabel,
+                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                    ]}
+                  >
+                    BODY
+                  </Text>
+                  <View style={styles.rowValueBlock}>
+                    <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                      {bodyLabel}
+                    </Text>
+                    <FiveDotRating value={bodyRating} isDark={isDark} />
+                  </View>
+                </Pressable>
+
+                <View
+                  style={[
+                    styles.divider,
+                    { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                  ]}
+                />
+
                 <Pressable
                   style={({ pressed }) => [styles.summaryRowTopAligned, pressed && styles.rowPressed]}
-                  onPress={handleEditCycle}
+                  onPress={handleEditNotable}
                   accessibilityRole="button"
-                  accessibilityLabel={`Edit cycle: ${periodInfo}`}
+                  accessibilityLabel={`Edit notable tags: ${tagsText}`}
                 >
-                  <Text style={styles.rowLabelTop}>CYCLE</Text>
-                  <Text style={styles.rowValueTextNotable}>
-                    {periodInfo}
+                  <Text
+                    style={[
+                      styles.rowLabelTop,
+                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                    ]}
+                  >
+                    NOTABLE
+                  </Text>
+                  <Text style={[styles.rowValueTextNotable, { color: isDark ? '#F3E7E1' : '#5a4644' }]}>
+                    {tagsText}
                   </Text>
                 </Pressable>
-              </>
-            )}
-          </View>
 
-          {/* Helper Text below card (.ci-edit-hint: 12px, rgba(74,58,57,0.5)) */}
-          <Text style={styles.helperText}>
-            Tap any line to edit before you go.
-          </Text>
+                {!isFirstTime && yesterdayLabel && (
+                  <>
+                    <View
+                      style={[
+                        styles.divider,
+                        { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                      ]}
+                    />
+                    <Pressable
+                      style={({ pressed }) => [styles.summaryRow, pressed && styles.rowPressed]}
+                      onPress={handleEditYesterday}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Edit yesterday: ${yesterdayLabel}`}
+                    >
+                      <Text
+                        style={[
+                          styles.rowLabel,
+                          { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                        ]}
+                      >
+                        YESTERDAY
+                      </Text>
+                      <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                        {yesterdayLabel}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
 
+                {periodInfo && (
+                  <>
+                    <View
+                      style={[
+                        styles.divider,
+                        { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                      ]}
+                    />
+                    <Pressable
+                      style={({ pressed }) => [styles.summaryRowTopAligned, pressed && styles.rowPressed]}
+                      onPress={handleEditCycle}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Edit cycle: ${periodInfo}`}
+                    >
+                      <Text
+                        style={[
+                          styles.rowLabelTop,
+                          { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                        ]}
+                      >
+                        CYCLE
+                      </Text>
+                      <Text style={[styles.rowValueTextNotable, { color: isDark ? '#F3E7E1' : '#5a4644' }]}>
+                        {periodInfo}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+              </View>
+
+              <Text
+                style={[
+                  styles.helperText,
+                  { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                ]}
+              >
+                Tap any line to edit before you go.
+              </Text>
+            </>
+          )}
         </View>
 
-        {/* ── Bottom Section: Back to Today Button (.ci-secondary) ─────── */}
         <View style={styles.bottomSection}>
           <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.buttonWrapper, pressed && styles.buttonPressed]}
             onPress={handleBackToToday}
             accessibilityRole="button"
-            accessibilityLabel="Back to today">
-            <Text style={styles.buttonText}>Back to today</Text>
+            accessibilityLabel="Back to today"
+          >
+            <LinearGradient
+              colors={
+                isDark
+                  ? ['#634256', '#8A5D7C', '#9E768E']
+                  : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 252, 248, 0.85)']
+              }
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={[
+                styles.buttonGradient,
+                !isDark && {
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.85)',
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: isDark ? '#FFF6F1' : '#463332' },
+                ]}
+              >
+                Back to today
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
-
       </SafeAreaView>
     </View>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {
@@ -285,51 +423,40 @@ const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
-    paddingTop: 12,
-  },
-
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.985 }],
+    paddingTop: 8,
   },
 
   rowPressed: {
     opacity: 0.6,
   },
 
-  // ── Content Area ─────────────────────────────────────────────────────────
-
   contentArea: {
     flex: 1,
-    paddingHorizontal: 26,
+    paddingHorizontal: 24,
     justifyContent: 'center',
     paddingBottom: 8,
   },
 
-  // ── Icon Badge (.ci-done-icon.check: 56x56) ──────────────────────────────
-
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
-  checkBadge: {
+  iconBadge: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.checkBg,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#BE968C',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.14,
     shadowRadius: 8,
     elevation: 2,
   },
 
-  // ── Headings (.ci-done .ob-h: 32px, Comfortaa 400) ───────────────────────
-
-  headingFirstTime: {
+  heading: {
     fontFamily: Fonts.display.regular,
     fontSize: 32,
     lineHeight: 38,
@@ -337,47 +464,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12,
   },
-
-  headingRegular: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: -0.3,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-
-  headingDark: {
-    color: INK.display,
-  },
-
-  headingAccent: {
-    color: CORAL.terracottaDeep,
-  },
-
-  // ── Description (.lead: 15px, line-height 23px) ──────────────────────────
 
   description: {
     fontSize: 15,
     lineHeight: 23,
-    color: INK.soft,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 26,
     paddingHorizontal: 12,
   },
 
-  // ── Summary Card (.ci-summary: radius 20, shadow, padding 4px 18px) ──────
-
   summaryCard: {
-    backgroundColor: COLORS.cardBg,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
     paddingVertical: 6,
     paddingHorizontal: 18,
-    shadowColor: '#BE968C',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.16,
     shadowRadius: 18,
     elevation: 3,
   },
@@ -396,11 +499,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
 
-  // .ci-skey: 11px, 600, letter-spacing 0.16em, uppercase, rgba(74,58,57,0.5)
   rowLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     letterSpacing: 1.76,
     textTransform: 'uppercase',
   },
@@ -408,7 +509,6 @@ const styles = StyleSheet.create({
   rowLabelTop: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(74, 58, 57, 0.5)',
     letterSpacing: 1.76,
     textTransform: 'uppercase',
     paddingTop: 2,
@@ -420,45 +520,28 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  // .ci-sval: 14px, 600, #4f3c3a
   rowValueText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4f3c3a',
   },
 
-  // .ci-snote: 13px, 600, #5a4644
   rowValueTextNotable: {
     flex: 1,
     textAlign: 'right',
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 18,
-    color: '#5a4644',
     marginLeft: 16,
   },
 
   divider: {
     height: 1,
-    backgroundColor: COLORS.divider,
   },
-
-  // ── Helper Text (.ci-edit-hint: 12px, rgba(74,58,57,0.5)) ────────────────
-
-  helperText: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: 'rgba(74, 58, 57, 0.5)',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-
-  // ── Dot Rating (.ci-sdots) ───────────────────────────────────────────────
 
   dotRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
 
   ratingDot: {
@@ -467,31 +550,45 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
-  // ── Bottom Section (.ci-secondary: height 54, radius 27, 16px 600 #5a4644) ─
-
-  bottomSection: {
-    paddingHorizontal: 26,
-    paddingBottom: 26,
+  helperText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 14,
   },
 
-  button: {
-    backgroundColor: COLORS.buttonBg,
-    borderRadius: 27,
-    height: 54,
+  bottomSection: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+
+  buttonWrapper: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.92,
+  },
+
+  buttonGradient: {
+    flex: 1,
+    borderRadius: 29,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.buttonBorder,
-    shadowColor: '#BE968C',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 2,
   },
 
   buttonText: {
-    fontSize: 16,
+    fontSize: 16.5,
     fontWeight: '600',
-    color: '#5a4644',
+    letterSpacing: -0.15,
   },
 });
