@@ -48,7 +48,7 @@ export default function NotingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const { categories, allTags, initialSelectedTags, periodDays } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
@@ -127,23 +127,13 @@ export default function NotingScreen() {
         pathname: "/(check-in)/body",
         params: {
           ...params,
-          isFirstTime: params.isFirstTime,
         },
       });
     }
   };
 
   const handleSkip = () => {
-    if (isEditing) {
-      router.push({
-        pathname: "/(check-in)/saved",
-        params: {
-          ...params,
-        },
-      });
-      return;
-    }
-    handleOpenPeriodSheet();
+    navigateToSaved(undefined);
   };
 
   const handleOpenPeriodSheet = () => {
@@ -215,7 +205,7 @@ export default function NotingScreen() {
             <Text
               style={[
                 styles.backChevron,
-                { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' },
+                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' },
               ]}
             >
               ‹
@@ -227,19 +217,25 @@ export default function NotingScreen() {
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
               ]}
             />
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
               ]}
             />
             <LinearGradient
-              colors={['#E28266', '#D9735A']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={
+                isDark
+                  ? isTrueBlack
+                    ? ['#C97B60', '#BE6A5C']
+                    : ['#E8907A', '#C86858']
+                  : [theme.coral.mid, theme.coral.terracotta]
+              }
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
               style={styles.progressActive}
             />
           </View>
@@ -257,7 +253,7 @@ export default function NotingScreen() {
             <Text
               style={[
                 styles.skipText,
-                { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
               ]}
             >
               Skip
@@ -271,7 +267,7 @@ export default function NotingScreen() {
           <Text
             style={[
               styles.questionLabel,
-              { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
             ]}
           >
             QUESTION 3 OF 3
@@ -279,15 +275,15 @@ export default function NotingScreen() {
 
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>Anything from{"\n"}</Text>
-            <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>today worth noting?</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>Anything from{"\n"}</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>today worth noting?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
           <Text
             style={[
               styles.supportingText,
-              { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
             ]}
           >
             Tap any that apply. Skip if nothing fits.
@@ -303,14 +299,22 @@ export default function NotingScreen() {
                 {
                   backgroundColor: isDark
                     ? isCategoryDrawerOpen
-                      ? "rgba(226, 122, 108, 0.18)"
+                      ? isTrueBlack
+                        ? "rgba(190, 106, 92, 0.14)"
+                        : "rgba(226, 122, 108, 0.18)"
+                      : isTrueBlack
+                      ? "#16111B"
                       : "rgba(51, 37, 56, 0.72)"
                     : isCategoryDrawerOpen
                     ? "rgba(244, 164, 126, 0.25)"
                     : "rgba(255, 252, 248, 0.82)",
                   borderColor: isDark
                     ? isCategoryDrawerOpen
-                      ? "rgba(226, 122, 108, 0.42)"
+                      ? isTrueBlack
+                        ? "rgba(255, 255, 255, 0.07)"
+                        : "rgba(226, 122, 108, 0.42)"
+                      : isTrueBlack
+                      ? "rgba(255, 255, 255, 0.07)"
                       : "rgba(255, 255, 255, 0.09)"
                     : isCategoryDrawerOpen
                     ? "rgba(224, 115, 95, 0.4)"
@@ -327,10 +331,14 @@ export default function NotingScreen() {
                 tintColor={
                   isCategoryDrawerOpen
                     ? isDark
-                      ? "#E8907A"
+                      ? isTrueBlack
+                        ? "#C97B60"
+                        : "#E8907A"
                       : "#c9603f"
                     : isDark
-                    ? "rgba(199, 180, 191, 0.65)"
+                    ? isTrueBlack
+                      ? "#9A8A91"
+                      : "rgba(199, 180, 191, 0.65)"
                     : "rgba(74, 58, 57, 0.6)"
                 }
               />
@@ -341,23 +349,31 @@ export default function NotingScreen() {
               style={[
                 styles.searchBar,
                 {
-                  backgroundColor: isDark ? "rgba(51, 37, 56, 0.72)" : "rgba(255, 252, 248, 0.82)",
-                  borderColor: isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#16111B"
+                      : "rgba(51, 37, 56, 0.72)"
+                    : "rgba(255, 252, 248, 0.82)",
+                  borderColor: isDark
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.07)"
+                      : "rgba(255, 255, 255, 0.09)"
+                    : "rgba(255, 255, 255, 0.8)",
                 },
               ]}
             >
               <SymbolView
                 name="magnifyingglass"
                 size={17}
-                tintColor={isDark ? "rgba(199, 180, 191, 0.54)" : "rgba(74, 58, 57, 0.42)"}
+                tintColor={isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.54)") : "rgba(74, 58, 57, 0.42)"}
               />
               <TextInput
                 style={[
                   styles.searchInput,
-                  { color: isDark ? "#F3E7E1" : "#463332" },
+                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : "#463332" },
                 ]}
                 placeholder="Search tags..."
-                placeholderTextColor={isDark ? "rgba(199, 180, 191, 0.54)" : "rgba(74, 58, 57, 0.4)"}
+                placeholderTextColor={isDark ? (isTrueBlack ? "rgba(154, 138, 145, 0.65)" : "rgba(199, 180, 191, 0.54)") : "rgba(74, 58, 57, 0.4)"}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCorrect={false}
@@ -372,15 +388,23 @@ export default function NotingScreen() {
               style={[
                 styles.categoryDrawer,
                 {
-                  backgroundColor: isDark ? "rgba(51, 37, 56, 0.95)" : "rgba(255, 252, 248, 0.92)",
-                  borderColor: isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#16111B"
+                      : "rgba(51, 37, 56, 0.95)"
+                    : "rgba(255, 252, 248, 0.92)",
+                  borderColor: isDark
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.07)"
+                      : "rgba(255, 255, 255, 0.09)"
+                    : "rgba(255, 255, 255, 0.8)",
                 },
               ]}
             >
               <Text
                 style={[
                   styles.categoryDrawerTitle,
-                  { color: isDark ? "rgba(199, 180, 191, 0.68)" : "rgba(74, 58, 57, 0.5)" },
+                  { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.68)") : "rgba(74, 58, 57, 0.5)" },
                 ]}
               >
                 BROWSE BY CATEGORY
@@ -397,17 +421,25 @@ export default function NotingScreen() {
                         {
                           backgroundColor: isSelected
                             ? isDark
-                              ? "rgba(226, 122, 108, 0.22)"
+                              ? isTrueBlack
+                                ? "rgba(190, 106, 92, 0.14)"
+                                : "rgba(226, 122, 108, 0.22)"
                               : "rgba(244, 164, 126, 0.24)"
                             : isDark
-                            ? "rgba(42, 29, 46, 0.7)"
+                            ? isTrueBlack
+                              ? "#16111B"
+                              : "rgba(42, 29, 46, 0.7)"
                             : "rgba(255, 255, 255, 0.75)",
                           borderColor: isSelected
                             ? isDark
-                              ? "rgba(226, 122, 108, 0.42)"
+                              ? isTrueBlack
+                                ? "rgba(255, 255, 255, 0.07)"
+                                : "rgba(226, 122, 108, 0.42)"
                               : "rgba(224, 115, 95, 0.45)"
                             : isDark
-                            ? "rgba(199, 180, 191, 0.14)"
+                            ? isTrueBlack
+                              ? "rgba(255, 255, 255, 0.07)"
+                              : "rgba(199, 180, 191, 0.14)"
                             : "rgba(212, 184, 174, 0.35)",
                         },
                         pressed && styles.pressed,
@@ -422,10 +454,10 @@ export default function NotingScreen() {
                           {
                             color: isSelected
                               ? isDark
-                                ? "#F3E7E1"
+                                ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1")
                                 : "#4f3c3a"
                               : isDark
-                              ? "rgba(199, 180, 191, 0.85)"
+                              ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.85)")
                               : "#5a4644",
                           },
                         ]}
@@ -456,19 +488,28 @@ export default function NotingScreen() {
                     {
                       backgroundColor: isSelected
                         ? isDark
-                          ? "rgba(226, 122, 108, 0.18)"
+                          ? isTrueBlack
+                            ? "rgba(190, 106, 92, 0.14)"
+                            : "rgba(226, 122, 108, 0.18)"
                           : "rgba(244, 164, 126, 0.2)"
                         : isDark
-                        ? "rgba(51, 37, 56, 0.72)"
+                        ? isTrueBlack
+                          ? "#16111B"
+                          : "rgba(51, 37, 56, 0.72)"
                         : "rgba(255, 252, 248, 0.76)",
                       borderColor: isSelected
                         ? isDark
-                          ? "rgba(226, 122, 108, 0.42)"
+                          ? isTrueBlack
+                            ? "rgba(255, 255, 255, 0.07)"
+                            : "rgba(226, 122, 108, 0.42)"
                           : "rgba(224, 115, 95, 0.42)"
                         : isDark
-                        ? "rgba(255, 255, 255, 0.09)"
+                        ? isTrueBlack
+                          ? "rgba(255, 255, 255, 0.07)"
+                          : "rgba(255, 255, 255, 0.09)"
                         : "rgba(255, 255, 255, 0.8)",
                     },
+                    isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                     pressed && styles.pressed,
                   ]}
                   accessibilityRole="checkbox"
@@ -476,7 +517,7 @@ export default function NotingScreen() {
                   accessibilityLabel={tag}
                 >
                   {isSelected && (
-                    <Text style={[styles.tagCheckIcon, { color: isDark ? "#E8907A" : "#b0532f" }]}>
+                    <Text style={[styles.tagCheckIcon, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b0532f" }]}>
                       ✓{" "}
                     </Text>
                   )}
@@ -486,10 +527,10 @@ export default function NotingScreen() {
                       {
                         color: isSelected
                           ? isDark
-                            ? "#F3E7E1"
+                            ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1")
                             : "#4f3c3a"
                           : isDark
-                          ? "rgba(199, 180, 191, 0.95)"
+                          ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.95)")
                           : "#5a4644",
                       },
                     ]}
@@ -508,6 +549,7 @@ export default function NotingScreen() {
             style={({ pressed }) => [
               styles.saveButtonWrapper,
               pressed && styles.buttonPressed,
+              isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
             ]}
             onPress={handleSaveButtonPress}
             accessibilityRole="button"
@@ -516,19 +558,27 @@ export default function NotingScreen() {
             <LinearGradient
               colors={
                 isDark
-                  ? ["#634256", "#8A5D7C", "#9E768E"]
+                  ? isTrueBlack
+                    ? ["#574049", "#241A20"]
+                    : ["#634256", "#8A5D7C", "#9E768E"]
                   : [theme.coral.light, theme.coral.mid, theme.coral.primary]
               }
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={styles.saveButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                styles.saveButtonGradient,
+                isDark && isTrueBlack && {
+                  borderColor: "rgba(255, 255, 255, 0.06)",
+                  borderWidth: 1,
+                },
+              ]}
             >
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={[styles.saveButtonText, isDark && isTrueBlack && { color: "#EADCD4" }]}>Save</Text>
               <View style={styles.saveArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke="#fff8f4"
+                    stroke={isDark && isTrueBlack ? "#EADCD4" : "#fff8f4"}
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -541,7 +591,7 @@ export default function NotingScreen() {
           <Text
             style={[
               styles.bottomHelperText,
-              { color: isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.5)" },
+              { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.5)" },
             ]}
           >
             You can do this lying down.
@@ -561,7 +611,9 @@ export default function NotingScreen() {
             styles.modalOverlay,
             {
               backgroundColor: isDark
-                ? "rgba(18, 10, 20, 0.62)"
+                ? isTrueBlack
+                  ? "rgba(0, 0, 0, 0.72)"
+                  : "rgba(18, 10, 20, 0.62)"
                 : "rgba(74, 58, 57, 0.34)",
             },
           ]}
@@ -574,8 +626,12 @@ export default function NotingScreen() {
             style={[
               styles.periodSheetContainer,
               {
-                backgroundColor: isDark ? "#332538" : "#fbf3ec",
-                borderTopColor: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
+                backgroundColor: isDark ? (isTrueBlack ? "#16111B" : "#332538") : "#fbf3ec",
+                borderTopColor: isDark
+                  ? isTrueBlack
+                    ? "rgba(255, 255, 255, 0.07)"
+                    : "rgba(199, 180, 191, 0.14)"
+                  : "transparent",
                 borderTopWidth: isDark ? 1 : 0,
                 paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28,
               },
@@ -587,7 +643,9 @@ export default function NotingScreen() {
                 styles.handleBar,
                 {
                   backgroundColor: isDark
-                    ? "rgba(199, 180, 191, 0.28)"
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.18)"
+                      : "rgba(199, 180, 191, 0.28)"
                     : "rgba(120, 90, 90, 0.2)",
                 },
               ]}
@@ -598,7 +656,7 @@ export default function NotingScreen() {
               <Text
                 style={[
                   styles.sheetHeadingDark,
-                  { color: isDark ? "#F3E7E1" : theme.ink.display },
+                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : theme.ink.display },
                 ]}
               >
                 What day of your{" "}
@@ -606,7 +664,7 @@ export default function NotingScreen() {
               <Text
                 style={[
                   styles.sheetHeadingAccent,
-                  { color: isDark ? "#E8907A" : theme.coral.terracottaDeep },
+                  { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracottaDeep },
                 ]}
               >
                 period?
@@ -619,7 +677,9 @@ export default function NotingScreen() {
                 styles.sheetDescription,
                 {
                   color: isDark
-                    ? "rgba(199, 180, 191, 0.95)"
+                    ? isTrueBlack
+                      ? "#9A8A91"
+                      : "rgba(199, 180, 191, 0.95)"
                     : "rgba(74, 58, 57, 0.72)",
                 },
               ]}
@@ -640,20 +700,28 @@ export default function NotingScreen() {
                       {
                         backgroundColor: isDark
                           ? isSelected
-                            ? "rgba(226, 122, 108, 0.22)"
+                            ? isTrueBlack
+                              ? "rgba(190, 106, 92, 0.14)"
+                              : "rgba(226, 122, 108, 0.22)"
+                            : isTrueBlack
+                            ? "#16111B"
                             : "rgba(51, 37, 56, 0.72)"
                           : isSelected
                           ? theme.coral.primary
                           : "rgba(255, 255, 255, 0.95)",
                         borderColor: isDark
                           ? isSelected
-                            ? "rgba(226, 122, 108, 0.5)"
+                            ? isTrueBlack
+                              ? "rgba(255, 255, 255, 0.07)"
+                              : "rgba(226, 122, 108, 0.5)"
+                            : isTrueBlack
+                            ? "rgba(255, 255, 255, 0.07)"
                             : "rgba(199, 180, 191, 0.14)"
                           : isSelected
                           ? "transparent"
                           : "rgba(212, 184, 174, 0.45)",
                       },
-                      isSelected && styles.dayNumberBtnSelectedShadow,
+                      isSelected && !isTrueBlack && styles.dayNumberBtnSelectedShadow,
                       pressed && styles.pressed,
                     ]}
                     accessibilityRole="button"
@@ -666,7 +734,11 @@ export default function NotingScreen() {
                         {
                           color: isDark
                             ? isSelected
-                              ? "#F3E7E1"
+                              ? isTrueBlack
+                                ? "#E9DDD6"
+                                : "#F3E7E1"
+                              : isTrueBlack
+                              ? "#9A8A91"
                               : "rgba(199, 180, 191, 0.88)"
                             : isSelected
                             ? "#FFFFFF"
@@ -687,6 +759,7 @@ export default function NotingScreen() {
               style={({ pressed }) => [
                 styles.sheetSaveBtnWrapper,
                 pressed && styles.buttonPressed,
+                isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
               ]}
               onPress={handlePeriodSave}
               accessibilityRole="button"
@@ -695,26 +768,30 @@ export default function NotingScreen() {
               <LinearGradient
                 colors={
                   isDark
-                    ? ["#634256", "#8A5D7C", "#9E768E"]
+                    ? isTrueBlack
+                      ? ["#574049", "#241A20"]
+                      : ["#634256", "#8A5D7C", "#9E768E"]
                     : [theme.coral.light, theme.coral.mid, theme.coral.primary]
                 }
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={[
                   styles.sheetSaveBtnGradient,
                   {
                     borderColor: isDark
-                      ? "rgba(199, 180, 191, 0.15)"
+                      ? isTrueBlack
+                        ? "rgba(255, 255, 255, 0.06)"
+                        : "rgba(199, 180, 191, 0.15)"
                       : "rgba(255, 255, 255, 0.4)",
                   },
                 ]}
               >
-                <Text style={styles.sheetSaveBtnText}>Save</Text>
+                <Text style={[styles.sheetSaveBtnText, isDark && isTrueBlack && { color: "#EADCD4" }]}>Save</Text>
                 <View style={styles.sheetSaveArrowContainer}>
                   <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                     <Path
                       d="M8 5l7 7-7 7"
-                      stroke="#FFF6F1"
+                      stroke={isDark && isTrueBlack ? "#EADCD4" : "#FFF6F1"}
                       strokeWidth={2.4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -736,7 +813,9 @@ export default function NotingScreen() {
                   styles.sheetSkipText,
                   {
                     color: isDark
-                      ? "rgba(199, 180, 191, 0.68)"
+                      ? isTrueBlack
+                        ? "#9A8A91"
+                        : "rgba(199, 180, 191, 0.68)"
                       : "rgba(74, 58, 57, 0.55)",
                   },
                 ]}

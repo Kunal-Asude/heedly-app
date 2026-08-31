@@ -17,7 +17,7 @@ const CHIP_GAP = 16;
 export default function ConditionsScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const ctaTokens = theme.components.cta;
   const { conditions } = useUserSettings();
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -48,15 +48,15 @@ export default function ConditionsScreen() {
 
           {/* ── Progress indicator (.ob-progress, step 3 active) ─────── */}
           <View style={styles.progressRow}>
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-            <View style={[styles.progressActive, { backgroundColor: theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
           </View>
 
           {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
             <Text style={[styles.headingDark, { color: theme.ink.display }]}>What are you{'\n'}</Text>
-            <Text style={[styles.headingAccent, { color: theme.coral.terracottaDeep }]}>living with?</Text>
+            <Text style={[styles.headingAccent, { color: theme.coral.terracotta }]}>living with?</Text>
           </Text>
 
           {/* ── Supporting text (.ob-sub) ──────────────────────────────── */}

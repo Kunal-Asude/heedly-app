@@ -16,17 +16,37 @@ import { DawnBackground } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 
-// ─── Data Card Component (.sx-card with subtle gradient) ─────────────────────
+// ─── Data Card Component (.sx-card with subtle gradient / flat OLED) ─────
 
 function DataCard({
   children,
   isDark,
+  isTrueBlack = false,
   style,
 }: {
   children: React.ReactNode;
   isDark: boolean;
+  isTrueBlack?: boolean;
   style?: any;
 }) {
+  if (isDark && isTrueBlack) {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: '#16111B',
+            borderColor: 'rgba(255, 255, 255, 0.07)',
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          style,
+        ]}>
+        {children}
+      </View>
+    );
+  }
+
   const cardGradientColors: [string, string, string] = isDark
     ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
     : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
@@ -56,7 +76,7 @@ export default function YourDataScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   const handleBack = () => {
@@ -73,17 +93,58 @@ export default function YourDataScreen() {
     router.replace("/(tabs)?mode=fd-empty" as any);
   };
 
-  // Theme-aware tokens
-  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.7)";
-  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const itemTitleColor = isDark ? "#F3E7E1" : "#4f3c3a";
-  const itemDescColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.62)";
-  const dividerColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(120, 90, 90, 0.1)";
-  const chevronColor = isDark ? "rgba(199, 180, 191, 0.45)" : "rgba(74, 58, 57, 0.34)";
-  const actionDeleteColor = isDark ? "#E8907A" : "#c0533c";
-  const footnoteColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.55)";
+  // Theme-aware tokens (Dawn vs Dusk vs True Black / OLED)
+  const eyebrowColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.65)"
+    : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : theme.ink.display;
+  const subtitleColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.72)"
+    : "rgba(74, 58, 57, 0.7)";
+  const groupHeaderColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.65)"
+    : "rgba(74, 58, 57, 0.55)";
+  const itemTitleColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : "#4f3c3a";
+  const itemDescColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.72)"
+    : "rgba(74, 58, 57, 0.62)";
+  const dividerColor = isDark
+    ? isTrueBlack
+      ? "rgba(255, 255, 255, 0.07)"
+      : "rgba(255, 255, 255, 0.06)"
+    : "rgba(120, 90, 90, 0.1)";
+  const chevronColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.45)"
+    : "rgba(74, 58, 57, 0.34)";
+  const actionDeleteColor = isDark
+    ? isTrueBlack
+      ? "#BE6A5C"
+      : "#E8907A"
+    : "#c0533c";
+  const footnoteColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.55)"
+    : "rgba(74, 58, 57, 0.55)";
+
 
   return (
     <View style={styles.root}>
@@ -121,14 +182,27 @@ export default function YourDataScreen() {
         {/* ── 1. WHAT HEEDLY KEEPS (.sx-sec) ─────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>WHAT HEEDLY KEEPS</Text>
 
-        <DataCard isDark={isDark}>
+        <DataCard isDark={isDark} isTrueBlack={isTrueBlack}>
           {/* Wearable data */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#3D2526"
+                      : "#784436"
+                    : "rgba(224, 115, 95, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="waveform.path.ecg"
                 size={17}
-                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -143,11 +217,24 @@ export default function YourDataScreen() {
 
           {/* Daily check-ins */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#3D2526"
+                      : "#784436"
+                    : "rgba(224, 115, 95, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="list.clipboard"
                 size={17}
-                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -162,11 +249,24 @@ export default function YourDataScreen() {
 
           {/* Conditions */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#3D2526"
+                      : "#784436"
+                    : "rgba(224, 115, 95, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="heart"
                 size={17}
-                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -181,11 +281,24 @@ export default function YourDataScreen() {
 
           {/* Period days */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#3D2526"
+                      : "#784436"
+                    : "rgba(224, 115, 95, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="moon"
                 size={17}
-                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -200,14 +313,27 @@ export default function YourDataScreen() {
         {/* ── 2. WHERE IT LIVES (.sx-sec) ────────────────────────────── */}
         <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHERE IT LIVES</Text>
 
-        <DataCard isDark={isDark}>
+        <DataCard isDark={isDark} isTrueBlack={isTrueBlack}>
           {/* On your device */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#2C4235"
+                      : "#3E5D47"
+                    : "rgba(126, 155, 106, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="iphone"
                 size={17}
-                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
+                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -222,11 +348,24 @@ export default function YourDataScreen() {
 
           {/* Encrypted backup */}
           <View style={styles.itemRow}>
-            <View style={[styles.iconBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
+            <View
+              style={[
+                styles.iconBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#2C4235"
+                      : "#3E5D47"
+                    : "rgba(126, 155, 106, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name="lock"
                 size={17}
-                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
+                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
               />
             </View>
             <View style={styles.itemTextContainer}>
@@ -241,7 +380,7 @@ export default function YourDataScreen() {
         {/* ── 3. WHO ELSE SEES IT (.sx-sec) ──────────────────────────── */}
         <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHO ELSE SEES IT</Text>
 
-        <DataCard isDark={isDark} style={{ paddingVertical: 14 }}>
+        <DataCard isDark={isDark} isTrueBlack={isTrueBlack} style={{ paddingVertical: 14 }}>
           <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Private by default.</Text>
           <Text style={[styles.paragraphDescription, { color: itemDescColor }]}>
             {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
@@ -249,7 +388,7 @@ export default function YourDataScreen() {
         </DataCard>
 
         {/* ── 4. ACTIONS ─────────────────────────────────────────────── */}
-        <DataCard isDark={isDark} style={{ marginTop: 18 }}>
+        <DataCard isDark={isDark} isTrueBlack={isTrueBlack} style={{ marginTop: 18 }}>
           {/* Export my data */}
           <Pressable
             style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
@@ -303,7 +442,9 @@ export default function YourDataScreen() {
             styles.modalOverlay,
             {
               backgroundColor: isDark
-                ? "rgba(18, 10, 20, 0.65)"
+                ? isTrueBlack
+                  ? "rgba(0, 0, 0, 0.72)"
+                  : "rgba(18, 10, 20, 0.65)"
                 : "rgba(74, 58, 57, 0.34)",
             },
           ]}
@@ -317,8 +458,12 @@ export default function YourDataScreen() {
             style={[
               styles.sheetContainer,
               {
-                backgroundColor: isDark ? "#332538" : "#fbf3ec",
-                borderTopColor: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
+                backgroundColor: isDark ? (isTrueBlack ? "#16111B" : "#332538") : "#fbf3ec",
+                borderTopColor: isDark
+                  ? isTrueBlack
+                    ? "rgba(255, 255, 255, 0.07)"
+                    : "rgba(199, 180, 191, 0.14)"
+                  : "transparent",
                 borderTopWidth: isDark ? 1 : 0,
                 paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28,
               },
@@ -329,7 +474,9 @@ export default function YourDataScreen() {
                 styles.handleBar,
                 {
                   backgroundColor: isDark
-                    ? "rgba(199, 180, 191, 0.28)"
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.18)"
+                      : "rgba(199, 180, 191, 0.28)"
                     : "rgba(120, 90, 90, 0.2)",
                 },
               ]}
@@ -338,7 +485,7 @@ export default function YourDataScreen() {
             <Text
               style={[
                 styles.sheetTitle,
-                { color: isDark ? "#F3E7E1" : theme.ink.display },
+                { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : theme.ink.display },
               ]}
             >
               Delete everything?
@@ -349,7 +496,9 @@ export default function YourDataScreen() {
                 styles.sheetBodyText,
                 {
                   color: isDark
-                    ? "rgba(199, 180, 191, 0.95)"
+                    ? isTrueBlack
+                      ? "#9A8A91"
+                      : "rgba(199, 180, 191, 0.95)"
                     : "rgba(74, 58, 57, 0.72)",
                 },
               ]}
@@ -362,7 +511,9 @@ export default function YourDataScreen() {
                 styles.sheetHelperText,
                 {
                   color: isDark
-                    ? "rgba(199, 180, 191, 0.68)"
+                    ? isTrueBlack
+                      ? "#9A8A91"
+                      : "rgba(199, 180, 191, 0.68)"
                     : "rgba(74, 58, 57, 0.55)",
                 },
               ]}
@@ -376,10 +527,14 @@ export default function YourDataScreen() {
                 styles.deleteOutlineButton,
                 {
                   backgroundColor: isDark
-                    ? "rgba(51, 37, 56, 0.85)"
+                    ? isTrueBlack
+                      ? "rgba(190, 106, 92, 0.14)"
+                      : "rgba(51, 37, 56, 0.85)"
                     : "#FCE4E6",
                   borderColor: isDark
-                    ? "rgba(226, 122, 108, 0.38)"
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.07)"
+                      : "rgba(226, 122, 108, 0.38)"
                     : "#c0533c",
                 },
                 pressed && styles.buttonPressed,
@@ -391,21 +546,25 @@ export default function YourDataScreen() {
               <Text
                 style={[
                   styles.deleteOutlineButtonText,
-                  { color: isDark ? "#E8907A" : "#c0533c" },
+                  { color: isDark ? (isTrueBlack ? "#BE6A5C" : "#E8907A") : "#c0533c" },
                 ]}
               >
                 Delete everything
               </Text>
             </Pressable>
 
-            {/* Keep my data button (Solid Dark Mauve) */}
+            {/* Keep my data button (Solid Dark Mauve / Flat OLED) */}
             <Pressable
               style={({ pressed }) => [
                 styles.keepDataButton,
                 {
                   backgroundColor: isDark
-                    ? "#5C3E50"
+                    ? isTrueBlack
+                      ? "#16111B"
+                      : "#5C3E50"
                     : "rgba(120, 90, 80, 0.12)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
                 },
                 pressed && styles.buttonPressed,
               ]}
@@ -416,7 +575,7 @@ export default function YourDataScreen() {
               <Text
                 style={[
                   styles.keepDataButtonText,
-                  { color: isDark ? "#FFF6F1" : "#4f3c3a" },
+                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#FFF6F1") : "#4f3c3a" },
                 ]}
               >
                 Keep my data
@@ -425,6 +584,7 @@ export default function YourDataScreen() {
           </View>
         </View>
       </Modal>
+
     </View>
   );
 }

@@ -269,13 +269,13 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  // Learning note text (17px, line-height 25px, matching onboarding description)
+  // .fd-note: 14px, weight 500, line-height 21.5px (1.55), matching reference design
   learningNoteText: {
-    fontSize: 17,
-    lineHeight: 25,
-    fontWeight: "400",
-    letterSpacing: 0,
+    fontSize: 14,
+    lineHeight: 21.5,
+    fontWeight: "500",
+    letterSpacing: -0.05,
     textAlign: "center",
-    maxWidth: 330,
+    maxWidth: 320,
   },
 });

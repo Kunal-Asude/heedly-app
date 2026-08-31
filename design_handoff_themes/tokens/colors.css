@@ -1,0 +1,28 @@
+:root {
+  /* ink (warm brown-rose text) */
+  --ink-display: #463332;
+  --ink-1: #4a3a39;
+  --ink-2: #4f3c3a;
+  --ink-3: #5a4644;
+  --ink-soft: rgba(74,58,57,0.7);
+  --ink-muted: rgba(74,58,57,0.55);
+  --ink-faint: rgba(74,58,57,0.38);
+  /* coral accent ramp */
+  --coral: #e0735f;
+  --coral-mid: #ea846a;
+  --coral-light: #f4a47e;
+  --terracotta: #b05334;      /* links */
+  --terracotta-deep: #b0532f; /* key-word accent, hovers */
+  --terracotta-hover: #c9603f;
+  /* energy states — dot/UI value + soft chart value. NEVER color alone; always word + color. */
+  --steady: #7e9b6a;   --steady-chart: #94b094;  --steady-bg: rgba(126,155,106,0.15); --steady-ink: #5d7a52;
+  --caution: #d99843;  --caution-chart: #f0c59e; --caution-bg: rgba(217,152,67,0.15);
+  --rest: #e0735f;     --rest-chart: #da6d82;    --rest-bg: rgba(224,115,95,0.13);
+  /* oat / neutral option tone */
+  --oat: #cdb488; --oat-bg: rgba(233,215,188,0.34); --oat-border: rgba(209,184,148,0.5);
+  /* semantic aliases */
+  --text-body: var(--ink-1);
+  --text-heading: var(--ink-display);
+  --text-on-coral: #fff8f4;
+  --link: var(--terracotta);
+}

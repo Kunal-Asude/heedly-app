@@ -43,7 +43,7 @@ export function TodayBadge({
   return (
     <View style={styles.badgeSlot}>
       {isFirstDay ? (
-        /* .fd-chip: padding 6px 14px, radius 20, composite halo dot */
+        /* .fd-chip: padding 5px 12px 5px 11px, radius 20, solid 6px dot */
         <Pressable
           onPress={onPress}
           style={[
@@ -56,19 +56,10 @@ export function TodayBadge({
         >
           <View
             style={[
-              styles.learningDotHalo,
-              {
-                backgroundColor: `${badgeTokens.learning.dot}2E`,
-              },
+              styles.learningDotCenter,
+              { backgroundColor: badgeTokens.learning.dot },
             ]}
-          >
-            <View
-              style={[
-                styles.learningDotCenter,
-                { backgroundColor: badgeTokens.learning.dot },
-              ]}
-            />
-          </View>
+          />
           <Text
             style={[
               styles.learningText,
@@ -121,31 +112,24 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // .fd-chip: padding 6px 14px, radius 20px, gap 8px
+  // .fd-chip: padding 5px 12px 5px 11px, radius 20px, gap 7px per design handoff
   learningChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 5.5,
-    paddingHorizontal: 14,
+    justifyContent: "center",
+    gap: 7,
+    paddingVertical: 5,
+    paddingLeft: 11,
+    paddingRight: 12,
     borderRadius: 20,
     borderWidth: 1,
   },
 
-  // Composite dot outer halo: 14x14
-  learningDotHalo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  // Composite dot solid center: 6.5x6.5
+  // .fd-chip i: 6x6 solid dot, border-radius 50%
   learningDotCenter: {
-    width: 6.5,
-    height: 6.5,
-    borderRadius: 3.25,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 
   // .fd-chip span: 10.5px, 700, letter-spacing 0.16em (1.68), uppercase
@@ -154,6 +138,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1.68,
     textTransform: "uppercase",
+    lineHeight: 14,
   },
 
   standardBadgeRow: {

@@ -16,7 +16,7 @@ import { useCheckInConfig } from '@/hooks/data';
 export default function EnergyScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const { recurringEnergyLevels, firstTimeEnergyLevels } = useCheckInConfig();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
@@ -144,31 +144,39 @@ export default function EnergyScreen() {
             <Text
               style={[
                 styles.backChevron,
-                { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' },
+                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' },
               ]}
             >
               ‹
             </Text>
           </Pressable>
 
-          {/* Progress Dots: Question 1 of 3 (.ci-dots) */}
+          {/* 3 Progress Indicators (.ci-dots) */}
           <View style={styles.progressRow}>
+            {/* Step 1: Active Bar (.ci-dot.act) */}
             <LinearGradient
-              colors={['#E28266', '#D9735A']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={
+                isDark
+                  ? isTrueBlack
+                    ? ['#C97B60', '#BE6A5C']
+                    : ['#E8907A', '#C86858']
+                  : [theme.coral.mid, theme.coral.terracotta]
+              }
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
               style={styles.progressActive}
             />
+            {/* Steps 2 & 3: Inactive Dots */}
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
               ]}
             />
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
               ]}
             />
           </View>
@@ -183,7 +191,7 @@ export default function EnergyScreen() {
             <Text
               style={[
                 styles.skipText,
-                { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
               ]}
             >
               Skip
@@ -191,13 +199,13 @@ export default function EnergyScreen() {
           </Pressable>
         </View>
 
-        {/* ── Fixed Viewport Content ───────────────────────────────────── */}
+        {/* ── Viewport Content ─────────────────────────────────────────── */}
         <View style={styles.contentArea}>
-          {/* ── Question Eyebrow (.ci-eyebrow) ─────────────────────────── */}
+          {/* Step Eyebrow (.ci-step) */}
           <Text
             style={[
               styles.questionLabel,
-              { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
             ]}
           >
             QUESTION 1 OF 3
@@ -207,13 +215,13 @@ export default function EnergyScreen() {
           <Text style={styles.questionHeading}>
             {isFirstTime ? (
               <>
-                <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'How are you\n'}</Text>
-                <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>feeling?</Text>
+                <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How are you\n'}</Text>
+                <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>feeling?</Text>
               </>
             ) : (
               <>
-                <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{"How's your\n"}</Text>
-                <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>energy right now?</Text>
+                <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{"How's your\n"}</Text>
+                <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>energy right now?</Text>
               </>
             )}
           </Text>
@@ -222,7 +230,7 @@ export default function EnergyScreen() {
           <Text
             style={[
               styles.supportingText,
-              { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
             ]}
           >
             No need to think hard — go with your gut.
@@ -248,7 +256,7 @@ export default function EnergyScreen() {
                         <View
                           style={[
                             styles.selectedRing,
-                            { backgroundColor: level.glowColor },
+                            { backgroundColor: isDark && isTrueBlack ? 'rgba(255, 255, 255, 0.12)' : level.glowColor },
                           ]}
                         />
                       )}
@@ -270,7 +278,7 @@ export default function EnergyScreen() {
               <Text
                 style={[
                   styles.endpointLabel,
-                  { color: isDark ? 'rgba(199, 180, 191, 0.74)' : 'rgba(74, 58, 57, 0.55)' },
+                  { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.74)') : 'rgba(74, 58, 57, 0.55)' },
                 ]}
               >
                 {levels[0].label}
@@ -282,22 +290,22 @@ export default function EnergyScreen() {
                   styles.selectedPill,
                   {
                     backgroundColor: isDark
-                      ? 'rgba(226, 122, 108, 0.16)'
+                      ? isTrueBlack
+                        ? 'rgba(190, 106, 92, 0.14)'
+                        : 'rgba(226, 122, 108, 0.16)'
                       : 'rgba(244, 164, 126, 0.18)',
-                    borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(224, 115, 95, 0.28)',
+                    borderColor: isDark
+                      ? isTrueBlack
+                        ? 'rgba(255, 255, 255, 0.07)'
+                        : 'rgba(255, 255, 255, 0.09)'
+                      : 'rgba(224, 115, 95, 0.28)',
                   },
                 ]}
               >
-                <View
-                  style={[
-                    styles.pillDot,
-                    { backgroundColor: isDark ? '#D9735A' : selectedLevel.color },
-                  ]}
-                />
                 <Text
                   style={[
                     styles.pillText,
-                    { color: isDark ? '#F3E7E1' : '#4f3c3a' },
+                    { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' },
                   ]}
                 >
                   {selectedLevel.label}
@@ -307,7 +315,7 @@ export default function EnergyScreen() {
               <Text
                 style={[
                   styles.endpointLabel,
-                  { color: isDark ? 'rgba(199, 180, 191, 0.74)' : 'rgba(74, 58, 57, 0.55)' },
+                  { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.74)') : 'rgba(74, 58, 57, 0.55)' },
                 ]}
               >
                 {levels[4].label}
@@ -326,8 +334,8 @@ export default function EnergyScreen() {
               style={[
                 styles.crashText,
                 {
-                  color: isDark ? 'rgba(232, 144, 122, 0.98)' : 'rgba(176, 83, 52, 0.98)',
-                  borderColor: isDark ? 'rgba(232, 144, 122, 0.46)' : 'rgba(176, 83, 52, 0.4)',
+                  color: isDark ? (isTrueBlack ? '#C97B60' : 'rgba(232, 144, 122, 0.98)') : 'rgba(176, 83, 52, 0.98)',
+                  borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(232, 144, 122, 0.46)') : 'rgba(176, 83, 52, 0.4)',
                 },
               ]}
             >
@@ -339,7 +347,11 @@ export default function EnergyScreen() {
         {/* ── Bottom Section: Next CTA & Helper Footnote ──────────────── */}
         <View style={styles.bottomSection}>
           <Pressable
-            style={({ pressed }) => [styles.nextButtonWrapper, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [
+              styles.nextButtonWrapper,
+              pressed && styles.buttonPressed,
+              isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
+            ]}
             onPress={handleNext}
             accessibilityRole="button"
             accessibilityLabel="Next"
@@ -347,19 +359,27 @@ export default function EnergyScreen() {
             <LinearGradient
               colors={
                 isDark
-                  ? ['#634256', '#8A5D7C', '#9E768E']
+                  ? isTrueBlack
+                    ? ['#574049', '#241A20']
+                    : ['#634256', '#8A5D7C', '#9E768E']
                   : [theme.coral.light, theme.coral.mid, theme.coral.primary]
               }
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={styles.nextButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                styles.nextButtonGradient,
+                isDark && isTrueBlack && {
+                  borderColor: 'rgba(255, 255, 255, 0.06)',
+                  borderWidth: 1,
+                },
+              ]}
             >
-              <Text style={styles.nextButtonText}>{isEditing ? 'Save' : 'Next'}</Text>
+              <Text style={[styles.nextButtonText, isDark && isTrueBlack && { color: '#EADCD4' }]}>{isEditing ? 'Save' : 'Next'}</Text>
               <View style={styles.nextArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke="#FFF6F1"
+                    stroke={isDark && isTrueBlack ? '#EADCD4' : '#FFF6F1'}
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"

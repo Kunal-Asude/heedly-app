@@ -1,15 +1,22 @@
 /**
  * ThemeContext
  *
- * Provides the user-selected theme mode ('light' | 'dark' | 'system') app-wide.
+ * Provides the user-selected theme mode ('light' | 'dark' | 'system') and
+ * True Black (OLED) preference app-wide.
  * Screens read the resolved DesignTokens via useAppTheme().
  * The Settings screen writes to it via useThemeMode().
  *
  * Architecture:
  *  - ThemeProvider wraps the entire app in _layout.tsx
- *  - Theme preference is persisted to AsyncStorage so it survives app restarts and reloads
- *  - useAppTheme() returns the resolved DesignTokens (replaces useTheme())
- *  - useThemeMode() returns { themeMode, setThemeMode, isDark, isLoaded } for controls
+ *  - Theme preferences are persisted to AsyncStorage so they survive app restarts and reloads
+ *  - useAppTheme() returns the resolved DesignTokens (Light, Dark, or True Black)
+ *  - useThemeMode() returns { themeMode, setThemeMode, isTrueBlack, setTrueBlack, isDark, isLoaded }
+ *
+ * Resolution rule:
+ *  - isDark: themeMode === "dark" || (themeMode === "system" && systemScheme === "dark")
+ *  - If !isDark -> lightTheme (Dawn)
+ *  - If isDark && isTrueBlack -> trueBlackTheme (OLED)
+ *  - If isDark && !isTrueBlack -> darkTheme (Dusk)
  */
 
 import React, {
@@ -25,15 +32,19 @@ import { useColorScheme } from "react-native";
 import { darkTheme } from "@/constants/themes/dark";
 import { lightTheme } from "@/constants/themes/light";
 import type { DesignTokens } from "@/constants/themes/tokens";
+import { trueBlackTheme } from "@/constants/themes/trueBlack";
 import { appStorage } from "@/utils/storage";
 
 export type AppThemeMode = "light" | "dark" | "system";
 
 const THEME_STORAGE_KEY = "@heedly/theme_mode";
+const TRUE_BLACK_STORAGE_KEY = "@heedly/is_true_black";
 
 interface ThemeContextValue {
   themeMode: AppThemeMode;
   setThemeMode: (mode: AppThemeMode) => void;
+  isTrueBlack: boolean;
+  setTrueBlack: (enabled: boolean) => void;
   resolvedTheme: DesignTokens;
   isDark: boolean;
   isLoaded: boolean;
@@ -42,6 +53,8 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({
   themeMode: "system",
   setThemeMode: () => {},
+  isTrueBlack: false,
+  setTrueBlack: () => {},
   resolvedTheme: lightTheme,
   isDark: false,
   isLoaded: false,
@@ -49,31 +62,40 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 /**
  * Wrap the application root with this provider.
- * Initialises themeMode from persisted preference.
+ * Initialises themeMode and isTrueBlack from persisted preferences.
  */
 export function AppThemeProvider({
   children,
   initialMode = "system",
+  initialTrueBlack = false,
 }: {
   children: React.ReactNode;
   initialMode?: AppThemeMode;
+  initialTrueBlack?: boolean;
 }) {
   const systemScheme = useColorScheme(); // 'light' | 'dark' | null
   const [themeMode, setThemeModeState] = useState<AppThemeMode>(initialMode);
+  const [isTrueBlack, setIsTrueBlackState] = useState<boolean>(initialTrueBlack);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load saved theme preference on cold start / mount
+  // Load saved theme preferences on cold start / mount
   useEffect(() => {
     let isMounted = true;
-    appStorage
-      .getItem(THEME_STORAGE_KEY)
-      .then((savedMode) => {
-        if (
-          isMounted &&
-          savedMode &&
-          (savedMode === "light" || savedMode === "dark" || savedMode === "system")
-        ) {
-          setThemeModeState(savedMode as AppThemeMode);
+    Promise.all([
+      appStorage.getItem(THEME_STORAGE_KEY),
+      appStorage.getItem(TRUE_BLACK_STORAGE_KEY),
+    ])
+      .then(([savedMode, savedTrueBlack]) => {
+        if (isMounted) {
+          if (
+            savedMode &&
+            (savedMode === "light" || savedMode === "dark" || savedMode === "system")
+          ) {
+            setThemeModeState(savedMode as AppThemeMode);
+          }
+          if (savedTrueBlack !== null && savedTrueBlack !== undefined) {
+            setIsTrueBlackState(savedTrueBlack === "true");
+          }
         }
       })
       .catch((err) => {
@@ -97,7 +119,14 @@ export function AppThemeProvider({
     });
   }, []);
 
-  // Resolve to actual light/dark tokens
+  const setTrueBlack = useCallback((enabled: boolean) => {
+    setIsTrueBlackState(enabled);
+    appStorage.setItem(TRUE_BLACK_STORAGE_KEY, enabled ? "true" : "false").catch((err) => {
+      console.warn("[ThemeContext] Failed to persist true black preference:", err);
+    });
+  }, []);
+
+  // Resolve to actual dark status
   const isDark = useMemo(() => {
     if (themeMode === "dark") return true;
     if (themeMode === "light") return false;
@@ -105,14 +134,24 @@ export function AppThemeProvider({
     return systemScheme === "dark";
   }, [themeMode, systemScheme]);
 
-  const resolvedTheme = useMemo(
-    () => (isDark ? darkTheme : lightTheme),
-    [isDark]
-  );
+  // Three-way resolution: Dawn vs Dusk vs True Black
+  const resolvedTheme = useMemo(() => {
+    if (!isDark) return lightTheme;
+    if (isTrueBlack) return trueBlackTheme;
+    return darkTheme;
+  }, [isDark, isTrueBlack]);
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ themeMode, setThemeMode, resolvedTheme, isDark, isLoaded }),
-    [themeMode, setThemeMode, resolvedTheme, isDark, isLoaded]
+    () => ({
+      themeMode,
+      setThemeMode,
+      isTrueBlack,
+      setTrueBlack,
+      resolvedTheme,
+      isDark,
+      isLoaded,
+    }),
+    [themeMode, setThemeMode, isTrueBlack, setTrueBlack, resolvedTheme, isDark, isLoaded]
   );
 
   return (
@@ -129,15 +168,28 @@ export function useAppTheme(): DesignTokens {
 }
 
 /**
- * useThemeMode — returns the selected mode and a setter.
+ * useThemeMode — returns the selected mode, true black setting, and setters.
  * Used by the Settings screen theme selector and layout navigators.
  */
 export function useThemeMode(): {
   themeMode: AppThemeMode;
   setThemeMode: (mode: AppThemeMode) => void;
+  isTrueBlack: boolean;
+  setTrueBlack: (enabled: boolean) => void;
+  setIsTrueBlack: (enabled: boolean) => void;
   isDark: boolean;
   isLoaded: boolean;
 } {
-  const { themeMode, setThemeMode, isDark, isLoaded } = useContext(ThemeContext);
-  return { themeMode, setThemeMode, isDark, isLoaded };
+  const { themeMode, setThemeMode, isTrueBlack, setTrueBlack, isDark, isLoaded } =
+    useContext(ThemeContext);
+  return {
+    themeMode,
+    setThemeMode,
+    isTrueBlack,
+    setTrueBlack,
+    setIsTrueBlack: setTrueBlack,
+    isDark,
+    isLoaded,
+  };
 }
+

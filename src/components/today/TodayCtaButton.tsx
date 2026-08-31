@@ -1,7 +1,6 @@
 import { useTheme } from "@/constants/themes";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
 
 interface TodayCtaButtonProps {
   label: string;
@@ -30,7 +29,7 @@ export function TodayCtaButton({ label, onPress }: TodayCtaButtonProps) {
         <LinearGradient
           colors={ctaTokens.gradient as any}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={[
             styles.buttonGradient,
             {
@@ -41,17 +40,6 @@ export function TodayCtaButton({ label, onPress }: TodayCtaButtonProps) {
           <Text style={[styles.buttonText, { color: ctaTokens.textColor }]}>
             {label}
           </Text>
-          <View style={styles.arrowContainer}>
-            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M8 5l7 7-7 7"
-                stroke={ctaTokens.textColor}
-                strokeWidth={2.4}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          </View>
         </LinearGradient>
       </Pressable>
     </View>

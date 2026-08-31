@@ -24,17 +24,37 @@ const STATE_COLORS = {
   rest: "#E27A6C",
 };
 
-// ─── Pattern Card Component (.sx-card with subtle gradient) ───────────────────
+// ─── Pattern Card Component (.sx-card with subtle gradient / flat OLED) ───────
 
 function PatternCard({
   children,
   isDark,
+  isTrueBlack = false,
   style,
 }: {
   children: React.ReactNode;
   isDark: boolean;
+  isTrueBlack?: boolean;
   style?: any;
 }) {
+  if (isDark && isTrueBlack) {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: '#16111B',
+            borderColor: 'rgba(255, 255, 255, 0.07)',
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          style,
+        ]}>
+        {children}
+      </View>
+    );
+  }
+
   const cardGradientColors: [string, string, string] = isDark
     ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
     : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
@@ -64,7 +84,7 @@ export default function PatternsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const [isTankTooltipVisible, setIsTankTooltipVisible] = useState(false);
 
   const {
@@ -75,18 +95,63 @@ export default function PatternsScreen() {
     tankTooltipBody,
   } = usePatterns();
 
-  // Dynamic Theme Colors
-  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.75)";
-  const learningSinceLabelColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.5)";
-  const learningSinceDateColor = isDark ? "#F3E7E1" : "#4F3C3A";
-  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const cardTitleColor = isDark ? "#F3E7E1" : "#4F3C3A";
-  const bodyTextColor = isDark ? "#F3E7E1" : "#4F3C3A";
-  const subtextColor = isDark ? "rgba(199, 180, 191, 0.68)" : "rgba(74, 58, 57, 0.62)";
-  const legendTextColor = isDark ? "rgba(199, 180, 191, 0.8)" : "rgba(74, 58, 57, 0.75)";
-  const footnoteColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.6)";
+  // Dynamic Theme Colors (Dawn vs Dusk vs True Black / OLED)
+  const eyebrowColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.65)"
+    : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : theme.ink.display;
+  const subtitleColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.72)"
+    : "rgba(74, 58, 57, 0.75)";
+  const learningSinceLabelColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.55)"
+    : "rgba(74, 58, 57, 0.5)";
+  const learningSinceDateColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : "#4F3C3A";
+  const groupHeaderColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.65)"
+    : "rgba(74, 58, 57, 0.55)";
+  const cardTitleColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : "#4F3C3A";
+  const bodyTextColor = isDark
+    ? isTrueBlack
+      ? "#E9DDD6"
+      : "#F3E7E1"
+    : "#4F3C3A";
+  const subtextColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.68)"
+    : "rgba(74, 58, 57, 0.62)";
+  const legendTextColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.8)"
+    : "rgba(74, 58, 57, 0.75)";
+  const footnoteColor = isDark
+    ? isTrueBlack
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.65)"
+    : "rgba(74, 58, 57, 0.6)";
+
 
   return (
     <View style={styles.root}>
@@ -137,7 +202,7 @@ export default function PatternsScreen() {
         </View>
 
         {/* ── "This week" 7-Day Card (.pt-week) ────────────────────────── */}
-        <PatternCard isDark={isDark} style={styles.thisWeekCard}>
+        <PatternCard isDark={isDark} isTrueBlack={isTrueBlack} style={styles.thisWeekCard}>
           {/* Card Header */}
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.thisWeekTitle, { color: cardTitleColor }]}>This week</Text>
@@ -151,6 +216,8 @@ export default function PatternsScreen() {
                     borderColor: isDark
                       ? isTankTooltipVisible
                         ? "rgba(226, 122, 108, 0.6)"
+                        : isTrueBlack
+                        ? "rgba(255, 255, 255, 0.18)"
                         : "rgba(199, 180, 191, 0.35)"
                       : isTankTooltipVisible
                       ? "rgba(224, 115, 95, 0.6)"
@@ -176,7 +243,9 @@ export default function PatternsScreen() {
                           ? "#E8907A"
                           : "#c9603f"
                         : isDark
-                        ? "rgba(199, 180, 191, 0.75)"
+                        ? isTrueBlack
+                          ? "#9A8A91"
+                          : "rgba(199, 180, 191, 0.75)"
                         : "rgba(74, 58, 57, 0.55)",
                     },
                   ]}
@@ -193,8 +262,12 @@ export default function PatternsScreen() {
               style={[
                 styles.tankTooltipPopover,
                 {
-                  backgroundColor: isDark ? "#3D293E" : "#fffefb",
-                  borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(220, 190, 180, 0.5)",
+                  backgroundColor: isDark ? (isTrueBlack ? "#16111B" : "#3D293E") : "#fffefb",
+                  borderColor: isDark
+                    ? isTrueBlack
+                      ? "rgba(255, 255, 255, 0.07)"
+                      : "rgba(255, 255, 255, 0.12)"
+                    : "rgba(220, 190, 180, 0.5)",
                 },
               ]}
             >
@@ -202,7 +275,7 @@ export default function PatternsScreen() {
                 <Text
                   style={[
                     styles.tankTooltipTitle,
-                    { color: isDark ? "rgba(199, 180, 191, 0.75)" : "rgba(74, 58, 57, 0.7)" },
+                    { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.75)") : "rgba(74, 58, 57, 0.7)" },
                   ]}
                 >
                   {tankTooltipTitle}
@@ -217,7 +290,7 @@ export default function PatternsScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Close tooltip"
                 >
-                  <Text style={[styles.tankTooltipCloseText, { color: isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.5)" }]}>
+                  <Text style={[styles.tankTooltipCloseText, { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.6)") : "rgba(74, 58, 57, 0.5)" }]}>
                     ✕
                   </Text>
                 </Pressable>
@@ -226,7 +299,7 @@ export default function PatternsScreen() {
               <Text
                 style={[
                   styles.tankTooltipBody,
-                  { color: isDark ? "rgba(199, 180, 191, 0.92)" : "rgba(74, 58, 57, 0.8)" },
+                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "rgba(199, 180, 191, 0.92)") : "rgba(74, 58, 57, 0.8)" },
                 ]}
               >
                 {tankTooltipBody}
@@ -239,9 +312,15 @@ export default function PatternsScreen() {
             {thisWeekDays.map((dayItem, index) => {
               const dotColor =
                 dayItem.type === "steady"
-                  ? STATE_COLORS.steady
+                  ? isDark && isTrueBlack
+                    ? "#6E9678"
+                    : STATE_COLORS.steady
                   : dayItem.type === "caution"
-                  ? STATE_COLORS.caution
+                  ? isDark && isTrueBlack
+                    ? "#C29A5F"
+                    : STATE_COLORS.caution
+                  : isDark && isTrueBlack
+                  ? "#BE6A5C"
                   : STATE_COLORS.rest;
 
               return (
@@ -259,7 +338,7 @@ export default function PatternsScreen() {
                       ]}
                     />
                   </View>
-                  <Text style={[styles.dayLabel, { color: isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)" }]}>
+                  <Text style={[styles.dayLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)" }]}>
                     {dayItem.day}
                   </Text>
                 </View>
@@ -270,15 +349,15 @@ export default function PatternsScreen() {
           {/* Legend Row (.pt-legend) */}
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.steady }]} />
+              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#6E9678" : STATE_COLORS.steady }]} />
               <Text style={[styles.legendText, { color: legendTextColor }]}>Steady</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.caution }]} />
+              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#C29A5F" : STATE_COLORS.caution }]} />
               <Text style={[styles.legendText, { color: legendTextColor }]}>Caution</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: STATE_COLORS.rest }]} />
+              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#BE6A5C" : STATE_COLORS.rest }]} />
               <Text style={[styles.legendText, { color: legendTextColor }]}>Rest day</Text>
             </View>
           </View>
@@ -301,13 +380,27 @@ export default function PatternsScreen() {
           <PatternCard
             key={pattern.id}
             isDark={isDark}
+            isTrueBlack={isTrueBlack}
             style={styles.patternCard}
           >
-            <View style={[styles.helpBadge, { backgroundColor: isDark ? "#3E5D47" : "rgba(126, 155, 106, 0.18)" }]}>
+            <View
+              style={[
+                styles.helpBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#2C4235"
+                      : "#3E5D47"
+                    : "rgba(126, 155, 106, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name={pattern.icon === "moon.fill" ? "moon" : "clock"}
                 size={17}
-                tintColor={isDark ? "#E0F2E6" : "#5d7a52"}
+                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
               />
             </View>
             <View style={styles.cardTextBlock}>
@@ -330,9 +423,23 @@ export default function PatternsScreen() {
           <PatternCard
             key={pattern.id}
             isDark={isDark}
+            isTrueBlack={isTrueBlack}
             style={styles.patternCard}
           >
-            <View style={[styles.costBadge, { backgroundColor: isDark ? "#784436" : "rgba(224, 115, 95, 0.18)" }]}>
+            <View
+              style={[
+                styles.costBadge,
+                {
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? "#3D2526"
+                      : "#784436"
+                    : "rgba(224, 115, 95, 0.18)",
+                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                  borderWidth: isDark && isTrueBlack ? 1 : 0,
+                },
+              ]}
+            >
               <SymbolView
                 name={
                   pattern.icon === "person.2.fill"
@@ -342,7 +449,7 @@ export default function PatternsScreen() {
                     : "sun.max"
                 }
                 size={17}
-                tintColor={isDark ? "#FFF0EB" : "#b0532f"}
+                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
             </View>
             <View style={styles.cardTextBlock}>
@@ -360,6 +467,7 @@ export default function PatternsScreen() {
         <Text style={[styles.bottomExplanatoryText, { color: footnoteColor }]}>
           {"We only share patterns we're reasonably sure about. Tap a card to see the days behind it."}
         </Text>
+
       </ScrollView>
     </View>
   );

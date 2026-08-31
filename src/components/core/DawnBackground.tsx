@@ -15,8 +15,9 @@ import Svg, {
  * - Dawn: 5-layer composite (linear base + 4 warm pastel radial blooms)
  * - Dusk: 5-layer composite (deep plum #191320 base + 4 atmospheric radial blooms:
  *         top-left violet, top-right terracotta, center plum transition, bottom warm wash)
+ * - True Black (OLED): Flat #000000 with zero blooms, zero gradients, zero shadows
  *
- * Sourced directly from surfaces.css (--grad-dawn) and dusk.css (--grad-dusk).
+ * Sourced directly from surfaces.css (--grad-dawn), dusk.css (--grad-dusk), and oled.css.
  */
 interface DawnBackgroundProps extends ViewProps {
   /**
@@ -39,6 +40,18 @@ export function DawnBackground({
   const showCenterGlow = showOrbGlow !== undefined ? showOrbGlow : hasOrb;
 
   const isLinearBase = bg.type === "gradient" && !!bg.baseLinear;
+  const isFlatSolid = bg.type === "solid" && bg.radial1.opacity === 0;
+
+  // True Black / OLED: completely flat, pure #000000
+  if (isFlatSolid) {
+    return (
+      <View
+        style={[StyleSheet.absoluteFill, { backgroundColor: bg.baseColor }, style]}
+        pointerEvents="none"
+        {...rest}
+      />
+    );
+  }
 
   return (
     <View
@@ -155,3 +168,4 @@ export function DawnBackground({
     </View>
   );
 }
+

@@ -157,6 +157,10 @@ function OuterHalo({
   let midAlpha: number;
 
   if (isDark) {
+    if (glass.haloInnerAlpha === 0 && glass.haloMidAlpha === 0) {
+      // OLED / True Black: No outer halo
+      return null;
+    }
     if (state === "rest") {
       // .s-rest .orb::before — circle at 50% 78%
       haloCenterY = 320;
@@ -224,6 +228,7 @@ function OuterHalo({
     </View>
   );
 }
+
 
 // ─── Dawn Glass Sphere ────────────────────────────────────────────────────────
 
@@ -396,6 +401,7 @@ function DuskGlassSphere({
   state: EnergyOrbState;
   glass: ReturnType<typeof useAppTheme>["components"]["energyOrb"]["glass"];
 }) {
+  const isOled = glass.haloInnerAlpha === 0 && glass.haloMidAlpha === 0;
   let glowColor: string;
   let glowAlpha: number;
   let glowCenterY = 279.4; // 110% of 254
@@ -451,21 +457,35 @@ function DuskGlassSphere({
 
           {/* 2. Per-State Bottom Glow / Ember */}
           {isEmber ? (
-            // --orb-ember: warm bottom core glow
+            // --orb-ember: warm bottom core glow (Aubade - True Black (OLED).html line 1190)
             <SvgRadialGradient
               id="duskGlassGlow"
               cx="127"
-              cy="242"
-              r="185"
+              cy="248.9" // 98% of 254
+              r="241.3"  // 95% of 254
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0%" stopColor={glowColor} stopOpacity={glass.emberAlpha0} />
+              <Stop offset="45%" stopColor={glowColor} stopOpacity={glass.emberAlpha45} />
+              <Stop offset="68%" stopColor={glowColor} stopOpacity={glass.emberAlpha68} />
+              <Stop offset="100%" stopColor={glowColor} stopOpacity={0} />
+            </SvgRadialGradient>
+          ) : isOled ? (
+            // OLED per-state ember: anchored at bottom edge (VB*0.99) fading out upward
+            <SvgRadialGradient
+              id="duskGlassGlow"
+              cx="127"
+              cy="251.4" // 99% of 254
+              r="233.6"  // 92% of 254
               gradientUnits="userSpaceOnUse"
             >
               <Stop offset="0%" stopColor={glowColor} stopOpacity={0.62} />
-              <Stop offset="35%" stopColor={glowColor} stopOpacity={0.32} />
-              <Stop offset="65%" stopColor={glowColor} stopOpacity={0.10} />
+              <Stop offset="42%" stopColor={glowColor} stopOpacity={0.20} />
+              <Stop offset="68%" stopColor={glowColor} stopOpacity={0.05} />
               <Stop offset="100%" stopColor={glowColor} stopOpacity={0} />
             </SvgRadialGradient>
           ) : (
-            // Steady / Caution / Rest bottom glow
+            // Dusk Steady / Caution / Rest bottom glow
             <SvgRadialGradient
               id="duskGlassGlow"
               cx="127"
@@ -479,7 +499,7 @@ function DuskGlassSphere({
             </SvgRadialGradient>
           )}
 
-          {/* 3. Frosted Veil (--orb-veil: circle at 50% 30%, transparent 55%) */}
+          {/* 3. Frosted Veil (--orb-veil) */}
           <SvgRadialGradient
             id="duskGlassVeil"
             cx="127"
@@ -500,51 +520,64 @@ function DuskGlassSphere({
             r="140"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.26} />
-            <Stop offset="50%" stopColor={glass.rimColor} stopOpacity={glass.rimTopAlpha} />
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.26} />
+            <Stop offset="50%" stopColor={glass.rimColor} stopOpacity={isOled ? 0.05 : glass.rimTopAlpha} />
             <Stop offset="100%" stopColor={glass.rimColor} stopOpacity={0} />
           </SvgRadialGradient>
 
           {/* 5. Bottom Inner Shadow (--orb-rim: inset 0 -10px 30px rgba(233,214,226,0.12)) */}
-          <SvgRadialGradient
-            id="duskRimBot"
-            cx="127"
-            cy="254"
-            r="130"
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset="0%" stopColor={glass.rimColor} stopOpacity={glass.rimBotAlpha} />
-            <Stop offset="100%" stopColor={glass.rimColor} stopOpacity={0} />
-          </SvgRadialGradient>
+          {!isOled && (
+            <SvgRadialGradient
+              id="duskRimBot"
+              cx="127"
+              cy="254"
+              r="130"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0%" stopColor={glass.rimColor} stopOpacity={glass.rimBotAlpha} />
+              <Stop offset="100%" stopColor={glass.rimColor} stopOpacity={0} />
+            </SvgRadialGradient>
+          )}
 
           {/* 6. Left Side Light (--orb-rim: inset 6px 0 24px rgba(255,255,255,0.07)) */}
-          <SvgRadialGradient
-            id="duskRimSide"
-            cx="0"
-            cy="127"
-            r="120"
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={glass.rimSideAlpha} />
-            <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-          </SvgRadialGradient>
+          {!isOled && (
+            <SvgRadialGradient
+              id="duskRimSide"
+              cx="0"
+              cy="127"
+              r="120"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity={glass.rimSideAlpha} />
+              <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+            </SvgRadialGradient>
+          )}
 
           {/* 7. Luminous Gradient Hairline Rim Stroke */}
           <SvgLinearGradient id="duskRimStroke" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.52} />
-            <Stop offset="25%" stopColor={glass.rimColor} stopOpacity={0.36} />
-            <Stop offset="60%" stopColor={glass.rimColor} stopOpacity={0.18} />
-            <Stop offset="85%" stopColor={glass.emberColor} stopOpacity={0.32} />
-            <Stop offset="100%" stopColor={glass.emberColor} stopOpacity={0.46} />
+            {isOled ? [
+              <Stop key="0" offset="0%" stopColor="#ffffff" stopOpacity={0.24} />,
+              <Stop key="1" offset="25%" stopColor="#ffffff" stopOpacity={0.16} />,
+              <Stop key="2" offset="65%" stopColor="#ffffff" stopOpacity={0.10} />,
+              <Stop key="3" offset="100%" stopColor={isEmber ? "rgb(180,110,80)" : "rgb(255,255,255)"} stopOpacity={0.18} />,
+            ] : [
+              <Stop key="0" offset="0%" stopColor="#ffffff" stopOpacity={0.52} />,
+              <Stop key="1" offset="25%" stopColor={glass.rimColor} stopOpacity={0.36} />,
+              <Stop key="2" offset="60%" stopColor={glass.rimColor} stopOpacity={0.18} />,
+              <Stop key="3" offset="85%" stopColor={glass.emberColor} stopOpacity={0.32} />,
+              <Stop key="4" offset="100%" stopColor={glass.emberColor} stopOpacity={0.46} />,
+            ]}
           </SvgLinearGradient>
 
-          {/* 8. Soft Edge Rim Bloom */}
-          <SvgLinearGradient id="duskRimStrokeSoft" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.25} />
-            <Stop offset="30%" stopColor={glass.rimColor} stopOpacity={0.15} />
-            <Stop offset="70%" stopColor={glass.rimColor} stopOpacity={0.08} />
-            <Stop offset="100%" stopColor={glass.emberColor} stopOpacity={0.22} />
-          </SvgLinearGradient>
+          {/* 8. Soft Edge Rim Bloom (Dusk only) */}
+          {!isOled && (
+            <SvgLinearGradient id="duskRimStrokeSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.25} />
+              <Stop offset="30%" stopColor={glass.rimColor} stopOpacity={0.15} />
+              <Stop offset="70%" stopColor={glass.rimColor} stopOpacity={0.08} />
+              <Stop offset="100%" stopColor={glass.emberColor} stopOpacity={0.22} />
+            </SvgLinearGradient>
+          )}
         </Defs>
 
         <G clipPath="url(#duskGlassClip)">
@@ -557,51 +590,60 @@ function DuskGlassSphere({
           {/* Layer 4: Top diffuse rim highlight */}
           <Circle cx="127" cy="127" r="127" fill="url(#duskRimTop)" />
           {/* Layer 5: Bottom diffuse rim shadow */}
-          <Circle cx="127" cy="127" r="127" fill="url(#duskRimBot)" />
+          {!isOled && <Circle cx="127" cy="127" r="127" fill="url(#duskRimBot)" />}
           {/* Layer 6: Left side light */}
-          <Circle cx="127" cy="127" r="127" fill="url(#duskRimSide)" />
-          {/* Layer 7: Soft outer rim halo glow */}
-          <Circle
-            cx="127"
-            cy="127"
-            r="125.8"
-            fill="none"
-            stroke="url(#duskRimStrokeSoft)"
-            strokeWidth={2.4}
-          />
+          {!isOled && <Circle cx="127" cy="127" r="127" fill="url(#duskRimSide)" />}
+          {/* Layer 7: Soft outer rim halo glow (Dusk only) */}
+          {!isOled && (
+            <Circle
+              cx="127"
+              cy="127"
+              r="125.8"
+              fill="none"
+              stroke="url(#duskRimStrokeSoft)"
+              strokeWidth={2.4}
+            />
+          )}
           {/* Layer 8: Exact crisp hairline glass rim */}
           <Circle
             cx="127"
             cy="127"
-            r="126.3"
+            r={isOled ? 126.4 : 126.2}
             fill="none"
             stroke="url(#duskRimStroke)"
-            strokeWidth={1.4}
+            strokeWidth={isOled ? 1.2 : 1.5}
           />
         </G>
+
       </Svg>
     </View>
   );
 }
 
+
 // ─── Water Wave ───────────────────────────────────────────────────────────────
 
 /**
- * Animated SVG Water Wave — exact translation of buildWater(st) from Aubade - Today.html.
+ * Animated SVG Water Wave — exact translation of buildWater(st) from Aubade - Today.html & Aubade - True Black (OLED).html.
  *
- * Source: buildWater(st)
- *  - Linear gradient (x1=0, y1=B, x2=0, y2=VB) from topColor (alphaTop) to botColor (alphaBot)
+ * In OLED (True Black):
+ *  - The liquid is an ember inside the glass gathering at the bottom edge and fading out well before the waterline.
+ *  - Animated headspace mask (#0A070D) painted from the top down to the drifting wave curve.
+ *  - Wave crest lines: #E9DDD6 with 0.16 and 0.04 stroke-opacity.
+ *
+ * In Dawn / Dusk:
+ *  - Linear gradient (x1=0, y1=B, x2=0, y2=VB) from topColor to botColor
  *  - Liquid fill path
- *  - Secondary ripple line at translate(0 6) with stroke-opacity 0.10, stroke-width 1.2
- *  - Main crest line with stroke-opacity 0.40, stroke-width 1.4
- *  - Both lines drift + bob in the same animated group
+ *  - Luminous wave crest lines
  */
 function WaterWave({
   state = "steady",
   reduceMotion = false,
+  isOled = false,
 }: {
   state?: EnergyOrbState;
   reduceMotion?: boolean;
+  isOled?: boolean;
 }) {
   const fgDrift = useSharedValue(0);
   const bobAnim = useSharedValue(0);
@@ -615,22 +657,22 @@ function WaterWave({
       return;
     }
 
-    // Drift: '0 0' to '-120 0' over 13s linear (gentler horizontal wave motion)
+    // Drift: '0 0' to '-120 0' over 11s / 13s linear
     fgDrift.value = withRepeat(
-      withTiming(1, { duration: 13000, easing: Easing.linear }),
+      withTiming(1, { duration: 11000, easing: Easing.linear }),
       -1,
       false,
     );
 
-    // Bob motion: 0 -> 2.5 -> 0 over 7.5s with spline easing (0.4 0 0.6 1)
+    // Bob motion: 0 -> 2.5 -> 0 over 7s with spline easing (0.4 0 0.6 1)
     bobAnim.value = withRepeat(
       withSequence(
-        withTiming(2.5, {
-          duration: 3750,
+        withTiming(1.8, {
+          duration: 3500,
           easing: Easing.bezier(0.4, 0, 0.6, 1),
         }),
         withTiming(0, {
-          duration: 3750,
+          duration: 3500,
           easing: Easing.bezier(0.4, 0, 0.6, 1),
         }),
       ),
@@ -670,6 +712,9 @@ function WaterWave({
 
   const fillPath = `${waveEdge} L ${xEnd} ${BOTTOM} L ${xStart} ${BOTTOM} Z`;
 
+  // OLED: Animated headspace mask painted from top (-VB) down to wave curve
+  const headPath = `M ${xStart} ${-VB} L ${xStart} ${B} ${waveEdge.replace(/^M\s+\S+\s+\S+/, '')} L ${xEnd} ${-VB} Z`;
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Svg width="100%" height="100%" viewBox={`0 0 ${VB} ${VB}`}>
@@ -677,50 +722,74 @@ function WaterWave({
           <ClipPath id="liquidClip">
             <Circle cx={VB / 2} cy={VB / 2} r={VB / 2} />
           </ClipPath>
-          <SvgLinearGradient
-            id={`waterGrad-${state}`}
-            x1="0"
-            y1={B}
-            x2="0"
-            y2={VB}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop
-              offset="0"
-              stopColor={cfg.topRgb}
-              stopOpacity={cfg.alphaTop}
-            />
-            <Stop
-              offset="1"
-              stopColor={cfg.botRgb}
-              stopOpacity={cfg.alphaBot}
-            />
-          </SvgLinearGradient>
+          {!isOled && (
+            <SvgLinearGradient
+              id={`waterGrad-${state}`}
+              x1="0"
+              y1={B}
+              x2="0"
+              y2={VB}
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop
+                offset="0"
+                stopColor={cfg.topRgb}
+                stopOpacity={cfg.alphaTop}
+              />
+              <Stop
+                offset="1"
+                stopColor={cfg.botRgb}
+                stopOpacity={cfg.alphaBot}
+              />
+            </SvgLinearGradient>
+          )}
         </Defs>
 
         <G clipPath="url(#liquidClip)">
-          {/* Main water wave animated group (drift + bob) */}
-          {/* @ts-ignore */}
-          <AnimatedG style={waveAnimatedStyle}>
-            {/* Liquid fill */}
-            <Path d={fillPath} fill={`url(#waterGrad-${state})`} />
-            {/* Faint ripple line 6px below: stroke-opacity="0.10" stroke-width="1.2" */}
-            <Path
-              d={rippleEdge}
-              fill="none"
-              stroke="#ffffff"
-              strokeOpacity={0.1}
-              strokeWidth={1.2}
-            />
-            {/* Single surface crest line: stroke-opacity="0.40" stroke-width="1.4" */}
-            <Path
-              d={waveEdge}
-              fill="none"
-              stroke="#ffffff"
-              strokeOpacity={0.4}
-              strokeWidth={1.4}
-            />
-          </AnimatedG>
+          {isOled ? (
+            /* OLED (Aubade - True Black (OLED).html:1336-1342): dark headspace mask + quiet wave lines */
+            /* @ts-ignore */
+            <AnimatedG style={waveAnimatedStyle}>
+              {/* Dark headspace painted down to wave curve */}
+              <Path d={headPath} fill="#0A070D" />
+              {/* Faint echo ripple line 6px below: stroke="#E9DDD6", opacity=0.04 */}
+              <Path
+                d={rippleEdge}
+                fill="none"
+                stroke="#E9DDD6"
+                strokeOpacity={0.04}
+                strokeWidth={1.2}
+              />
+              {/* Main surface crest line: stroke="#E9DDD6", opacity=0.16 */}
+              <Path
+                d={waveEdge}
+                fill="none"
+                stroke="#E9DDD6"
+                strokeOpacity={0.16}
+                strokeWidth={1.4}
+              />
+            </AnimatedG>
+          ) : (
+            /* Dawn & Dusk: Linear gradient liquid fill + luminous crest lines */
+            /* @ts-ignore */
+            <AnimatedG style={waveAnimatedStyle}>
+              <Path d={fillPath} fill={`url(#waterGrad-${state})`} />
+              <Path
+                d={rippleEdge}
+                fill="none"
+                stroke="#ffffff"
+                strokeOpacity={0.10}
+                strokeWidth={1.2}
+              />
+              <Path
+                d={waveEdge}
+                fill="none"
+                stroke="#ffffff"
+                strokeOpacity={0.40}
+                strokeWidth={1.4}
+              />
+            </AnimatedG>
+          )}
         </G>
       </Svg>
     </View>
@@ -730,17 +799,25 @@ function WaterWave({
 // ─── Bubbles ──────────────────────────────────────────────────────────────────
 
 /**
- * Animated Bubble — appearance is identical in Dawn and Dusk.
- * Source: .bubble in Aubade - Today.html / Aubade - Dusk (dark).html
+ * Animated Bubble.
+ *
+ * In OLED:
+ *  - Bubbles rise only within their own liquid, never into the headspace
+ *    (--rise: 150px for steady, 104px for caution, 60px for rest)
+ *  - Dimmed, subtle opacity (max 0.30)
  */
 function SingleBubble({
   bubble,
   orbSize,
   reduceMotion,
+  isOled = false,
+  state = "steady",
 }: {
   bubble: BubbleConfig;
   orbSize: number;
   reduceMotion: boolean;
+  isOled?: boolean;
+  state?: EnergyOrbState;
 }) {
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
@@ -748,12 +825,14 @@ function SingleBubble({
 
   const scaleFactor = orbSize / 254;
   const bubbleSize = bubble.w * scaleFactor;
-  // Rise all the way from the bottom of the sphere to the top rim
-  const riseDistance = 248 * scaleFactor;
+  // OLED: Rise only within liquid body
+  const riseDistance = isOled
+    ? (state === "rest" ? 60 : state === "caution" ? 104 : 140) * scaleFactor
+    : 248 * scaleFactor;
 
   useEffect(() => {
     if (reduceMotion) {
-      opacity.value = 0.4;
+      opacity.value = isOled ? 0.15 : 0.4;
       translateY.value = -riseDistance * 0.4;
       scale.value = 1.0;
       return;
@@ -775,8 +854,8 @@ function SingleBubble({
       bubble.delay,
       withRepeat(
         withSequence(
-          withTiming(0.85, { duration: bubble.dur * 0.15, easing: Easing.out(Easing.quad) }),
-          withTiming(0.55, { duration: bubble.dur * 0.70, easing: Easing.linear }),
+          withTiming(isOled ? 0.30 : 0.85, { duration: bubble.dur * 0.15, easing: Easing.out(Easing.quad) }),
+          withTiming(isOled ? 0.16 : 0.55, { duration: bubble.dur * 0.70, easing: Easing.linear }),
           withTiming(0, { duration: bubble.dur * 0.15, easing: Easing.in(Easing.quad) }),
         ),
         -1,
@@ -795,12 +874,14 @@ function SingleBubble({
         false,
       ),
     );
-  }, [bubble.delay, bubble.dur, opacity, reduceMotion, riseDistance, scale, translateY]);
+  }, [bubble.delay, bubble.dur, isOled, opacity, reduceMotion, riseDistance, scale, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
     opacity: opacity.value,
   }));
+
+  const gradId = `bubbleGrad_${isOled ? "oled" : "def"}_${bubble.leftPercent}`;
 
   return (
     <Animated.View
@@ -817,14 +898,14 @@ function SingleBubble({
     >
       <Svg width={bubbleSize} height={bubbleSize} viewBox="0 0 100 100">
         <Defs>
-          <SvgRadialGradient id="bubbleGrad" cx="35%" cy="30%" r="70%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.98} />
-            <Stop offset="40%" stopColor="#ffffff" stopOpacity={0.65} />
-            <Stop offset="75%" stopColor="#ffffff" stopOpacity={0.25} />
+          <SvgRadialGradient id={gradId} cx="35%" cy="30%" r="70%">
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.30 : 0.98} />
+            <Stop offset="40%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.65} />
+            <Stop offset="75%" stopColor="#ffffff" stopOpacity={isOled ? 0.03 : 0.25} />
             <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
           </SvgRadialGradient>
         </Defs>
-        <Circle cx="50" cy="50" r="50" fill="url(#bubbleGrad)" />
+        <Circle cx="50" cy="50" r="50" fill={`url(#${gradId})`} />
       </Svg>
     </Animated.View>
   );
@@ -834,10 +915,14 @@ function BubblesLayer({
   bubbles,
   orbSize,
   reduceMotion,
+  isOled = false,
+  state = "steady",
 }: {
   bubbles: BubbleConfig[];
   orbSize: number;
   reduceMotion: boolean;
+  isOled?: boolean;
+  state?: EnergyOrbState;
 }) {
   return (
     <View style={styles.clippedLayer} pointerEvents="none">
@@ -847,6 +932,8 @@ function BubblesLayer({
           bubble={b}
           orbSize={orbSize}
           reduceMotion={reduceMotion}
+          isOled={isOled}
+          state={state}
         />
       ))}
     </View>
@@ -864,61 +951,60 @@ function BubblesLayer({
  *   b2: 30×30, top 62% (157.5px), left 30% (76.2px)  → center (91.2, 172.5),  radius 15, opacity 0.85
  *   b3: 18×18, top 24% (61.0px), left 34% (86.4px)  → center (95.4, 70.0),   radius 9,  opacity 0.70
  */
-function BloomsLayer({ size }: { size: number }) {
+function BloomsLayer({ size, isOled = false }: { size: number; isOled?: boolean }) {
   const isSmall = size < 200;
 
   return (
     <View style={styles.clippedLayer} pointerEvents="none">
       <Svg width={size} height={size} viewBox="0 0 254 254">
         <Defs>
-          {/* b1 gradient — Soft 3D spherical bloom with reduced opacity */}
+          {/* b1 gradient — Soft 3D spherical bloom */}
           <SvgRadialGradient id="bloomGrad1" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.80} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={0.65} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={0.34} />
-            <Stop offset="75%" stopColor="#ffffff" stopOpacity={0.10} />
-            <Stop offset="90%" stopColor="#ffffff" stopOpacity={0.02} />
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.80} />
+            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.06 : 0.65} />
+            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.34} />
+            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.20} />
+            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
             <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
           </SvgRadialGradient>
 
-          {/* b2 gradient — Medium spherical bloom with reduced opacity */}
+          {/* b2 gradient — Medium spherical bloom */}
           <SvgRadialGradient id="bloomGrad2" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.75} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={0.58} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={0.28} />
-            <Stop offset="75%" stopColor="#ffffff" stopOpacity={0.08} />
-            <Stop offset="90%" stopColor="#ffffff" stopOpacity={0.02} />
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.09 : 0.75} />
+            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.05 : 0.58} />
+            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.28} />
+            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.15} />
+            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
             <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
           </SvgRadialGradient>
 
-          {/* b3 gradient — Top-left spherical bloom with reduced opacity */}
+          {/* b3 gradient — Top-left spherical bloom */}
           <SvgRadialGradient id="bloomGrad3" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.72} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={0.52} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={0.24} />
-            <Stop offset="75%" stopColor="#ffffff" stopOpacity={0.06} />
-            <Stop offset="90%" stopColor="#ffffff" stopOpacity={0.02} />
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.07 : 0.72} />
+            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.04 : 0.52} />
+            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.015 : 0.24} />
+            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.005 : 0.12} />
+            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
             <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
           </SvgRadialGradient>
-
         </Defs>
 
         {isSmall ? (
           /* Small orb (e.g. 152px onboarding / learning): keep configured sizes and positions */
           <G>
-            <Circle cx={186} cy={120} r={50} fill="url(#bloomGrad1)" />
-            <Circle cx={82} cy={188} r={28} fill="url(#bloomGrad2)" />
-            <Circle cx={86} cy={78} r={19} fill="url(#bloomGrad3)" />
+            <Circle cx={186} cy={120} r={46} fill="url(#bloomGrad1)" />
+            <Circle cx={84} cy={186} r={26} fill="url(#bloomGrad2)" />
+            <Circle cx={88} cy={76} r={17} fill="url(#bloomGrad3)" />
           </G>
         ) : (
-          /* Bigger orb (e.g. 254px Today screen): exact sizes and positions of the 3 spheres */
+          /* Bigger orb (e.g. 254px Today screen): exact sizes and positions (.b1: 54x54 -> r=27, .b2: 30x30 -> r=15, .b3: 18x18 -> r=9) */
           <G>
             {/* Large right sphere bloom */}
-            <Circle cx={166} cy={104} r={32} fill="url(#bloomGrad1)" />
+            <Circle cx={166} cy={104} r={27} fill="url(#bloomGrad1)" />
             {/* Bottom-left sphere bloom */}
-            <Circle cx={90} cy={168} r={18} fill="url(#bloomGrad2)" />
+            <Circle cx={90} cy={168} r={15} fill="url(#bloomGrad2)" />
             {/* Top-left sphere bloom */}
-            <Circle cx={94} cy={72} r={10} fill="url(#bloomGrad3)" />
+            <Circle cx={94} cy={72} r={9} fill="url(#bloomGrad3)" />
           </G>
         )}
       </Svg>
@@ -929,17 +1015,12 @@ function BloomsLayer({ size }: { size: number }) {
 // ─── EnergyOrb Component ──────────────────────────────────────────────────────
 
 /**
- * Reusable Signature EnergyOrb Component — theme-aware (Dawn + Dusk).
- * Sourced directly from Aubade - Today.html & Aubade - Dusk (dark).html.
+ * Reusable Signature EnergyOrb Component — theme-aware (Dawn, Dusk, True Black / OLED).
+ * Sourced directly from Aubade - Today.html, Aubade - Dusk (dark).html, and Aubade - True Black (OLED).html.
  *
  * Dawn: warm peach/cream glass sphere.
- * Dusk: dark translucent plum glass headspace per the design handoff:
- *   - --orb-glass dark core
- *   - --orb-rim (1.5px hairline rim + subtle top/bottom highlights)
- *   - --orb-veil subtle white veil
- *   - State-specific bottom glow (steady / caution / rest)
- *   - --orb-ember for brand/empty/wearableRead variant
- *   - State-specific outer halo
+ * Dusk: dark translucent plum glass headspace per the design handoff.
+ * True Black: near-black glass, zero halo, subtle 1px hairline rim, dimmed ember liquid.
  *
  * All color values are read from theme tokens.
  */
@@ -959,8 +1040,9 @@ export function EnergyOrb({
 
   // Read theme tokens
   const theme = useAppTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const orbGlass = theme.components.energyOrb.glass;
+  const isOled = isDark && (isTrueBlack || (orbGlass.haloInnerAlpha === 0 && orbGlass.haloMidAlpha === 0));
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
@@ -1032,7 +1114,7 @@ export function EnergyOrb({
           breatheStyle,
         ]}
       >
-        {/* Layer 1: Glass Sphere (.glass + .glass::after) — Dawn or Dusk */}
+        {/* Layer 1: Glass Sphere (.glass + .glass::after) — Dawn or Dusk/OLED */}
         {isDark ? (
           <DuskGlassSphere size={size} state={effectiveState} glass={orbGlass} />
         ) : (
@@ -1044,6 +1126,7 @@ export function EnergyOrb({
           <WaterWave
             state={effectiveState}
             reduceMotion={reduceMotion || !animated}
+            isOled={isOled}
           />
         )}
 
@@ -1052,16 +1135,19 @@ export function EnergyOrb({
           bubbles={activeBubbles}
           orbSize={size}
           reduceMotion={reduceMotion || !animated}
+          isOled={isOled}
+          state={effectiveState}
         />
 
         {/* Layer 4: Specular Blooms (.blooms .b1 / .b2 / .b3) */}
-        <BloomsLayer size={size} />
+        <BloomsLayer size={size} isOled={isOled} />
       </Animated.View>
     </View>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+
 
 const styles = StyleSheet.create({
   container: {

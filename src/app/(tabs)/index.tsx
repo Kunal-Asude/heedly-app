@@ -18,7 +18,7 @@ export default function TodayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const params = useLocalSearchParams<{ mode?: string }>();
 
   const validParamMode =
@@ -83,54 +83,123 @@ export default function TodayScreen() {
   const isLearningState =
     statusMode === "fd-empty" || statusMode === "fd-wearable";
 
-  // Dynamic modal theme tokens
+  // Dynamic modal theme tokens (Dawn vs Dusk vs True Black / OLED)
   const modalTokens = {
-    backdrop: isDark ? "rgba(18, 10, 20, 0.62)" : "rgba(74, 58, 57, 0.34)",
-    sheetBg: isDark ? "#332538" : "#fbf3ec",
-    sheetBorder: isDark ? "rgba(199, 180, 191, 0.14)" : "transparent",
-    handle: isDark ? "rgba(199, 180, 191, 0.28)" : "rgba(120, 90, 90, 0.2)",
-    headingDark: isDark ? "#F3E7E1" : theme.ink.display,
-    headingAccent: isDark ? "#E8907A" : theme.coral.terracottaDeep,
-    subtitle: isDark ? "rgba(199, 180, 191, 0.95)" : theme.ink.muted,
+    backdrop: isDark
+      ? isTrueBlack
+        ? "rgba(0, 0, 0, 0.72)"
+        : "rgba(18, 10, 20, 0.62)"
+      : "rgba(74, 58, 57, 0.34)",
+    sheetBg: isDark
+      ? isTrueBlack
+        ? "#16111B"
+        : "#332538"
+      : "#fbf3ec",
+    sheetBorder: isDark
+      ? isTrueBlack
+        ? "rgba(255, 255, 255, 0.07)"
+        : "rgba(199, 180, 191, 0.14)"
+      : "transparent",
+    handle: isDark
+      ? isTrueBlack
+        ? "rgba(255, 255, 255, 0.18)"
+        : "rgba(199, 180, 191, 0.28)"
+      : "rgba(120, 90, 90, 0.2)",
+    headingDark: isDark
+      ? isTrueBlack
+        ? "#E9DDD6"
+        : "#F3E7E1"
+      : theme.ink.display,
+    headingAccent: isDark
+      ? isTrueBlack
+        ? "#C97B60"
+        : "#E8907A"
+      : theme.coral.terracottaDeep,
+    subtitle: isDark
+      ? isTrueBlack
+        ? "#9A8A91"
+        : "rgba(199, 180, 191, 0.95)"
+      : theme.ink.muted,
     badgeBg:
       whyModalType === "rest"
         ? isDark
-          ? "rgba(226, 122, 140, 0.18)"
+          ? isTrueBlack
+            ? "rgba(190, 106, 92, 0.14)"
+            : "rgba(226, 122, 140, 0.18)"
           : "#FCE4E6"
         : isDark
-          ? "rgba(232, 168, 124, 0.18)"
+          ? isTrueBlack
+            ? "rgba(194, 154, 95, 0.14)"
+            : "rgba(232, 168, 124, 0.18)"
           : "#F4E2C7",
     badgeBorder:
       whyModalType === "rest"
         ? isDark
-          ? "rgba(226, 122, 140, 0.30)"
+          ? isTrueBlack
+            ? "rgba(255, 255, 255, 0.07)"
+            : "rgba(226, 122, 140, 0.30)"
           : "transparent"
         : isDark
-          ? "rgba(232, 168, 124, 0.30)"
+          ? isTrueBlack
+            ? "rgba(255, 255, 255, 0.07)"
+            : "rgba(232, 168, 124, 0.30)"
           : "transparent",
     badgeDot:
       whyModalType === "rest"
         ? isDark
-          ? "#E792A4"
+          ? isTrueBlack
+            ? "#BE6A5C"
+            : "#E792A4"
           : "#DC6B76"
         : isDark
-          ? "#E8A87C"
+          ? isTrueBlack
+            ? "#C29A5F"
+            : "#E8A87C"
           : "#D4A545",
     badgeText:
       whyModalType === "rest"
         ? isDark
-          ? "#E792A4"
+          ? isTrueBlack
+            ? "#BE6A5C"
+            : "#E792A4"
           : "#DC6B76"
         : isDark
-          ? "#E8A87C"
+          ? isTrueBlack
+            ? "#C29A5F"
+            : "#E8A87C"
           : "#B57E32",
-    iconBg: isDark ? "rgba(138, 75, 60, 0.35)" : "#F3E3D6",
-    iconBorder: isDark ? "rgba(232, 168, 124, 0.22)" : "transparent",
-    iconTint: isDark ? "#F3D9CD" : "#785344",
-    itemTitle: isDark ? "#F3E7E1" : theme.ink.display,
-    itemDesc: isDark ? "rgba(199, 180, 191, 0.88)" : "rgba(74, 58, 57, 0.66)",
-    reassurance: isDark ? "rgba(199, 180, 191, 0.82)" : "rgba(74, 58, 57, 0.6)",
+    iconBg: isDark
+      ? isTrueBlack
+        ? "#241A24"
+        : "rgba(138, 75, 60, 0.35)"
+      : "#F3E3D6",
+    iconBorder: isDark
+      ? isTrueBlack
+        ? "rgba(255, 255, 255, 0.07)"
+        : "rgba(232, 168, 124, 0.22)"
+      : "transparent",
+    iconTint: isDark
+      ? isTrueBlack
+        ? "#C97B60"
+        : "#F3D9CD"
+      : "#785344",
+    itemTitle: isDark
+      ? isTrueBlack
+        ? "#E9DDD6"
+        : "#F3E7E1"
+      : theme.ink.display,
+    itemDesc: isDark
+      ? isTrueBlack
+        ? "#9A8A91"
+        : "rgba(199, 180, 191, 0.88)"
+      : "rgba(74, 58, 57, 0.66)",
+    reassurance: isDark
+      ? isTrueBlack
+        ? "#9A8A91"
+        : "rgba(199, 180, 191, 0.82)"
+      : "rgba(74, 58, 57, 0.6)",
   };
+
 
   return (
     <View style={styles.root}>
@@ -324,6 +393,7 @@ export default function TodayScreen() {
               style={({ pressed }) => [
                 styles.modalOkayBtnWrapper,
                 pressed && styles.pressed,
+                isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
               ]}
               onPress={() => setIsWhyModalOpen(false)}
               accessibilityRole="button"
@@ -332,14 +402,22 @@ export default function TodayScreen() {
               <LinearGradient
                 colors={
                   isDark
-                    ? ["#634256", "#8A5D7C", "#9E768E"]
+                    ? isTrueBlack
+                      ? ["#574049", "#241A20"]
+                      : ["#634256", "#8A5D7C", "#9E768E"]
                     : [theme.coral.light, theme.coral.mid, theme.coral.primary]
                 }
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={styles.modalOkayBtnGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[
+                  styles.modalOkayBtnGradient,
+                  isDark && isTrueBlack && {
+                    borderColor: "rgba(255, 255, 255, 0.06)",
+                    borderWidth: 1,
+                  },
+                ]}
               >
-                <Text style={styles.modalOkayBtnText}>Okay</Text>
+                <Text style={[styles.modalOkayBtnText, isDark && isTrueBlack && { color: "#EADCD4" }]}>Okay</Text>
               </LinearGradient>
             </Pressable>
           </View>
@@ -379,6 +457,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: -12 },
     shadowOpacity: 0.35,
+
     shadowRadius: 34,
     elevation: 16,
   },

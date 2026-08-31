@@ -32,12 +32,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // Supporting micro text (17px, line-height 25px, matching onboarding description)
+  // .fd-micro: 14.5px, weight 500, line-height 21px, letter-spacing -0.005em
   supportingText: {
-    fontSize: 17,
-    fontWeight: "400",
-    lineHeight: 25,
+    fontSize: 14.5,
+    fontWeight: "500",
+    lineHeight: 21,
     textAlign: "center",
-    maxWidth: 330,
+    maxWidth: 320,
+    letterSpacing: -0.07,
   },
 });

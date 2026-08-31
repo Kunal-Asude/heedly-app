@@ -5,17 +5,16 @@
 
 ---
 
-## trueBlack Theme Exists But Is Not Wired
+## ~~trueBlack Theme Exists But Is Not Wired~~ ✅ RESOLVED
 
-**Code:** `src/constants/themes/trueBlack.ts` and `src/constants/themes/index.ts` export `trueBlackTheme`. `ThemeMode` type includes `"trueBlack"`. `themes` registry object includes `trueBlack: trueBlackTheme`.
+**Was:** `trueBlackTheme` was defined in tokens but not wired in `ThemeContext.tsx`, and the `isTrueBlack` toggle in Settings was disconnected.
 
-**Context:** `ThemeContext.tsx` only resolves to `lightTheme` or `darkTheme`. `AppThemeMode` type is `"light" | "dark" | "system"` — it does not include `"trueBlack"`.
-
-**Settings UI:** `isTrueBlack` setting exists in `UserSettings` and `MOCK_USER_SETTINGS`. Settings screen renders a "True Black" toggle that updates local `useState(isTrueBlack)`. This local state is **never passed to ThemeContext**.
-
-**Intent (inferred):** True Black was planned as a third selectable variant for dark mode (OLED optimization). The theme is defined and the setting UI exists, but the wiring between `isTrueBlack` toggle and `ThemeContext.resolvedTheme` was never implemented.
-
-**Severity:** Medium. The feature is silently broken (toggle does nothing). Code generation agents must NOT attempt to wire it without a human decision on how `isTrueBlack` interacts with `themeMode` (is it a modifier on top of `dark`? a separate mode?).
+**Resolution (2026-08-31):**
+- Tokens updated verbatim from design handoff files (`tokens/oled.css`, `reference/Aubade - True Black (OLED).html`).
+- `ThemeContext.tsx` updated with `isTrueBlack` preference loading and persistence to `@heedly/is_true_black`.
+- 3-way theme resolution active: Dawn (light), Dusk (dark), and True Black (OLED) when `isDark && isTrueBlack`.
+- All app screens (Today, Patterns, Your Data, Settings, Check-in flows: Plan, Plan Result, Yesterday, Energy, Body, Noting, Period, Saved, and Onboarding) and core components (`EnergyOrb`, `DawnBackground`, `NotificationTile`, `SettingsCard`, `PatternCard`, `DataCard`) updated with exact OLED specifications.
+- TypeScript check (`npx tsc --noEmit`) passes cleanly with 0 errors.
 
 ---
 
@@ -43,21 +42,19 @@
 
 **Code:** Settings screen initializes all toggles from `MOCK_USER_SETTINGS` via `useUserSettings()`. Toggle state changes update local `useState` only. `updateSetting()` from `useUserSettings` updates in-memory state within that hook instance only — not persisted to AsyncStorage, not broadcast to other components.
 
-**Exception:** `themeMode` is persisted — because it goes through `ThemeContext.setThemeMode()` which explicitly writes to AsyncStorage. This is the only setting that survives a restart.
+**Exception:** `themeMode` and `isTrueBlack` are persisted — because they go through `ThemeContext` which explicitly writes to AsyncStorage (`@heedly/theme_mode` and `@heedly/is_true_black`).
 
 **Severity:** Medium. For prototype, acceptable. Any task that "saves a setting" must define where it persists (AsyncStorage key, shape) and whether `useUserSettings` needs to become a context with persistence.
 
 ---
 
-## Hardcoded Colors in Screens
+## ~~Hardcoded Colors in Screens~~ ✅ RESOLVED
 
-**Code:** `paywall.tsx`, `noting.tsx`, and `period.tsx` define module-level `const COLORS = { ... }` objects with hardcoded Dawn (light) color values. These screens do not change appearance in dark mode for those elements.
+**Was:** `noting.tsx`, `period.tsx`, and `paywall.tsx` contained module-level `const COLORS = { ... }` objects with hardcoded Dawn color values.
 
-**Dark.ts comment:** *"DO NOT hardcode any of these values inside individual screens."*
-
-**Conflict:** The declared rule in dark.ts is violated by these three screens.
-
-**Severity:** Low (cosmetic). These are known prototype gaps. New screens should not follow this pattern — use `useTheme()` and token values.
+**Resolution (2026-08-31):**
+- `paywall.tsx`, `noting.tsx`, and `period.tsx` were migrated to full dynamic theme support (Dawn, Dusk, and True Black OLED).
+- TypeScript check (`npx tsc --noEmit`) passes cleanly with 0 errors.
 
 ---
 

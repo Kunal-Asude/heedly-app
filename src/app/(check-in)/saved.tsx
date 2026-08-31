@@ -12,7 +12,7 @@ import { useThemeMode } from '@/contexts/ThemeContext';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
-function FiveDotRating({ value, isDark }: { value: number; isDark: boolean }) {
+function FiveDotRating({ value, isDark, isTrueBlack = false }: { value: number; isDark: boolean; isTrueBlack?: boolean }) {
   return (
     <View style={styles.dotRatingRow}>
       {[1, 2, 3, 4, 5].map((idx) => (
@@ -24,10 +24,14 @@ function FiveDotRating({ value, isDark }: { value: number; isDark: boolean }) {
               backgroundColor:
                 idx <= value
                   ? isDark
-                    ? '#E8907A'
+                    ? isTrueBlack
+                      ? '#C97B60'
+                      : '#E8907A'
                     : '#ec7d5e'
                   : isDark
-                  ? 'rgba(199, 180, 191, 0.24)'
+                  ? isTrueBlack
+                    ? 'rgba(255, 255, 255, 0.18)'
+                    : 'rgba(199, 180, 191, 0.24)'
                   : 'rgba(120, 90, 90, 0.18)',
             },
           ]}
@@ -42,7 +46,8 @@ function FiveDotRating({ value, isDark }: { value: number; isDark: boolean }) {
 export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
+
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -173,18 +178,18 @@ export default function CheckInSavedScreen() {
 
           {isCrash ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Logged.\n'}</Text>
-              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Rest now, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Logged.\n'}</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest now, Sam.</Text>
             </Text>
           ) : isFirstTime ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Thank you, '}</Text>
-              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Thank you, '}</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Sam.</Text>
             </Text>
           ) : (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'Saved.\n'}</Text>
-              <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>Rest well, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Saved.\n'}</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest well, Sam.</Text>
             </Text>
           )}
 
@@ -192,7 +197,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
               ]}
             >
               {"We've noted this as a crash day. No more questions."}
@@ -201,7 +206,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
               ]}
             >
               {"That's your first piece of the picture.\nEach check-in teaches heedly a little\nmore about you."}
@@ -210,7 +215,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' },
+                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
               ]}
             >
               {"We'll quietly watch for patterns and only\nping you if something matters."}
@@ -223,9 +228,10 @@ export default function CheckInSavedScreen() {
                 style={[
                   styles.summaryCard,
                   {
-                    backgroundColor: isDark ? 'rgba(51, 37, 56, 0.72)' : 'rgba(255, 252, 248, 0.72)',
-                    borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(255, 255, 255, 0.8)',
+                    backgroundColor: isDark ? (isTrueBlack ? '#16111B' : 'rgba(51, 37, 56, 0.72)') : 'rgba(255, 252, 248, 0.72)',
+                    borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(255, 255, 255, 0.09)') : 'rgba(255, 255, 255, 0.8)',
                   },
+                  isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                 ]}
               >
                 <Pressable
@@ -237,23 +243,23 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabel,
-                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                     ]}
                   >
                     {isFirstTime ? 'FEELING' : 'ENERGY'}
                   </Text>
                   <View style={styles.rowValueBlock}>
-                    <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                    <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
                       {energyLabel}
                     </Text>
-                    <FiveDotRating value={energyRating} isDark={isDark} />
+                    <FiveDotRating value={energyRating} isDark={isDark} isTrueBlack={isTrueBlack} />
                   </View>
                 </Pressable>
 
                 <View
                   style={[
                     styles.divider,
-                    { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                    { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
                   ]}
                 />
 
@@ -266,23 +272,23 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabel,
-                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                     ]}
                   >
                     BODY
                   </Text>
                   <View style={styles.rowValueBlock}>
-                    <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                    <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
                       {bodyLabel}
                     </Text>
-                    <FiveDotRating value={bodyRating} isDark={isDark} />
+                    <FiveDotRating value={bodyRating} isDark={isDark} isTrueBlack={isTrueBlack} />
                   </View>
                 </Pressable>
 
                 <View
                   style={[
                     styles.divider,
-                    { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                    { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
                   ]}
                 />
 
@@ -295,12 +301,12 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabelTop,
-                      { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                     ]}
                   >
                     NOTABLE
                   </Text>
-                  <Text style={[styles.rowValueTextNotable, { color: isDark ? '#F3E7E1' : '#5a4644' }]}>
+                  <Text style={[styles.rowValueTextNotable, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#5a4644' }]}>
                     {tagsText}
                   </Text>
                 </Pressable>
@@ -310,7 +316,7 @@ export default function CheckInSavedScreen() {
                     <View
                       style={[
                         styles.divider,
-                        { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                        { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
                       ]}
                     />
                     <Pressable
@@ -322,12 +328,12 @@ export default function CheckInSavedScreen() {
                       <Text
                         style={[
                           styles.rowLabel,
-                          { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                          { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                         ]}
                       >
                         YESTERDAY
                       </Text>
-                      <Text style={[styles.rowValueText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                      <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
                         {yesterdayLabel}
                       </Text>
                     </Pressable>
@@ -339,7 +345,7 @@ export default function CheckInSavedScreen() {
                     <View
                       style={[
                         styles.divider,
-                        { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.12)' : 'rgba(120, 90, 90, 0.1)' },
+                        { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
                       ]}
                     />
                     <Pressable
@@ -351,12 +357,12 @@ export default function CheckInSavedScreen() {
                       <Text
                         style={[
                           styles.rowLabelTop,
-                          { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                          { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                         ]}
                       >
                         CYCLE
                       </Text>
-                      <Text style={[styles.rowValueTextNotable, { color: isDark ? '#F3E7E1' : '#5a4644' }]}>
+                      <Text style={[styles.rowValueTextNotable, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#5a4644' }]}>
                         {periodInfo}
                       </Text>
                     </Pressable>
@@ -367,7 +373,7 @@ export default function CheckInSavedScreen() {
               <Text
                 style={[
                   styles.helperText,
-                  { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' },
+                  { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
                 ]}
               >
                 Tap any line to edit before you go.
@@ -378,7 +384,11 @@ export default function CheckInSavedScreen() {
 
         <View style={styles.bottomSection}>
           <Pressable
-            style={({ pressed }) => [styles.buttonWrapper, pressed && styles.buttonPressed]}
+            style={({ pressed }) => [
+              styles.buttonWrapper,
+              pressed && styles.buttonPressed,
+              isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
+            ]}
             onPress={handleBackToToday}
             accessibilityRole="button"
             accessibilityLabel="Back to today"
@@ -386,23 +396,32 @@ export default function CheckInSavedScreen() {
             <LinearGradient
               colors={
                 isDark
-                  ? ['#634256', '#8A5D7C', '#9E768E']
+                  ? isTrueBlack
+                    ? ['#574049', '#241A20']
+                    : ['#634256', '#8A5D7C', '#9E768E']
                   : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 252, 248, 0.85)']
               }
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={[
                 styles.buttonGradient,
-                !isDark && {
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.85)',
-                },
+                isDark && isTrueBlack
+                  ? {
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.06)',
+                    }
+                  : !isDark
+                  ? {
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.85)',
+                    }
+                  : undefined,
               ]}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  { color: isDark ? '#FFF6F1' : '#463332' },
+                  { color: isDark ? (isTrueBlack ? '#EADCD4' : '#FFF6F1') : '#463332' },
                 ]}
               >
                 Back to today

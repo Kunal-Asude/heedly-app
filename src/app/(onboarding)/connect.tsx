@@ -24,11 +24,12 @@ export default function ConnectWearableScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const ctaTokens = theme.components.cta;
   const { wearables } = useUserSettings();
   const [selectedDevice, setSelectedDevice] = useState<DeviceId | null>(null);
   const [isNoDataSheetVisible, setIsNoDataSheetVisible] = useState(false);
+
 
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
   const deviceName = selectedDeviceObj ? selectedDeviceObj.label : 'Oura';
@@ -64,15 +65,15 @@ export default function ConnectWearableScreen() {
 
           {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
           <View style={styles.progressRow}>
-            <View style={[styles.progressActive, { backgroundColor: theme.coral.primary }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
           </View>
 
           {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
             <Text style={[styles.headingDark, { color: theme.ink.display }]}>Connect your{'\n'}</Text>
-            <Text style={[styles.headingAccent, { color: theme.coral.terracottaDeep }]}>wearable.</Text>
+            <Text style={[styles.headingAccent, { color: theme.coral.terracotta }]}>wearable.</Text>
           </Text>
 
           {/* ── Supporting text (.ob-sub) ──── */}
@@ -154,7 +155,7 @@ export default function ConnectWearableScreen() {
                   <Text
                     style={[
                       styles.cardConnect,
-                      { color: theme.coral.terracottaDeep },
+                      { color: theme.coral.terracotta },
                       isSelected && { color: cardTokens.selectedActionColor },
                       isWaiting && { color: cardTokens.waitingActionColor },
                     ]}>
@@ -178,9 +179,9 @@ export default function ConnectWearableScreen() {
               <View
                 style={[
                   styles.linkUnderlineWrapper,
-                  { borderBottomColor: `${theme.coral.terracottaDeep}80` },
+                  { borderBottomColor: `${theme.coral.terracotta}80` },
                 ]}>
-                <Text style={[styles.skipLink, { color: theme.coral.terracottaDeep }]}>
+                <Text style={[styles.skipLink, { color: theme.coral.terracotta }]}>
                   you can connect later
                 </Text>
               </View>
@@ -231,7 +232,7 @@ export default function ConnectWearableScreen() {
         animationType="slide"
         transparent={true}
         onRequestClose={handleDismissSheet}>
-        <View style={[styles.modalBackdrop, { backgroundColor: isDark ? 'rgba(18, 10, 20, 0.58)' : 'rgba(74, 58, 57, 0.34)' }]}>
+        <View style={[styles.modalBackdrop, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(0, 0, 0, 0.72)' : 'rgba(18, 10, 20, 0.58)') : 'rgba(74, 58, 57, 0.34)' }]}>
           <Pressable
             style={styles.modalOverlayDismiss}
             onPress={handleDismissSheet}
@@ -241,19 +242,19 @@ export default function ConnectWearableScreen() {
             style={[
               styles.modalSheetContainer,
               {
-                backgroundColor: isDark ? '#332538' : '#fbf3ec',
-                borderTopColor: isDark ? 'rgba(199, 180, 191, 0.14)' : 'transparent',
+                backgroundColor: isDark ? (isTrueBlack ? '#16111B' : '#332538') : '#fbf3ec',
+                borderTopColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.14)') : 'transparent',
                 borderTopWidth: isDark ? 1 : 0,
                 paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 34,
               },
             ]}>
             {/* Grip Handle (.nd-grip) */}
-            <View style={[styles.modalHandle, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.28)' : 'rgba(120, 90, 90, 0.2)' }]} />
+            <View style={[styles.modalHandle, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.18)' : 'rgba(199, 180, 191, 0.28)') : 'rgba(120, 90, 90, 0.2)' }]} />
 
             {/* Title: Comfortaa 400, 27px */}
             <Text style={styles.sheetTitle}>
               <Text style={{ color: theme.ink.display }}>No data </Text>
-              <Text style={{ color: theme.coral.terracottaDeep }}>coming through.</Text>
+              <Text style={{ color: theme.coral.terracotta }}>coming through.</Text>
             </Text>
 
             {/* Subtitle / Body text (.nd-body: 17px, matching description text) */}
@@ -267,10 +268,10 @@ export default function ConnectWearableScreen() {
             <View style={styles.stepsContainer}>
               {/* Step 1 */}
               <View style={styles.stepRow}>
-                <View style={[styles.stepBadge, { backgroundColor: isDark ? 'rgba(226, 122, 108, 0.18)' : 'rgba(244, 164, 126, 0.20)' }]}>
-                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracottaDeep }]}>1</Text>
+                <View style={[styles.stepBadge, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(190, 106, 92, 0.14)' : 'rgba(226, 122, 108, 0.18)') : 'rgba(244, 164, 126, 0.20)' }]}>
+                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracotta }]}>1</Text>
                 </View>
-                <Text style={[styles.stepText, { color: isDark ? 'rgba(199, 180, 191, 0.90)' : 'rgba(74, 58, 57, 0.78)' }]}>
+                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'In '}
                   <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>
                     Apple Health → Sharing → Apps → heedly
@@ -281,16 +282,17 @@ export default function ConnectWearableScreen() {
 
               {/* Step 2 */}
               <View style={styles.stepRow}>
-                <View style={[styles.stepBadge, { backgroundColor: isDark ? 'rgba(226, 122, 108, 0.18)' : 'rgba(244, 164, 126, 0.20)' }]}>
-                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracottaDeep }]}>2</Text>
+                <View style={[styles.stepBadge, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(190, 106, 92, 0.14)' : 'rgba(226, 122, 108, 0.18)') : 'rgba(244, 164, 126, 0.20)' }]}>
+                  <Text style={[styles.stepBadgeText, { color: theme.coral.terracotta }]}>2</Text>
                 </View>
-                <Text style={[styles.stepText, { color: isDark ? 'rgba(199, 180, 191, 0.90)' : 'rgba(74, 58, 57, 0.78)' }]}>
+                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'Open the '}
                   <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{`${deviceName} app`}</Text>
                   {' once so it writes today\'s data across.'}
                 </Text>
               </View>
             </View>
+
 
             {/* Primary Action Button: Open Apple Health (.ob-cta) */}
             <Pressable

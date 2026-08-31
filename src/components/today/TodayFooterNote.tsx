@@ -24,13 +24,13 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
               <View
                 style={[
                   styles.linkUnderlineWrapper,
-                  { borderBottomColor: `${theme.coral.terracottaDeep}90` },
+                  { borderBottomColor: `${theme.coral.terracotta}90` },
                 ]}
               >
                 <Text
                   style={[
                     styles.planningText,
-                    { color: theme.coral.terracottaDeep },
+                    { color: theme.coral.terracotta },
                   ]}
                 >
                   {text}

@@ -33,13 +33,19 @@ type CustomToggleProps = {
 };
 
 function CustomToggle({ value, onValueChange }: CustomToggleProps) {
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
 
   const onColors: [string, string, string] = isDark
-    ? ['#634256', '#8A5D7C', '#9E768E']
+    ? isTrueBlack
+      ? ['#B85F47', '#B85F47', '#B85F47']
+      : ['#634256', '#8A5D7C', '#9E768E']
     : ['#f0a07e', '#e88970', '#e0735f'];
 
-  const trackInactiveBg = isDark ? 'rgba(46, 33, 50, 0.95)' : 'rgba(120, 90, 90, 0.2)';
+  const trackInactiveBg = isDark
+    ? isTrueBlack
+      ? '#16111B'
+      : 'rgba(46, 33, 50, 0.95)'
+    : 'rgba(120, 90, 90, 0.2)';
 
   return (
     <Pressable
@@ -52,8 +58,20 @@ function CustomToggle({ value, onValueChange }: CustomToggleProps) {
           colors={onColors}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
-          style={styles.toggleTrack}>
-          <View style={[styles.toggleThumb, styles.toggleThumbActive]} />
+          style={[
+            styles.toggleTrack,
+            isDark && isTrueBlack && {
+              borderColor: 'rgba(255, 255, 255, 0.07)',
+              borderWidth: 1,
+            },
+          ]}>
+          <View
+            style={[
+              styles.toggleThumb,
+              styles.toggleThumbActive,
+              isDark && isTrueBlack && { backgroundColor: '#E9DDD6' },
+            ]}
+          />
         </LinearGradient>
       ) : (
         <View
@@ -72,15 +90,34 @@ function CustomToggle({ value, onValueChange }: CustomToggleProps) {
   );
 }
 
-// ─── Settings Card Component (.sx-card with subtle gradient) ──────────────────
+// ─── Settings Card Component (.sx-card with subtle gradient / flat OLED) ─────
 
 function SettingsCard({
   children,
   isDark,
+  isTrueBlack = false,
 }: {
   children: React.ReactNode;
   isDark: boolean;
+  isTrueBlack?: boolean;
 }) {
+  if (isDark && isTrueBlack) {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: '#16111B',
+            borderColor: 'rgba(255, 255, 255, 0.07)',
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        ]}>
+        {children}
+      </View>
+    );
+  }
+
   const cardGradientColors: [string, string, string] = isDark
     ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
     : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
@@ -111,11 +148,10 @@ export default function SettingsScreen() {
   const { settings } = useUserSettings();
   const theme = useAppTheme();
 
-  // Theme selector wired to the global ThemeContext
-  const { themeMode, setThemeMode, isDark } = useThemeMode();
+  // Theme selector & True Black wired to the global ThemeContext
+  const { themeMode, setThemeMode, isDark, isTrueBlack, setTrueBlack } = useThemeMode();
 
   // Other local control states
-  const [isTrueBlack, setIsTrueBlack] = useState(settings.isTrueBlack);
   const [isReduceMotion, setIsReduceMotion] = useState(settings.isReduceMotion);
   const [isAiInsights, setIsAiInsights] = useState(settings.isAiInsights);
   const [isHormonalOptionsOpen, setIsHormonalOptionsOpen] = useState(false);
@@ -124,6 +160,7 @@ export default function SettingsScreen() {
   const [isDailyReminder, setIsDailyReminder] = useState(settings.isDailyReminder);
   const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(settings.isHarderDaysReminder);
   const [isWeeklyRecap, setIsWeeklyRecap] = useState(settings.isWeeklyRecap);
+
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -176,7 +213,7 @@ export default function SettingsScreen() {
   const segActiveTextColor = '#FFF6F1';
 
   // Change link / coral accent
-  const coralAccentColor = isDark ? '#E8907A' : theme.coral.terracottaDeep;
+  const coralAccentColor = isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracotta;
 
   // Hormonal select button
   const hormSelectBg = isDark
@@ -213,7 +250,7 @@ export default function SettingsScreen() {
   const valueTextColor = isDark ? '#F3E7E1' : '#4f3c3a';
 
   // Preview link
-  const previewLinkColor = isDark ? '#E8907A' : 'rgba(176, 83, 52, 0.85)';
+  const previewLinkColor = isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : 'rgba(176, 83, 52, 0.85)';
 
   // Plus badge
   const plusBadgeBg = isDark
@@ -255,7 +292,7 @@ export default function SettingsScreen() {
         {/* ── 1. APPEARANCE (.sx-sec) ───────────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>APPEARANCE</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           {/* Theme Row */}
           <View style={styles.row}>
             <View style={styles.rowBetween}>
@@ -270,7 +307,15 @@ export default function SettingsScreen() {
                     <View
                       style={[
                         styles.segmentBtnActive,
-                        { backgroundColor: isDark ? '#5C3E50' : '#E0735F' },
+                        {
+                          backgroundColor: isDark
+                            ? isTrueBlack
+                              ? 'rgba(190, 106, 92, 0.14)'
+                              : '#5C3E50'
+                            : '#E0735F',
+                          borderColor: isDark && isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'transparent',
+                          borderWidth: isDark && isTrueBlack ? 1 : 0,
+                        },
                       ]}>
                       <Text style={[styles.segmentTextActive, { color: segActiveTextColor }]}>System</Text>
                     </View>
@@ -289,7 +334,15 @@ export default function SettingsScreen() {
                     <View
                       style={[
                         styles.segmentBtnActive,
-                        { backgroundColor: isDark ? '#5C3E50' : '#E0735F' },
+                        {
+                          backgroundColor: isDark
+                            ? isTrueBlack
+                              ? 'rgba(190, 106, 92, 0.14)'
+                              : '#5C3E50'
+                            : '#E0735F',
+                          borderColor: isDark && isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'transparent',
+                          borderWidth: isDark && isTrueBlack ? 1 : 0,
+                        },
                       ]}>
                       <Text style={[styles.segmentTextActive, { color: segActiveTextColor }]}>Light</Text>
                     </View>
@@ -308,7 +361,15 @@ export default function SettingsScreen() {
                     <View
                       style={[
                         styles.segmentBtnActive,
-                        { backgroundColor: isDark ? '#5C3E50' : '#E0735F' },
+                        {
+                          backgroundColor: isDark
+                            ? isTrueBlack
+                              ? 'rgba(190, 106, 92, 0.14)'
+                              : '#5C3E50'
+                            : '#E0735F',
+                          borderColor: isDark && isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'transparent',
+                          borderWidth: isDark && isTrueBlack ? 1 : 0,
+                        },
                       ]}>
                       <Text style={[styles.segmentTextActive, { color: segActiveTextColor }]}>Dark</Text>
                     </View>
@@ -335,12 +396,13 @@ export default function SettingsScreen() {
           <View style={styles.row}>
             <View style={styles.rowBetween}>
               <Text style={[styles.rowTitle, { color: rowTitleColor }]}>True black (OLED)</Text>
-              <CustomToggle value={isTrueBlack} onValueChange={setIsTrueBlack} />
+              <CustomToggle value={isTrueBlack} onValueChange={setTrueBlack} />
             </View>
             <Text style={[styles.rowDescription, { color: rowDescColor }]}>
               For severe light sensitivity. Flattens dark mode to near-pure black. Applies whenever dark mode is on.
             </Text>
           </View>
+
 
           <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
@@ -359,7 +421,7 @@ export default function SettingsScreen() {
         {/* ── 2. WEARABLE (.sx-sec) ─────────────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>WEARABLE</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           {/* Connected Wearable */}
           <View style={styles.row}>
             <View style={styles.rowBetween}>
@@ -403,7 +465,7 @@ export default function SettingsScreen() {
         {/* ── 3. AI INSIGHTS (.sx-sec) ─────────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>AI INSIGHTS</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           <View style={styles.row}>
             <View style={styles.rowBetween}>
               <Text style={[styles.rowTitle, { color: rowTitleColor }]}>AI insights</Text>
@@ -418,7 +480,7 @@ export default function SettingsScreen() {
         {/* ── 4. HORMONAL CONTEXT (.sx-sec) ────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>HORMONAL CONTEXT</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           <View style={styles.row}>
             <Text style={[styles.rowTitle, { color: rowTitleColor, marginBottom: 12 }]}>Cycle & hormones</Text>
             {/* Selection Dropdown Button (.sx-select) */}
@@ -500,7 +562,7 @@ export default function SettingsScreen() {
         {/* ── 5. SUBSCRIPTION (.sx-sec) ────────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>SUBSCRIPTION</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             onPress={() => router.push('/paywall' as any)}
@@ -519,7 +581,7 @@ export default function SettingsScreen() {
         {/* ── 6. PRIVACY (.sx-sec) ─────────────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>PRIVACY</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             onPress={() => router.push('/(tabs)/your-data' as any)}
@@ -538,7 +600,7 @@ export default function SettingsScreen() {
         {/* ── 7. NOTIFICATIONS (.sx-sec) ───────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>NOTIFICATIONS</Text>
 
-        <SettingsCard isDark={isDark}>
+        <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
           {/* Daily check-in reminder */}
           <View style={styles.row}>
             <View style={styles.rowBetween}>

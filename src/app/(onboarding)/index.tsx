@@ -33,8 +33,8 @@ export default function WelcomeScreen() {
             contentFit="contain"
           />
 
-          {/* ── Tagline (.tagline: Comfortaa, 22px, #E8907A) ─── */}
-          <Text style={[styles.taglineText, { color: theme.coral.terracottaDeep }]}>
+          {/* ── Tagline (.tagline: Comfortaa, 22px, #C97B60 in OLED / #E8907A in Dusk) ─── */}
+          <Text style={[styles.taglineText, { color: theme.coral.terracotta }]}>
             Works lying down.
           </Text>
 

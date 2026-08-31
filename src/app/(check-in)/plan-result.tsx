@@ -11,15 +11,34 @@ import { Fonts } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
 
-// ─── Forecast Card Component (.pl-card with subtle gradient) ──────────────────
+// ─── Forecast Card Component (.pl-card with subtle gradient / flat OLED) ─────
 
 function ForecastCard({
   children,
   isDark,
+  isTrueBlack = false,
 }: {
   children: React.ReactNode;
   isDark: boolean;
+  isTrueBlack?: boolean;
 }) {
+  if (isDark && isTrueBlack) {
+    return (
+      <View
+        style={[
+          styles.forecastCard,
+          {
+            backgroundColor: '#16111B',
+            borderColor: 'rgba(255, 255, 255, 0.07)',
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        ]}>
+        {children}
+      </View>
+    );
+  }
+
   const cardGradientColors: [string, string, string] = isDark
     ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
     : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
@@ -47,9 +66,10 @@ function ForecastCard({
 export default function PlanResultScreen() {
   const router = useRouter();
   const theme = useAppTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const { defaultPlanningPrediction } = useCheckInConfig();
   const params = useLocalSearchParams<{ dayName?: string; activityLabel?: string }>();
+
 
   const dayName = params.dayName || 'Saturday';
   const activityLabel = params.activityLabel || 'Social';
@@ -68,7 +88,7 @@ export default function PlanResultScreen() {
   const eyebrowColor = isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.55)';
   const mainHeadingColor = isDark ? '#F3E7E1' : theme.ink.display;
   const explanationColor = isDark ? '#F3E7E1' : 'rgba(74, 58, 57, 0.82)';
-  const reminderLinkColor = isDark ? '#E8907A' : 'rgba(176, 83, 52, 0.85)';
+  const reminderLinkColor = isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : 'rgba(176, 83, 52, 0.85)';
 
   return (
     <View style={styles.root}>
@@ -95,7 +115,7 @@ export default function PlanResultScreen() {
           </View>
 
           {/* ── Main Forecast Card (.pl-card) ─────────────────────────────── */}
-          <ForecastCard isDark={isDark}>
+          <ForecastCard isDark={isDark} isTrueBlack={isTrueBlack}>
             {/* Hero Orb (.pl-gauge: 140x140) */}
             <View style={styles.orbContainer}>
               <EnergyOrb state="caution" size={140} />
@@ -106,15 +126,23 @@ export default function PlanResultScreen() {
               style={[
                 styles.badgeContainer,
                 {
-                  backgroundColor: isDark ? 'rgba(92, 60, 52, 0.65)' : 'rgba(217, 152, 67, 0.16)',
-                  borderColor: isDark ? 'rgba(236, 200, 128, 0.35)' : 'rgba(217, 152, 67, 0.3)',
+                  backgroundColor: isDark
+                    ? isTrueBlack
+                      ? 'rgba(194, 154, 95, 0.14)'
+                      : 'rgba(92, 60, 52, 0.65)'
+                    : 'rgba(217, 152, 67, 0.16)',
+                  borderColor: isDark
+                    ? isTrueBlack
+                      ? 'rgba(255, 255, 255, 0.07)'
+                      : 'rgba(236, 200, 128, 0.35)'
+                    : 'rgba(217, 152, 67, 0.3)',
                 },
               ]}>
-              <View style={styles.badgeDot} />
+              <View style={[styles.badgeDot, isDark && isTrueBlack && { backgroundColor: '#C29A5F' }]} />
               <Text
                 style={[
                   styles.badgeText,
-                  { color: isDark ? '#F5DDC4' : '#9a6a2a' },
+                  { color: isDark ? (isTrueBlack ? '#C29A5F' : '#F5DDC4') : '#9a6a2a' },
                 ]}>
                 Caution
               </Text>
@@ -131,21 +159,29 @@ export default function PlanResultScreen() {
             style={[
               styles.recommendationBox,
               {
-                backgroundColor: isDark ? 'rgba(32, 54, 46, 0.78)' : 'rgba(126, 155, 106, 0.14)',
-                borderColor: isDark ? 'rgba(134, 196, 180, 0.35)' : 'rgba(126, 155, 106, 0.3)',
+                backgroundColor: isDark
+                  ? isTrueBlack
+                    ? '#16111B'
+                    : 'rgba(32, 54, 46, 0.78)'
+                  : 'rgba(126, 155, 106, 0.14)',
+                borderColor: isDark
+                  ? isTrueBlack
+                    ? 'rgba(255, 255, 255, 0.07)'
+                    : 'rgba(134, 196, 180, 0.35)'
+                  : 'rgba(126, 155, 106, 0.3)',
               },
             ]}>
             <View style={styles.tipIconContainer}>
               <SymbolView
                 name="waveform.path"
                 size={18}
-                tintColor={isDark ? '#86C4B4' : '#5d7a52'}
+                tintColor={isDark ? (isTrueBlack ? '#9FB8A6' : '#86C4B4') : '#5d7a52'}
               />
             </View>
             <Text
               style={[
                 styles.recommendationText,
-                { color: isDark ? '#C8EADB' : '#4f5a45' },
+                { color: isDark ? (isTrueBlack ? '#9FB8A6' : '#C8EADB') : '#4f5a45' },
               ]}>
               {recommendationText}
             </Text>
@@ -155,7 +191,7 @@ export default function PlanResultScreen() {
           <Text
             style={[
               styles.estimateNotice,
-              { color: isDark ? 'rgba(199, 180, 191, 0.75)' : 'rgba(74, 58, 57, 0.7)' },
+              { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.75)') : 'rgba(74, 58, 57, 0.7)' },
             ]}>
             Days further out are a rougher estimate.
           </Text>
@@ -166,21 +202,37 @@ export default function PlanResultScreen() {
           {/* ── Bottom Action Area (.pl-done & .pl-relink) ───────────────── */}
           <View style={styles.bottomArea}>
             <Pressable
-              style={({ pressed }) => [styles.doneButtonWrapper, pressed && styles.buttonPressed]}
+              style={({ pressed }) => [
+                styles.doneButtonWrapper,
+                pressed && styles.buttonPressed,
+                isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
+              ]}
               onPress={handleDone}
               accessibilityRole="button"
               accessibilityLabel="Done">
               <LinearGradient
-                colors={isDark ? ['#634256', '#8A5D7C', '#9E768E'] : ['#f0a07e', '#e88970', '#e0735f']}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={styles.doneButtonGradient}>
-                <Text style={styles.doneButtonText}>Done</Text>
+                colors={
+                  isDark
+                    ? isTrueBlack
+                      ? ['#574049', '#241A20']
+                      : ['#634256', '#8A5D7C', '#9E768E']
+                    : ['#f0a07e', '#e88970', '#e0735f']
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[
+                  styles.doneButtonGradient,
+                  isDark && isTrueBlack && {
+                    borderColor: 'rgba(255, 255, 255, 0.06)',
+                    borderWidth: 1,
+                  },
+                ]}>
+                <Text style={[styles.doneButtonText, isDark && isTrueBlack && { color: '#EADCD4' }]}>Done</Text>
                 <View style={styles.checkmarkIconContainer}>
                   <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                     <Path
                       d="M20 6L9 17l-5-5"
-                      stroke="#FFF6F1"
+                      stroke={isDark && isTrueBlack ? '#EADCD4' : '#FFF6F1'}
                       strokeWidth={2.4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -189,6 +241,7 @@ export default function PlanResultScreen() {
                 </View>
               </LinearGradient>
             </Pressable>
+
 
             {/* Remind me link (.pl-relink) */}
             <Pressable

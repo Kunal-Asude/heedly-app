@@ -12,7 +12,7 @@ import type { YesterdayOption } from '@/types/checkin';
 export default function YesterdayScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -44,27 +44,51 @@ export default function YesterdayScreen() {
       value: 'Lighter than usual',
       prefix: 'Lighter than ',
       emphasis: 'usual',
-      dotColor: '#86C4B4',
-      cardBg: isDark ? 'rgba(134, 196, 180, 0.14)' : 'rgba(224, 240, 235, 0.85)',
-      cardBorder: isDark ? 'rgba(134, 196, 180, 0.42)' : 'rgba(134, 196, 180, 0.4)',
+      dotColor: isDark && isTrueBlack ? '#6E9678' : '#86C4B4',
+      cardBg: isDark
+        ? isTrueBlack
+          ? 'rgba(110, 150, 120, 0.14)'
+          : 'rgba(134, 196, 180, 0.14)'
+        : 'rgba(224, 240, 235, 0.85)',
+      cardBorder: isDark
+        ? isTrueBlack
+          ? 'rgba(255, 255, 255, 0.07)'
+          : 'rgba(134, 196, 180, 0.42)'
+        : 'rgba(134, 196, 180, 0.4)',
     },
     {
       id: 'same',
       value: 'About the same',
       prefix: 'About ',
       emphasis: 'the same',
-      dotColor: isDark ? '#cdb488' : '#B88A58',
-      cardBg: isDark ? 'rgba(232, 168, 124, 0.18)' : 'rgba(252, 246, 236, 0.88)',
-      cardBorder: isDark ? 'rgba(232, 168, 124, 0.4)' : 'rgba(215, 186, 150, 0.4)',
+      dotColor: isDark ? (isTrueBlack ? '#C29A5F' : '#cdb488') : '#B88A58',
+      cardBg: isDark
+        ? isTrueBlack
+          ? 'rgba(194, 154, 95, 0.14)'
+          : 'rgba(232, 168, 124, 0.18)'
+        : 'rgba(252, 246, 236, 0.88)',
+      cardBorder: isDark
+        ? isTrueBlack
+          ? 'rgba(255, 255, 255, 0.07)'
+          : 'rgba(232, 168, 124, 0.4)'
+        : 'rgba(215, 186, 150, 0.4)',
     },
     {
       id: 'heavier',
       value: 'Heavier than usual',
       prefix: 'Heavier than ',
       emphasis: 'usual',
-      dotColor: '#E27A6C',
-      cardBg: isDark ? 'rgba(226, 122, 108, 0.13)' : 'rgba(255, 238, 232, 0.88)',
-      cardBorder: isDark ? 'rgba(226, 122, 108, 0.42)' : 'rgba(226, 122, 108, 0.4)',
+      dotColor: isDark && isTrueBlack ? '#BE6A5C' : '#E27A6C',
+      cardBg: isDark
+        ? isTrueBlack
+          ? 'rgba(190, 106, 92, 0.14)'
+          : 'rgba(226, 122, 108, 0.13)'
+        : 'rgba(255, 238, 232, 0.88)',
+      cardBorder: isDark
+        ? isTrueBlack
+          ? 'rgba(255, 255, 255, 0.07)'
+          : 'rgba(226, 122, 108, 0.42)'
+        : 'rgba(226, 122, 108, 0.4)',
     },
   ];
 
@@ -148,16 +172,16 @@ export default function YesterdayScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? 'rgba(199, 180, 191, 0.81)' : 'rgba(74, 58, 57, 0.6)' }]}>
+            <Text style={[styles.backChevron, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' }]}>
               ‹
             </Text>
           </Pressable>
 
           {/* 3 Inactive Progress Dots (.ci-dots) */}
           <View style={styles.progressRow}>
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? 'rgba(199, 180, 191, 0.24)' : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
           </View>
 
           {/* Skip Link (.ci-skip) */}
@@ -167,7 +191,7 @@ export default function YesterdayScreen() {
             accessibilityRole="button"
             accessibilityLabel="Skip"
           >
-            <Text style={[styles.skipText, { color: isDark ? 'rgba(199, 180, 191, 0.68)' : 'rgba(74, 58, 57, 0.5)' }]}>
+            <Text style={[styles.skipText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>
               Skip
             </Text>
           </Pressable>
@@ -177,12 +201,12 @@ export default function YesterdayScreen() {
         <View style={styles.contentArea}>
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: isDark ? '#F3E7E1' : theme.ink.display }}>{'How did\n'}</Text>
-            <Text style={{ color: isDark ? '#E8907A' : theme.coral.terracottaDeep }}>yesterday land?</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How did\n'}</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>yesterday land?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
-          <Text style={[styles.supportingText, { color: isDark ? 'rgba(199, 180, 191, 0.95)' : 'rgba(74, 58, 57, 0.72)' }]}>
+          <Text style={[styles.supportingText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' }]}>
             {'Just a quick look back — it helps the patterns make sense.'}
           </Text>
 
@@ -201,16 +225,17 @@ export default function YesterdayScreen() {
                       borderColor: option.cardBorder,
                     },
                     isSelected && {
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(74, 58, 57, 0.35)',
-                      shadowOpacity: isDark ? 0.35 : 0.15,
+                      borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.25)') : 'rgba(74, 58, 57, 0.35)',
+                      shadowOpacity: isDark ? (isTrueBlack ? 0 : 0.35) : 0.15,
                     },
+                    isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                     (pressed || isSelected) && styles.cardPressed,
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel={option.value}
                 >
                   <View style={[styles.dot, { backgroundColor: option.dotColor }]} />
-                  <Text style={[styles.cardText, { color: isDark ? '#F3E7E1' : '#4f3c3a' }]}>
+                  <Text style={[styles.cardText, { color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : '#4f3c3a' }]}>
                     <Text style={styles.cardTextRegular}>{option.prefix}</Text>
                     <Text style={styles.cardTextBold}>{option.emphasis}</Text>
                   </Text>

@@ -39,7 +39,7 @@ export default function ReadyScreen() {
               contentFit="contain"
             />
             <Text style={[styles.headingIs, { color: theme.ink.display }]}>is</Text>
-            <Text style={[styles.headingAccent, { color: theme.coral.terracottaDeep }]}>ready.</Text>
+            <Text style={[styles.headingAccent, { color: theme.coral.terracotta }]}>ready.</Text>
           </View>
 
           {/* ── Lead description (17px, noteColor) ──────────────── */}

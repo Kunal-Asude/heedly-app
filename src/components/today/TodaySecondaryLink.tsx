@@ -30,13 +30,13 @@ export function TodaySecondaryLink({
             <View
               style={[
                 styles.linkUnderlineWrapper,
-                { borderBottomColor: `${theme.coral.terracottaDeep}90` },
+                { borderBottomColor: `${theme.coral.terracotta}90` },
               ]}
             >
               <Text
                 style={[
                   styles.linkText,
-                  { color: theme.coral.terracottaDeep },
+                  { color: theme.coral.terracotta },
                 ]}
               >
                 {text}

@@ -1,31 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts, Spacing } from '@/constants/theme';
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const COLORS = {
-  background: '#F5DDD5',
-  headingDark: '#463332',
-  accent: '#b05334',
-  bodyText: '#463332',
-  mutedText: '#6B4C3E',
-  buttonFill: '#D9735A',
-  buttonText: '#FFFFFF',
-  progressInactive: '#E5C4B7',
-  cardBg: 'rgba(255, 251, 248, 0.85)',
-  cardBorder: 'rgba(212, 184, 174, 0.4)',
-  selectedBg: '#E07860',
-  selectedText: '#FFFFFF',
-  unselectedBg: 'rgba(255, 251, 248, 0.85)',
-  unselectedText: '#463332',
-  unselectedBorder: 'rgba(212, 184, 174, 0.45)',
-  spottingDot: '#DC6B76',
-};
+import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 
 const PERIOD_DAYS = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7+'];
 
@@ -41,6 +23,8 @@ const QUICK_OPTIONS = [
 
 export default function PeriodScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
+  const { isDark, isTrueBlack } = useThemeMode();
   const params = useLocalSearchParams<{
     yesterdayIndex?: string;
     yesterdayLabel?: string;
@@ -50,6 +34,7 @@ export default function PeriodScreen() {
     bodyLabel?: string;
     tags?: string;
   }>();
+
 
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
@@ -138,12 +123,28 @@ export default function PeriodScreen() {
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel="Go back to Question 3">
-            <Text style={styles.backChevron}>‹</Text>
+            <Text style={[styles.backChevron, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' }]}>‹</Text>
           </Pressable>
 
           {/* Optional Tag Chip in Nav */}
-          <View style={styles.optionalBadge}>
-            <Text style={styles.optionalBadgeText}>OPTIONAL</Text>
+          <View
+            style={[
+              styles.optionalBadge,
+              {
+                backgroundColor: isDark
+                  ? isTrueBlack
+                    ? "rgba(190, 106, 92, 0.14)"
+                    : "rgba(226, 122, 108, 0.16)"
+                  : "rgba(244, 164, 126, 0.2)",
+                borderColor: isDark
+                  ? isTrueBlack
+                    ? "rgba(255, 255, 255, 0.07)"
+                    : "rgba(255, 255, 255, 0.09)"
+                  : "rgba(224, 115, 95, 0.28)",
+              },
+            ]}
+          >
+            <Text style={[styles.optionalBadgeText, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b05334" }]}>OPTIONAL</Text>
           </View>
 
           {/* Skip link */}
@@ -152,23 +153,23 @@ export default function PeriodScreen() {
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel="Skip">
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={[styles.skipText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>Skip</Text>
           </Pressable>
         </View>
 
         {/* ── Viewport Content ─────────────────────────────────────────── */}
         <View style={styles.contentArea}>
           {/* ── Section Label ──────────────────────────────────────────── */}
-          <Text style={styles.questionLabel}>CYCLE UPDATE</Text>
+          <Text style={[styles.questionLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>CYCLE UPDATE</Text>
 
           {/* ── Question Heading ───────────────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={styles.headingDark}>{'What day of your\n'}</Text>
-            <Text style={styles.headingAccent}>period?</Text>
+            <Text style={[styles.headingDark, { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : theme.ink.display }]}>{'What day of your\n'}</Text>
+            <Text style={[styles.headingAccent, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracottaDeep }]}>period?</Text>
           </Text>
 
           {/* ── Supporting Text ────────────────────────────────────────── */}
-          <Text style={styles.supportingText}>
+          <Text style={[styles.supportingText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' }]}>
             Skip anytime if this does not apply to you.
           </Text>
 
@@ -182,7 +183,31 @@ export default function PeriodScreen() {
                   onPress={() => handleSelectDay(day)}
                   style={({ pressed }) => [
                     styles.dayChip,
-                    isSelected ? styles.dayChipSelected : styles.dayChipUnselected,
+                    {
+                      backgroundColor: isDark
+                        ? isSelected
+                          ? isTrueBlack
+                            ? "rgba(190, 106, 92, 0.14)"
+                            : "rgba(226, 122, 108, 0.22)"
+                          : isTrueBlack
+                          ? "#16111B"
+                          : "rgba(51, 37, 56, 0.72)"
+                        : isSelected
+                        ? theme.coral.primary
+                        : "rgba(255, 251, 248, 0.85)",
+                      borderColor: isDark
+                        ? isSelected
+                          ? isTrueBlack
+                            ? "rgba(255, 255, 255, 0.07)"
+                            : "rgba(226, 122, 108, 0.5)"
+                          : isTrueBlack
+                          ? "rgba(255, 255, 255, 0.07)"
+                          : "rgba(199, 180, 191, 0.14)"
+                        : isSelected
+                        ? "transparent"
+                        : "rgba(212, 184, 174, 0.45)",
+                    },
+                    isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                     pressed && styles.pressed,
                   ]}
                   accessibilityRole="button"
@@ -191,7 +216,19 @@ export default function PeriodScreen() {
                   <Text
                     style={[
                       styles.dayText,
-                      isSelected ? styles.dayTextSelected : styles.dayTextUnselected,
+                      {
+                        color: isDark
+                          ? isSelected
+                            ? isTrueBlack
+                              ? "#E9DDD6"
+                              : "#F3E7E1"
+                            : isTrueBlack
+                            ? "#9A8A91"
+                            : "rgba(199, 180, 191, 0.88)"
+                          : isSelected
+                          ? "#FFFFFF"
+                          : "#463332",
+                      },
                     ]}>
                     {day}
                   </Text>
@@ -203,7 +240,7 @@ export default function PeriodScreen() {
           {/* ── Flow Selection (Shown when a day is selected) ──────────── */}
           {selectedDay && (
             <View style={styles.flowSection}>
-              <Text style={styles.subLabel}>FLOW (OPTIONAL)</Text>
+              <Text style={[styles.subLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>FLOW (OPTIONAL)</Text>
               <View style={styles.flowRow}>
                 {FLOW_LEVELS.map((flow) => {
                   const isSelected = selectedFlow === flow;
@@ -213,7 +250,31 @@ export default function PeriodScreen() {
                       onPress={() => handleSelectFlow(flow)}
                       style={({ pressed }) => [
                         styles.flowChip,
-                        isSelected ? styles.flowChipSelected : styles.flowChipUnselected,
+                        {
+                          backgroundColor: isDark
+                            ? isSelected
+                              ? isTrueBlack
+                                ? "rgba(190, 106, 92, 0.14)"
+                                : "rgba(226, 122, 108, 0.22)"
+                              : isTrueBlack
+                              ? "#16111B"
+                              : "rgba(51, 37, 56, 0.72)"
+                            : isSelected
+                            ? theme.coral.primary
+                            : "rgba(255, 251, 248, 0.85)",
+                          borderColor: isDark
+                            ? isSelected
+                              ? isTrueBlack
+                                ? "rgba(255, 255, 255, 0.07)"
+                                : "rgba(226, 122, 108, 0.5)"
+                              : isTrueBlack
+                              ? "rgba(255, 255, 255, 0.07)"
+                              : "rgba(199, 180, 191, 0.14)"
+                            : isSelected
+                            ? "transparent"
+                            : "rgba(212, 184, 174, 0.45)",
+                        },
+                        isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                         pressed && styles.pressed,
                       ]}
                       accessibilityRole="button"
@@ -222,7 +283,19 @@ export default function PeriodScreen() {
                       <Text
                         style={[
                           styles.flowText,
-                          isSelected ? styles.flowTextSelected : styles.flowTextUnselected,
+                          {
+                            color: isDark
+                              ? isSelected
+                                ? isTrueBlack
+                                  ? "#E9DDD6"
+                                  : "#F3E7E1"
+                                : isTrueBlack
+                                ? "#9A8A91"
+                                : "rgba(199, 180, 191, 0.88)"
+                              : isSelected
+                              ? "#FFFFFF"
+                              : "#463332",
+                          },
                         ]}>
                         {flow}
                       </Text>
@@ -235,7 +308,7 @@ export default function PeriodScreen() {
 
           {/* ── Quick Status Options ───────────────────────────────────── */}
           <View style={styles.quickOptionsSection}>
-            <Text style={styles.subLabel}>OR SELECT STATUS</Text>
+            <Text style={[styles.subLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>OR SELECT STATUS</Text>
             <View style={styles.quickList}>
               {QUICK_OPTIONS.map((option) => {
                 const isSelected = selectedQuick === option;
@@ -245,7 +318,31 @@ export default function PeriodScreen() {
                     onPress={() => handleSelectQuick(option)}
                     style={({ pressed }) => [
                       styles.quickChip,
-                      isSelected ? styles.quickChipSelected : styles.quickChipUnselected,
+                      {
+                        backgroundColor: isDark
+                          ? isSelected
+                            ? isTrueBlack
+                              ? "rgba(190, 106, 92, 0.14)"
+                              : "rgba(226, 122, 108, 0.22)"
+                            : isTrueBlack
+                            ? "#16111B"
+                            : "rgba(51, 37, 56, 0.72)"
+                          : isSelected
+                          ? theme.coral.primary
+                          : "rgba(255, 251, 248, 0.85)",
+                        borderColor: isDark
+                          ? isSelected
+                            ? isTrueBlack
+                              ? "rgba(255, 255, 255, 0.07)"
+                              : "rgba(226, 122, 108, 0.5)"
+                            : isTrueBlack
+                            ? "rgba(255, 255, 255, 0.07)"
+                            : "rgba(199, 180, 191, 0.14)"
+                          : isSelected
+                          ? "transparent"
+                          : "rgba(212, 184, 174, 0.45)",
+                      },
+                      isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                       pressed && styles.pressed,
                     ]}
                     accessibilityRole="button"
@@ -254,7 +351,19 @@ export default function PeriodScreen() {
                     <Text
                       style={[
                         styles.quickText,
-                        isSelected ? styles.quickTextSelected : styles.quickTextUnselected,
+                        {
+                          color: isDark
+                            ? isSelected
+                              ? isTrueBlack
+                                ? "#E9DDD6"
+                                : "#F3E7E1"
+                              : isTrueBlack
+                              ? "#9A8A91"
+                              : "rgba(199, 180, 191, 0.88)"
+                            : isSelected
+                            ? "#FFFFFF"
+                            : "#463332",
+                        },
                       ]}>
                       {option}
                     </Text>
@@ -269,20 +378,51 @@ export default function PeriodScreen() {
         <View style={styles.bottomSection}>
           <Pressable
             style={({ pressed }) => [
-              styles.saveButton,
+              styles.saveButtonWrapper,
               pressed && styles.buttonPressed,
+              isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
             ]}
             onPress={handleSave}
             accessibilityRole="button"
             accessibilityLabel="Save check-in">
-            <Text style={styles.saveButtonText}>Save</Text>
-            <Text style={styles.nextArrow}>›</Text>
+            <LinearGradient
+              colors={
+                isDark
+                  ? isTrueBlack
+                    ? ['#574049', '#241A20']
+                    : ['#634256', '#8A5D7C', '#9E768E']
+                  : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                styles.saveButtonGradient,
+                isDark && isTrueBlack && {
+                  borderColor: 'rgba(255, 255, 255, 0.06)',
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <Text style={[styles.saveButtonText, isDark && isTrueBlack && { color: '#EADCD4' }]}>Save</Text>
+              <View style={styles.saveArrowContainer}>
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M8 5l7 7-7 7"
+                    stroke={isDark && isTrueBlack ? '#EADCD4' : '#FFF6F1'}
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            </LinearGradient>
           </Pressable>
 
-          <Text style={styles.bottomHelperText}>
+          <Text style={[styles.bottomHelperText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.65)') : 'rgba(74, 58, 57, 0.5)' }]}>
             You can do this lying down.
           </Text>
         </View>
+
       </SafeAreaView>
     </View>
   );
@@ -344,7 +484,7 @@ const styles = StyleSheet.create({
   optionalBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.mutedText,
+    color: '#6B4C3E',
     letterSpacing: 1.4,
   },
 
@@ -367,7 +507,7 @@ const styles = StyleSheet.create({
   questionLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.mutedText,
+    color: '#6B4C3E',
     letterSpacing: 1.8,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -383,18 +523,18 @@ const styles = StyleSheet.create({
 
   headingDark: {
     fontFamily: Fonts.display.regular,
-    color: COLORS.headingDark,
+    color: '#463332',
   },
 
   headingAccent: {
     fontFamily: Fonts.display.regular,
-    color: COLORS.accent,
+    color: '#b05334',
   },
 
   supportingText: {
     fontSize: 16,
     lineHeight: 22,
-    color: COLORS.bodyText,
+    color: '#463332',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -417,13 +557,13 @@ const styles = StyleSheet.create({
   },
 
   dayChipSelected: {
-    backgroundColor: COLORS.selectedBg,
-    borderColor: COLORS.selectedBg,
+    backgroundColor: '#E07860',
+    borderColor: '#E07860',
   },
 
   dayChipUnselected: {
-    backgroundColor: COLORS.unselectedBg,
-    borderColor: COLORS.unselectedBorder,
+    backgroundColor: 'rgba(255, 251, 248, 0.85)',
+    borderColor: 'rgba(212, 184, 174, 0.45)',
   },
 
   dayText: {
@@ -432,11 +572,11 @@ const styles = StyleSheet.create({
   },
 
   dayTextSelected: {
-    color: COLORS.selectedText,
+    color: '#FFFFFF',
   },
 
   dayTextUnselected: {
-    color: COLORS.unselectedText,
+    color: '#463332',
   },
 
   // ── Flow Section ─────────────────────────────────────────────────────────
@@ -450,7 +590,7 @@ const styles = StyleSheet.create({
   subLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.mutedText,
+    color: '#6B4C3E',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -471,13 +611,13 @@ const styles = StyleSheet.create({
   },
 
   flowChipSelected: {
-    backgroundColor: COLORS.selectedBg,
-    borderColor: COLORS.selectedBg,
+    backgroundColor: '#E07860',
+    borderColor: '#E07860',
   },
 
   flowChipUnselected: {
-    backgroundColor: COLORS.unselectedBg,
-    borderColor: COLORS.unselectedBorder,
+    backgroundColor: 'rgba(255, 251, 248, 0.85)',
+    borderColor: 'rgba(212, 184, 174, 0.45)',
   },
 
   flowText: {
@@ -485,12 +625,12 @@ const styles = StyleSheet.create({
   },
 
   flowTextSelected: {
-    color: COLORS.selectedText,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 
   flowTextUnselected: {
-    color: COLORS.unselectedText,
+    color: '#463332',
   },
 
   // ── Quick Options ────────────────────────────────────────────────────────
@@ -514,13 +654,13 @@ const styles = StyleSheet.create({
   },
 
   quickChipSelected: {
-    backgroundColor: COLORS.selectedBg,
-    borderColor: COLORS.selectedBg,
+    backgroundColor: '#E07860',
+    borderColor: '#E07860',
   },
 
   quickChipUnselected: {
-    backgroundColor: COLORS.unselectedBg,
-    borderColor: COLORS.unselectedBorder,
+    backgroundColor: 'rgba(255, 251, 248, 0.85)',
+    borderColor: 'rgba(212, 184, 174, 0.45)',
   },
 
   quickText: {
@@ -528,12 +668,12 @@ const styles = StyleSheet.create({
   },
 
   quickTextSelected: {
-    color: COLORS.selectedText,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 
   quickTextUnselected: {
-    color: COLORS.unselectedText,
+    color: '#463332',
   },
 
   // ── Bottom Action Section ─────────────────────────────────────────────────
@@ -544,14 +684,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.buttonFill,
+  saveButtonWrapper: {
     borderRadius: 28,
-    height: 56,
-    paddingHorizontal: 24,
+    overflow: 'hidden',
     shadowColor: '#6E5656',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.16,
@@ -559,21 +694,28 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
+  saveButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 28,
+    height: 56,
+    paddingHorizontal: 24,
+  },
+
   saveButtonText: {
     flex: 1,
     textAlign: 'center',
-    color: COLORS.buttonText,
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: 0.1,
   },
 
-  nextArrow: {
-    color: COLORS.buttonText,
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    opacity: 0.85,
+  saveArrowContainer: {
+    width: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   bottomHelperText: {
@@ -583,3 +725,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

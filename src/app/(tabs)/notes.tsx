@@ -56,7 +56,7 @@ export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, isTrueBlack } = useThemeMode();
 
   const {
     userName,
@@ -90,11 +90,11 @@ export default function NotesScreen() {
   const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
   const triggerTitleColor = isDark ? "#F3E7E1" : theme.ink.display;
   const triggerSubtitleColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.6)";
-  const impactTextColor = isDark ? "#E8907A" : "#b6634a";
+  const impactTextColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b6634a";
   const dividerColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(120, 90, 80, 0.13)";
   const summaryTextColor = isDark ? "rgba(199, 180, 191, 0.9)" : "rgba(74, 58, 57, 0.82)";
   const disclaimerTextColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.6)";
-  const personalNoteColor = isDark ? "#E8907A" : theme.coral.terracottaDeep;
+  const personalNoteColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracotta;
 
   return (
     <View style={styles.root}>
