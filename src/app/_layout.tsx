@@ -8,6 +8,9 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { CheckInProvider } from '@/contexts/CheckInContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
+// ⚠️ TEMPORARY — bridge spike. Delete once a real screen consumes native data.
+import HeedlyNative from '../../modules/heedly-native/src/HeedlyNativeModule';
+
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
@@ -49,6 +52,18 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // ⚠️ TEMPORARY — bridge spike. Proves a value crosses from Swift into
+  // JavaScript, and that HeedlyEngine is callable from the native module.
+  // Delete this block once a real screen consumes native data.
+  useEffect(() => {
+    try {
+      console.log('[BRIDGE] contract version:', HeedlyNative.getContractVersion());
+      console.log('[BRIDGE] engine smoke test:', HeedlyNative.engineSmokeTest());
+    } catch (e) {
+      console.log('[BRIDGE] FAILED:', e);
+    }
+  }, []);
 
   useEffect(() => {
     // 1. Handle notification click when app is already open or in background
