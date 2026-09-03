@@ -2,6 +2,12 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // @heedly/native is installed through a local `file:` path during
+    // development, so npm links it rather than copying it. Without this,
+    // TypeScript resolves the package at its real location and then looks for
+    // `expo` from there — the Heedly repository, where it is not installed.
+    // Remove once the package is installed from npm by version.
+    "preserveSymlinks": true,
     "paths": {
       "@/*": [
         "./src/*"
