@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckIn } from '@/contexts/CheckInContext';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
@@ -18,54 +19,41 @@ export default function BodyScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { bodyLevels } = useCheckInConfig();
+  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-    periodInfo?: string;
     isFirstTime?: string;
     isEditing?: string;
   }>();
 
-  const isFirstTime = params.isFirstTime === 'true';
   const initialIndex =
-    params.bodyIndex !== undefined && !isNaN(Number(params.bodyIndex))
-      ? Math.min(Math.max(0, Number(params.bodyIndex)), bodyLevels.length - 1)
+    activeEntry.bodyIndex !== undefined && activeEntry.bodyIndex !== null
+      ? Math.min(Math.max(0, activeEntry.bodyIndex), bodyLevels.length - 1)
       : 2;
   const [selectedIndex, setSelectedIndex] = useState<number>(initialIndex);
 
   const selectedLevel = bodyLevels[selectedIndex];
-  const isEditing = params.isEditing === 'true';
+  const isEditing = params.isEditing === 'true' || contextIsEditing;
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
+    updateEntry({
+      bodyIndex: index,
+      bodyLabel: bodyLevels[index].label,
+    });
   };
 
   const handleCrashPress = () => {
-    router.push({
-      pathname: '/(check-in)/saved',
-      params: {
-        ...params,
-        bodyIndex: selectedIndex.toString(),
-        bodyLabel: selectedLevel.label,
-        isCrash: 'true',
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
+    updateEntry({
+      bodyIndex: selectedIndex,
+      bodyLabel: selectedLevel.label,
+      isCrash: true,
     });
+    router.push('/(check-in)/saved');
   };
 
   const handleBack = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
     if (router.canGoBack()) {
@@ -77,44 +65,24 @@ export default function BodyScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
-    router.push({
-      pathname: '/(check-in)/noting',
-      params: {
-        ...params,
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
-    });
+    router.push('/(check-in)/noting');
   };
 
   const handleNext = () => {
+    updateEntry({
+      bodyIndex: selectedIndex,
+      bodyLabel: selectedLevel.label,
+    });
+
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-          bodyIndex: selectedIndex.toString(),
-          bodyLabel: selectedLevel.label,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
-    router.push({
-      pathname: '/(check-in)/noting',
-      params: {
-        ...params,
-        bodyIndex: selectedIndex.toString(),
-        bodyLabel: selectedLevel.label,
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
-    });
+
+    router.push('/(check-in)/noting');
   };
 
 

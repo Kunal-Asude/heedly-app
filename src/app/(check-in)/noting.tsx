@@ -16,6 +16,7 @@ import Svg, { Path } from "react-native-svg";
 
 import { DawnBackground } from "@/components/core";
 import { CORAL, Fonts, INK } from "@/constants/theme";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useTheme } from "@/constants/themes";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useCheckInConfig } from "@/hooks/data";
@@ -50,25 +51,17 @@ export default function NotingScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { categories, allTags, initialSelectedTags, periodDays } = useCheckInConfig();
+  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-    periodInfo?: string;
-    isFirstTime?: string;
     isEditing?: string;
     openPeriod?: string;
   }>();
 
-  const isEditing = params.isEditing === 'true';
+  const isEditing = params.isEditing === 'true' || contextIsEditing;
   const openPeriod = params.openPeriod === 'true';
 
-  const initialTags = params.tags && params.tags.trim().length > 0
-    ? new Set(params.tags.split(' · ').map((t) => t.trim()))
+  const initialTags = activeEntry.tags && activeEntry.tags.length > 0
+    ? new Set(activeEntry.tags)
     : new Set(initialSelectedTags);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTags);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -76,8 +69,8 @@ export default function NotingScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   // Period bottom sheet modal state
-  const initialPeriodDay = params.periodInfo && params.periodInfo.startsWith('Day ')
-    ? Number(params.periodInfo.replace('Day ', ''))
+  const initialPeriodDay = activeEntry.periodInfo && activeEntry.periodInfo.startsWith('Day ')
+    ? Number(activeEntry.periodInfo.replace('Day ', '').split(' ')[0])
     : null;
   const [isPeriodModalVisible, setIsPeriodModalVisible] = useState<boolean>(openPeriod);
   const [selectedPeriodDay, setSelectedPeriodDay] = useState<number | null>(initialPeriodDay);
@@ -96,6 +89,7 @@ export default function NotingScreen() {
       }
     }
     setSelectedTags(next);
+    updateEntry({ tags: Array.from(next) });
   };
 
   const handleToggleCategoryDrawer = () => {
@@ -112,23 +106,13 @@ export default function NotingScreen() {
 
   const handleBack = () => {
     if (isEditing) {
-      router.push({
-        pathname: "/(check-in)/saved",
-        params: {
-          ...params,
-        },
-      });
+      router.push("/(check-in)/saved");
       return;
     }
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push({
-        pathname: "/(check-in)/body",
-        params: {
-          ...params,
-        },
-      });
+      router.push("/(check-in)/body");
     }
   };
 
@@ -142,26 +126,16 @@ export default function NotingScreen() {
 
   const navigateToSaved = (periodInfo?: string) => {
     setIsPeriodModalVisible(false);
-    const tagsString = Array.from(selectedTags).join(" · ");
-    router.push({
-      pathname: "/(check-in)/saved",
-      params: {
-        yesterdayIndex: params.yesterdayIndex,
-        yesterdayLabel: params.yesterdayLabel,
-        energyIndex: params.energyIndex ?? "2",
-        energyLabel: params.energyLabel ?? "middling",
-        bodyIndex: params.bodyIndex ?? "2",
-        bodyLabel: params.bodyLabel ?? "tender",
-        tags: tagsString,
-        periodInfo: periodInfo,
-        isFirstTime: params.isFirstTime,
-      },
+    updateEntry({
+      tags: Array.from(selectedTags),
+      periodInfo: periodInfo !== undefined ? periodInfo : activeEntry.periodInfo ?? null,
     });
+    router.push("/(check-in)/saved");
   };
 
   const handleSaveButtonPress = () => {
     if (isEditing) {
-      navigateToSaved(params.periodInfo);
+      navigateToSaved(activeEntry.periodInfo ?? undefined);
     } else {
       handleOpenPeriodSheet();
     }

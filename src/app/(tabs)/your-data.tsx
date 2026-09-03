@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DawnBackground } from "@/components/core";
 import { Fonts } from "@/constants/theme";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 
 // ─── Data Card Component (.sx-card with subtle gradient / flat OLED) ─────
@@ -77,6 +78,7 @@ export default function YourDataScreen() {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const { resetAllData } = useCheckIn();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   const handleBack = () => {
@@ -87,8 +89,9 @@ export default function YourDataScreen() {
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     setIsDeleteModalVisible(false);
+    await resetAllData();
     // Reset to fresh state on today
     router.replace("/(tabs)?mode=fd-empty" as any);
   };

@@ -18,13 +18,13 @@
 
 ---
 
-## All Data Is Mock — No Real Backend Wired
+## Check-In Data Is Storage-Backed; Other Features Remain Mock (No Backend API)
 
-**Code:** Every data hook (`useForecast`, `useCheckInConfig`, `useUserSettings`, `useNotes`, `usePatterns`) initializes from a hardcoded constant in `src/data/mock/`. Comments in `useForecast.ts` say: `"In the future, this state/fetcher will be backed by a query/API call"`.
+**Code:** Check-in data is now backed by persistent client-side storage (`CheckInContext` + `checkinStorage.ts` via `appStorage`). Check-in drafts, completed entries by date, and last check-in date persist across app reloads, backgrounding, and cold launches. Other data hooks (`useForecast`, `useUserSettings`, `useNotes`, `usePatterns`) continue to initialize from hardcoded constants in `src/data/mock/`.
 
-**Implication:** User answers from check-in are never stored. Username shown in Notes is `"Sam"` (hardcoded in mock). Forecast status `"fd-empty"` is the default that any real user would see. Pattern data is fictional.
+**Implication:** User answers from check-in persist locally on the device. Forecast status and pattern data remain local mock representations.
 
-**Severity:** High architectural gap. Any task that "saves check-in data" or "fetches forecast from API" is a major architectural change requiring new storage/API design. Do not implement without a full spec.
+**Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
 
 ---
 

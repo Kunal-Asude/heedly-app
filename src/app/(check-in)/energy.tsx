@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckIn } from '@/contexts/CheckInContext';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
@@ -18,55 +19,44 @@ export default function EnergyScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { recurringEnergyLevels, firstTimeEnergyLevels } = useCheckInConfig();
+  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-    periodInfo?: string;
     isFirstTime?: string;
     isEditing?: string;
   }>();
 
-  const isFirstTime = params.isFirstTime === 'true';
+  const isFirstTime = params.isFirstTime === 'true' || Boolean(activeEntry.isFirstTime);
   const levels = isFirstTime ? firstTimeEnergyLevels : recurringEnergyLevels;
   const initialIndex =
-    params.energyIndex !== undefined && !isNaN(Number(params.energyIndex))
-      ? Math.min(Math.max(0, Number(params.energyIndex)), levels.length - 1)
+    activeEntry.energyIndex !== undefined && activeEntry.energyIndex !== null
+      ? Math.min(Math.max(0, activeEntry.energyIndex), levels.length - 1)
       : 2;
   const [selectedIndex, setSelectedIndex] = useState<number>(initialIndex);
 
   const selectedLevel = levels[selectedIndex];
-  const isEditing = params.isEditing === 'true';
+  const isEditing = params.isEditing === 'true' || contextIsEditing;
 
   const handleSelectLevel = (index: number) => {
     setSelectedIndex(index);
+    updateEntry({
+      energyIndex: index,
+      energyLabel: levels[index].label,
+    });
   };
 
   const handleCrashPress = () => {
-    router.push({
-      pathname: '/(check-in)/saved',
-      params: {
-        ...params,
-        energyIndex: selectedIndex.toString(),
-        energyLabel: selectedLevel.label,
-        isCrash: 'true',
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
+    updateEntry({
+      energyIndex: selectedIndex,
+      energyLabel: selectedLevel.label,
+      isCrash: true,
+      isFirstTime,
     });
+    router.push('/(check-in)/saved');
   };
 
   const handleBack = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
     if (isFirstTime) {
@@ -86,43 +76,31 @@ export default function EnergyScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
     router.push({
       pathname: '/(check-in)/body',
-      params: {
-        ...params,
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
+      params: isFirstTime ? { isFirstTime: 'true' } : undefined,
     });
   };
 
   const handleNext = () => {
+    updateEntry({
+      energyIndex: selectedIndex,
+      energyLabel: selectedLevel.label,
+      isFirstTime,
+      isCrash: false,
+    });
+
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-          energyIndex: selectedIndex.toString(),
-          energyLabel: selectedLevel.label,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
+
     router.push({
       pathname: '/(check-in)/body',
-      params: {
-        ...params,
-        energyIndex: selectedIndex.toString(),
-        energyLabel: selectedLevel.label,
-        isFirstTime: isFirstTime ? 'true' : 'false',
-      },
+      params: isFirstTime ? { isFirstTime: 'true' } : undefined,
     });
   };
 

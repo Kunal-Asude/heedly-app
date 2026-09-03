@@ -16,20 +16,40 @@ import { Fonts } from "@/constants/theme";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 import { useNotes } from "@/hooks/data";
 
-// ─── Notes Card Component (.sx-card with subtle gradient) ─────────────────────
+// ─── Notes Card Component (.sx-card / .nt-card) ───────────────────────────────
 
 function NotesCard({
   children,
   isDark,
+  isTrueBlack,
   style,
 }: {
   children: React.ReactNode;
   isDark: boolean;
+  isTrueBlack?: boolean;
   style?: any;
 }) {
+  if (isDark && isTrueBlack) {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: "#16111B",
+            borderColor: "rgba(255, 255, 255, 0.07)",
+            shadowOpacity: 0,
+          },
+          style,
+        ]}
+      >
+        {children}
+      </View>
+    );
+  }
+
   const cardGradientColors: [string, string, string] = isDark
-    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
-    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+    ? ["rgba(50, 35, 54, 0.88)", "rgba(62, 43, 65, 0.85)", "rgba(82, 54, 72, 0.82)"]
+    : ["rgba(252, 246, 240, 0.92)", "rgba(255, 250, 245, 0.95)", "rgba(255, 238, 230, 0.95)"];
 
   return (
     <LinearGradient
@@ -39,12 +59,13 @@ function NotesCard({
       style={[
         styles.card,
         {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
-          shadowColor: isDark ? '#000000' : '#BE968C',
+          borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.85)",
+          shadowColor: isDark ? "#000000" : "#BE968C",
           shadowOpacity: isDark ? 0.24 : 0.08,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </LinearGradient>
   );
@@ -76,36 +97,67 @@ export default function NotesScreen() {
     }
   };
 
-  // Theme-aware tokens
-  const eyebrowColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const mainHeadingColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.75)";
-  const cardHeaderLabelColor = isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.5)";
-  const userNameColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const cardHeaderDateColor = isDark ? "rgba(199, 180, 191, 0.85)" : "rgba(74, 58, 57, 0.74)";
-  const checkInsCountColor = isDark ? "rgba(199, 180, 191, 0.6)" : "rgba(74, 58, 57, 0.58)";
-  const metricLabelColor = isDark ? "#FFFFFF" : "rgba(120, 72, 48, 0.72)";
-  const metricValueColor = isDark ? "#FFFFFF" : "#463130";
-  const metricSubtextColor = isDark ? "#FFFFFF" : "rgba(74, 58, 57, 0.6)";
-  const groupHeaderColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.55)";
-  const triggerTitleColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const triggerSubtitleColor = isDark ? "rgba(199, 180, 191, 0.65)" : "rgba(74, 58, 57, 0.6)";
-  const impactTextColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b6634a";
-  const dividerColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(120, 90, 80, 0.13)";
-  const summaryTextColor = isDark ? "rgba(199, 180, 191, 0.9)" : "rgba(74, 58, 57, 0.82)";
-  const disclaimerTextColor = isDark ? "rgba(199, 180, 191, 0.55)" : "rgba(74, 58, 57, 0.6)";
-  const personalNoteColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracotta;
+  // ── Theme-aware tokens matching Aubade - True Black (OLED).html ──────────────
+  const isOled = isDark && isTrueBlack;
+
+  const eyebrowColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)";
+  const mainHeadingColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
+  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "rgba(74, 58, 57, 0.75)";
+  const cardHeaderLabelColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.6)") : "rgba(74, 58, 57, 0.5)";
+  const userNameColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
+  const cardHeaderDateColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.85)") : "rgba(74, 58, 57, 0.74)";
+  const checkInsCountColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.6)") : "rgba(74, 58, 57, 0.58)";
+
+  // Metric tiles (.nt-tile)
+  const metricBoxBg = isDark ? (isOled ? "#16111B" : "rgba(112, 72, 94, 0.65)") : "#f8d9bf";
+  const metricBoxBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.6)";
+  const metricLabelColor = isDark ? (isOled ? "#9A8A91" : "#FFFFFF") : "rgba(120, 72, 48, 0.72)";
+  const metricValueColor = isDark ? (isOled ? "#E9DDD6" : "#FFFFFF") : "#463130";
+  const metricSubtextColor = isDark ? (isOled ? "#9A8A91" : "#FFFFFF") : "rgba(74, 58, 57, 0.6)";
+
+  // Top triggers (.nt-trig)
+  const groupHeaderColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)";
+  const triggerTitleColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
+  const triggerSubtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.6)";
+  const impactTextColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#b6634a";
+  const dividerColor = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(120, 90, 80, 0.13)";
+
+  // Summary (.nt-card--summary)
+  const summaryTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.9)") : "rgba(74, 58, 57, 0.82)";
+  const disclaimerTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.55)") : "rgba(74, 58, 57, 0.6)";
+  const personalNoteColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : theme.coral.terracotta;
+
+  // Floating actions bar (.nt-actions)
+  const bottomPanelBg = isDark ? (isOled ? "#16111B" : "rgba(38, 26, 42, 0.92)") : "rgba(255, 255, 255, 0.75)";
+  const bottomPanelBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.85)";
+  const ctaGradient: [string, string, ...string[]] = isDark
+    ? (isOled ? ["#574049", "#241A20"] : ["#634256", "#8A5D7C", "#9E768E"])
+    : ["#f0a07e", "#e88970", "#e0735f"];
+  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
+  const ghostBtnBg = isDark ? (isOled ? "#16111B" : "rgba(72, 48, 62, 0.7)") : "rgba(255, 255, 255, 0.75)";
+  const ghostBtnBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.85)";
+  const ghostBtnTextColor = isDark ? (isOled ? "#A8979E" : "#FFF6F1") : "#4f3c3a";
+  const ghostBtnIconColor = isDark ? (isOled ? "#C97B60" : "#FFF6F1") : "#4f3c3a";
 
   return (
     <View style={styles.root}>
       {/* Atmosphere Background */}
       <DawnBackground />
 
+      {/* Top Fade mask in OLED mode (.nt-topfade) */}
+      {isOled && (
+        <LinearGradient
+          colors={["#000000", "rgba(0,0,0,0.82)", "rgba(0,0,0,0)"]}
+          style={[styles.topFade, { height: insets.top + 28 }]}
+          pointerEvents="none"
+        />
+      )}
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 170 },
+          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 160 },
         ]}
         showsVerticalScrollIndicator={false}
         bounces={true}
@@ -118,7 +170,7 @@ export default function NotesScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
+            <Text style={[styles.backChevron, { color: isDark ? (isOled ? "#9A8A91" : theme.ink.muted) : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
 
@@ -132,7 +184,7 @@ export default function NotesScreen() {
         </Text>
 
         {/* ── 90-DAY SUMMARY Card (.nt-card) ─────────────────────────── */}
-        <NotesCard isDark={isDark} style={styles.summary90Card}>
+        <NotesCard isDark={isDark} isTrueBlack={isTrueBlack} style={styles.summary90Card}>
           {/* Header Row (.nt-card-head) */}
           <View style={styles.cardHeaderRow}>
             <View>
@@ -161,12 +213,8 @@ export default function NotesScreen() {
                 style={[
                   styles.metricBox,
                   {
-                    backgroundColor: isDark
-                      ? "rgba(112, 72, 94, 0.65)"
-                      : "#f8d9bf",
-                    borderColor: isDark
-                      ? "rgba(255, 255, 255, 0.08)"
-                      : "rgba(255, 255, 255, 0.6)",
+                    backgroundColor: metricBoxBg,
+                    borderColor: metricBoxBorder,
                   },
                 ]}
               >
@@ -219,7 +267,7 @@ export default function NotesScreen() {
         {/* ── SUMMARY Section (.nt-sec--summary & .nt-card--summary) ──── */}
         <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>SUMMARY</Text>
 
-        <NotesCard isDark={isDark} style={styles.summaryCard}>
+        <NotesCard isDark={isDark} isTrueBlack={isTrueBlack} style={styles.summaryCard}>
           <Text style={[styles.summaryParagraphText, { color: summaryTextColor }]}>
             {summaryParagraph}
           </Text>
@@ -247,13 +295,10 @@ export default function NotesScreen() {
         style={[
           styles.bottomPanel,
           {
-            bottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
-            backgroundColor: isDark
-              ? "rgba(38, 26, 42, 0.92)"
-              : "rgba(255, 255, 255, 0.75)",
-            borderColor: isDark
-              ? "rgba(255, 255, 255, 0.09)"
-              : "rgba(255, 255, 255, 0.85)",
+            bottom: insets.bottom > 0 ? insets.bottom + 8 : 20,
+            backgroundColor: bottomPanelBg,
+            borderColor: bottomPanelBorder,
+            shadowOpacity: isOled ? 0 : 0.35,
           },
         ]}
       >
@@ -265,13 +310,13 @@ export default function NotesScreen() {
           accessibilityLabel="Prepare for my appointment"
         >
           <LinearGradient
-            colors={isDark ? ["#634256", "#8A5D7C", "#9E768E"] : ["#f0a07e", "#e88970", "#e0735f"]}
+            colors={ctaGradient}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.appointmentButtonGradient}
           >
-            <SymbolView name="calendar" size={18} tintColor="#FFF6F1" />
-            <Text style={styles.appointmentButtonText}>Prepare for my appointment</Text>
+            <SymbolView name="calendar" size={18} tintColor={ctaTextColor} />
+            <Text style={[styles.appointmentButtonText, { color: ctaTextColor }]}>Prepare for my appointment</Text>
           </LinearGradient>
         </Pressable>
 
@@ -281,12 +326,8 @@ export default function NotesScreen() {
             style={({ pressed }) => [
               styles.secondaryBtn,
               {
-                backgroundColor: isDark
-                  ? "rgba(72, 48, 62, 0.7)"
-                  : "rgba(255, 255, 255, 0.75)",
-                borderColor: isDark
-                  ? "rgba(255, 255, 255, 0.08)"
-                  : "rgba(255, 255, 255, 0.85)",
+                backgroundColor: ghostBtnBg,
+                borderColor: ghostBtnBorder,
               },
               pressed && styles.buttonPressed,
             ]}
@@ -296,9 +337,9 @@ export default function NotesScreen() {
             <SymbolView
               name="square.and.arrow.up"
               size={15}
-              tintColor={isDark ? "#FFF6F1" : "#4f3c3a"}
+              tintColor={ghostBtnIconColor}
             />
-            <Text style={[styles.secondaryBtnText, { color: isDark ? "#FFF6F1" : "#4f3c3a" }]}>
+            <Text style={[styles.secondaryBtnText, { color: ghostBtnTextColor }]}>
               Export / Share
             </Text>
           </Pressable>
@@ -307,12 +348,8 @@ export default function NotesScreen() {
             style={({ pressed }) => [
               styles.secondaryBtn,
               {
-                backgroundColor: isDark
-                  ? "rgba(72, 48, 62, 0.7)"
-                  : "rgba(255, 255, 255, 0.75)",
-                borderColor: isDark
-                  ? "rgba(255, 255, 255, 0.08)"
-                  : "rgba(255, 255, 255, 0.85)",
+                backgroundColor: ghostBtnBg,
+                borderColor: ghostBtnBorder,
               },
               pressed && styles.buttonPressed,
             ]}
@@ -322,9 +359,9 @@ export default function NotesScreen() {
             <SymbolView
               name="link"
               size={15}
-              tintColor={isDark ? "#FFF6F1" : "#4f3c3a"}
+              tintColor={ghostBtnIconColor}
             />
-            <Text style={[styles.secondaryBtnText, { color: isDark ? "#FFF6F1" : "#4f3c3a" }]}>
+            <Text style={[styles.secondaryBtnText, { color: ghostBtnTextColor }]}>
               Copy link
             </Text>
           </Pressable>
@@ -339,6 +376,14 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+
+  topFade: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
 
   scrollView: {

@@ -56,27 +56,31 @@ When `settings` tab is active, the `Today` tab pill is highlighted (effective ac
 ### Ownership
 - `ThemeContext` (`src/contexts/ThemeContext.tsx`) is the **single owner** of:
   - The current `themeMode` (`"light" | "dark" | "system"`)
-  - The resolved `DesignTokens` object
+  - The `isTrueBlack` boolean (OLED mode preference)
+  - The resolved `DesignTokens` object (Dawn, Dusk, or True Black)
   - The `isDark` boolean
-  - Persistence of `themeMode` to AsyncStorage
+  - Persistence of both `themeMode` (`@heedly/theme_mode`) and `isTrueBlack` (`@heedly/is_true_black`) to AsyncStorage
 
 ### Two Hooks — Use Correctly
 | Hook | Import path | Returns | Use for |
 |---|---|---|---|
 | `useTheme()` | `@/constants/themes` | `DesignTokens` | Components that only need tokens |
 | `useAppTheme()` | `@/contexts/ThemeContext` | `DesignTokens` | Same as above; canonical hook per context docs |
-| `useThemeMode()` | `@/contexts/ThemeContext` | `{ themeMode, setThemeMode, isDark, isLoaded }` | Settings screen, layout decisions, `isDark` conditionals |
+| `useThemeMode()` | `@/contexts/ThemeContext` | `{ themeMode, setThemeMode, isTrueBlack, setTrueBlack, isDark, isLoaded }` | Settings screen, layout decisions, theme toggles |
 
 **Note:** `useTheme()` from `@/constants/themes` is a thin wrapper around `useAppTheme()`. Both are correct. The old `@/hooks/use-theme.ts` file (which returned the simplified `Colors` object) was **deleted** (2026-08-28). Its renamed replacement `useLegacyTheme()` in `use-legacy-theme.ts` is only for Expo template scaffolding components. See [40-conventions.md §Theme Consumption](40-conventions.md#theme-consumption-pattern) for the full rule.
 
 ### Theme Resolution
 ```
-ThemeContext.themeMode
-  "light"  → lightTheme (DesignTokens)
-  "dark"   → darkTheme  (DesignTokens)
-  "system" → systemScheme === "dark" ? darkTheme : lightTheme
+isDark = themeMode === "dark" || (themeMode === "system" && systemScheme === "dark")
+
+Resolution:
+  !isDark                 → lightTheme (Dawn)
+  isDark && !isTrueBlack  → darkTheme (Dusk)
+  isDark && isTrueBlack   → trueBlackTheme (OLED)
 ```
-`trueBlack` is never resolved at runtime (see [50-contradictions.md](50-contradictions-and-open-questions.md#trueblack-theme-exists-but-is-not-wired)).
+
+For non-React execution contexts (such as background services and notification schedulers), `src/utils/getActiveTheme.ts` provides a standalone async resolver that reads persisted AsyncStorage keys directly.
 
 ### Provider Position
 `AppThemeProvider` wraps `RootNavigator` in `src/app/_layout.tsx`. This means ThemeContext is available to all routes. `ThemeProvider` from expo-router is a child of `AppThemeProvider`, fed by `isDark`.
@@ -100,23 +104,103 @@ All data in the app currently comes from `src/data/mock/`. The data hooks (`src/
 ### State Ownership
 - `useForecast`, `useNotes`, `usePatterns`, `useCheckInConfig`: state is **read-only** to callers. No mutation is exposed.
 - `useUserSettings`: exposes `updateSetting<K>(key, value)` which mutates in-memory state only (not persisted, not broadcast to other hook instances).
-- Check-in answers: owned entirely by URL params — no hook, no context.
+- Check-in answers: transitioning from URL parameter bus to storage-backed `CheckInContext` and `checkinStorage`.
 
 ---
 
-## Check-In URL Parameter Bus
+## Check-In State & Persistence Architecture
 
-Check-in screens communicate entirely through Expo Router URL params — effectively a URL-param state bus. Each screen reads its inbound params via `useLocalSearchParams` and passes them forward (spreading `...params`) to the next screen in the stack.
+### Overview
+The check-in subsystem architecture follows a decoupled, persistent data flow:
+```
+Check-in screens (yesterday, energy, body, noting, period, saved)
+    ↓
+CheckInContext (`src/contexts/CheckInContext.tsx`)
+    ↓
+Active Check-In State (in-memory React state)
+    ↓
+AsyncStorage persistence (`appStorage` in `src/utils/storage.ts`)
+```
 
-**All params are strings.** Components must parse `Number(params.energyIndex)`, compare `params.isFirstTime === 'true'`, etc.
+Check-in answer data must **not** be passed between screens through route/query parameters. The `CheckInContext` serves as the shared state bus for the active check-in.
 
-**No validation is performed** on incoming params. A missing `energyIndex` defaults silently (screen uses a fallback).
+### Two Persistence Concepts
+
+#### A. Draft Storage
+- **Key**: `@heedly/checkin_draft`
+- **Type**: `Partial<CheckInEntry>`
+- **Purpose**:
+  - Stores an in-progress, unfinished check-in step-by-step.
+  - Survives reloads (Metro hot/cold reload), app backgrounding, and operating system termination.
+  - Automatically restored when the user re-enters the check-in flow or reopens the app.
+  - Cleared upon successful submission on the Saved screen.
+
+#### B. History Storage
+- **Key**: `@heedly/checkin_history`
+- **Type**: `Record<string, CheckInEntry>` (dictionary keyed by date string `YYYY-MM-DD`)
+- **Purpose**:
+  - Stores completed, final check-ins.
+  - Keyed by the date being recorded (e.g., `{"2026-09-01": {...}}`).
+  - Forms the durable foundation for historical views, weekly pattern trends, doctor-ready notes, and backend synchronization.
+
+#### Convenience Reference
+- **Key**: `@heedly/last_checkin_date`
+- **Purpose**: Fast reference string (`YYYY-MM-DD`) to the most recently completed check-in date for instant query checks without loading the full history dictionary. It is **not** the primary source of historical check-in data.
+
+### Date Semantics — Very Important
+`CheckInEntry.date` represents the **DATE THE CHECK-IN IS ABOUT**. It does **NOT** represent the submission timestamp.
+
+In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
+- If a user submits a check-in on **September 2** about **September 1**:
+  - `date` = `"2026-09-01"`
+  - `completedAt` = `"2026-09-02T08:30:00.000Z"`
+  - `updatedAt` = `"2026-09-02T08:30:00.000Z"`
+
+**Why this distinction matters:**
+- **History & Trends**: Physiological correlations (e.g. HRV, sleep, pacing) must align with the day the symptoms and activities occurred, not the morning after.
+- **Editing**: Modifying answers must update the record for the day that was lived, preserving the original `completedAt` timestamp.
+- **Patterns**: Multi-day rollups require accurate calendar day alignment.
+- **Future Backend Sync**: Retrospective timestamps prevent 24-hour offset discrepancies when syncing with wearables (Oura, Apple Health) or server databases.
+
+### Check-In State Modes
+`CheckInContext` manages two distinct operational modes:
+
+1. **NEW CHECK-IN Mode**:
+   - Entry: Today screen → "Check in for yesterday"
+   - Flow: Initialize active entry for target date → update draft on each step → complete on Saved screen → save to `@heedly/checkin_history` → clear `@heedly/checkin_draft`.
+2. **EDIT EXISTING CHECK-IN Mode**:
+   - Entry: Today screen → "Review today's check-in"
+   - Flow: Load existing record from `@heedly/checkin_history` into active state → user edits a specific answer (e.g., Energy) → returns to Saved screen → saves back to the **same historical date key** → updates `updatedAt` while preserving `completedAt` → **does not create a duplicate historical entry**.
+
+### Hydration & Restoration
+- When `CheckInProvider` mounts, it hydrates from `appStorage` to restore any existing draft and verify whether the check-in for the target date has already been completed.
+- Exposes `isHydrating: boolean`. Screens must not assume empty/default answers while hydration is in progress.
+
+### Layer Responsibilities
+- **Screens (`src/app/(check-in)/`)**: Display current active values, invoke `updateEntry()`, handle UI interactions. Screens do not own persistent check-in state.
+- **Context (`src/contexts/CheckInContext.tsx`)**: Owns active state, distinguishes NEW vs EDIT modes, restores state from storage, coordinates writes.
+- **Storage Service (`src/services/checkinStorage.ts`)**: Handles `appStorage` read/write operations, manages key schemas, contains zero UI logic.
+- **Types (`src/types/checkin.ts`)**: Defines the domain model (`CheckInEntry`, `CheckInConfig`, etc.).
+
+### URL Parameter Rule
+- **Check-in answer data must NOT be passed via route or query parameters** (no `energyIndex`, `bodyIndex`, `yesterdayId`, `tags`, or `periodInfo` in the URL).
+- **Navigation-only parameters** representing UI/routing control remain permitted (e.g. `openPeriod=true`, `isFirstTime=true`).
+- **Rule**: Navigation parameters describe navigation/modal UI state; `CheckInContext` describes check-in domain data.
+
+### Current Implementation Status
+- **Status**: **Fully Implemented**.
+- **Services & Context**: `src/services/checkinStorage.ts` and `src/contexts/CheckInContext.tsx` are active. `CheckInProvider` wraps the app in `src/app/_layout.tsx`.
+- **Screen Migration**: All screens (`yesterday.tsx`, `energy.tsx`, `body.tsx`, `noting.tsx`, `period.tsx`, `saved.tsx`) read and persist via `useCheckIn()`.
+- **Answer URL Parameters**: Completely eliminated. Only UI-control parameters (`openPeriod=true`, `isFirstTime=true`) are permitted.
+- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx` to clear `@heedly/checkin_history`, `@heedly/checkin_draft`, `@heedly/last_checkin_date`, and reset Today CTA.
 
 ---
 
 ## Storage
 
-`appStorage` (`src/utils/storage.ts`) is the only abstraction over AsyncStorage. Direct `AsyncStorage` imports elsewhere would be a layering violation. Currently only ThemeContext uses it.
+`appStorage` (`src/utils/storage.ts`) is the only abstraction over AsyncStorage. Direct `AsyncStorage` imports elsewhere are a layering violation. Consumers:
+- `ThemeContext` & `getActiveTheme` (`@heedly/theme_mode`, `@heedly/is_true_black`)
+- `checkinStorage` (`@heedly/checkin_draft`, `@heedly/checkin_history`, `@heedly/last_checkin_date`)
 
 ---
 

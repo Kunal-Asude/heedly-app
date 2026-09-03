@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { CheckInProvider } from '@/contexts/CheckInContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
@@ -80,7 +81,9 @@ export default function RootLayout() {
 
   return (
     <AppThemeProvider initialMode="system">
-      <RootNavigator />
+      <CheckInProvider>
+        <RootNavigator />
+      </CheckInProvider>
     </AppThemeProvider>
   );
 }

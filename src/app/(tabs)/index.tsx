@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LearningScreenLayout, TodayScreenLayout } from "@/components/today";
 import { Fonts } from "@/constants/theme";
 import { useTheme } from "@/constants/themes";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useForecast } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
@@ -19,6 +20,7 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const { isTodayCompleted, startNewCheckIn } = useCheckIn();
   const params = useLocalSearchParams<{ mode?: string }>();
 
   const validParamMode =
@@ -31,6 +33,13 @@ export default function TodayScreen() {
       : null;
 
   const [customMode, setCustomMode] = useState<TodayStatusMode | null>(null);
+  const [prevParamMode, setPrevParamMode] = useState<TodayStatusMode | null>(validParamMode);
+
+  if (validParamMode !== prevParamMode) {
+    setPrevParamMode(validParamMode);
+    setCustomMode(null);
+  }
+
   const statusMode = customMode ?? validParamMode ?? "fd-empty";
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
@@ -55,12 +64,18 @@ export default function TodayScreen() {
   };
 
   const handleCtaPress = () => {
+    if (isTodayCompleted) {
+      router.push('/(check-in)/saved');
+      return;
+    }
     if (statusMode === 'fd-empty') {
+      startNewCheckIn(true);
       router.push({
         pathname: '/(check-in)/energy',
         params: { isFirstTime: 'true' },
       });
     } else {
+      startNewCheckIn(false);
       router.push('/(check-in)/yesterday');
     }
   };
@@ -228,7 +243,7 @@ export default function TodayScreen() {
             statusMode === "fd-wearable" ? currentConfig.noteText : undefined
           }
           isSecondaryLink={false}
-          ctaLabel={currentConfig.ctaText}
+          ctaLabel={isTodayCompleted ? "Review today's check-in" : currentConfig.ctaText}
           onCtaPress={handleCtaPress}
           footerNote={currentConfig.footerNote}
           onFooterPress={handleFooterPress}
@@ -252,7 +267,7 @@ export default function TodayScreen() {
           secondaryText={currentConfig.whyText}
           isSecondaryLink={Boolean(currentConfig.whyText)}
           onSecondaryPress={handleOpenWhyModal}
-          ctaLabel={currentConfig.ctaText}
+          ctaLabel={isTodayCompleted ? "Review today's check-in" : currentConfig.ctaText}
           onCtaPress={handleCtaPress}
           footerNote={currentConfig.footerNote}
           onFooterPress={handleFooterPress}

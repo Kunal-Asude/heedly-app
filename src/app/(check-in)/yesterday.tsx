@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckIn } from '@/contexts/CheckInContext';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import type { YesterdayOption } from '@/types/checkin';
@@ -13,30 +14,23 @@ export default function YesterdayScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-    periodInfo?: string;
-    isFirstTime?: string;
     isEditing?: string;
   }>();
 
-  const initialId =
-    params.yesterdayIndex === '3' || params.yesterdayLabel === 'Lighter than usual'
-      ? 'lighter'
-      : params.yesterdayIndex === '2' || params.yesterdayLabel === 'About the same'
-      ? 'same'
-      : params.yesterdayIndex === '1' || params.yesterdayLabel === 'Heavier than usual'
-      ? 'heavier'
-      : null;
-  const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const isEditing = params.isEditing === 'true' || contextIsEditing;
 
-  const isEditing = params.isEditing === 'true';
+  const initialId =
+    activeEntry.yesterdayId ??
+    (activeEntry.yesterdayIndex === 3
+      ? 'lighter'
+      : activeEntry.yesterdayIndex === 2
+      ? 'same'
+      : activeEntry.yesterdayIndex === 1
+      ? 'heavier'
+      : null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
 
   const options: YesterdayOption[] = [
     {
@@ -94,40 +88,26 @@ export default function YesterdayScreen() {
 
   const handleSelectOption = (option: YesterdayOption) => {
     setSelectedId(option.id);
-    const yesterdayIdx = option.id === 'lighter' ? '3' : option.id === 'same' ? '2' : '1';
+    const yesterdayIdx = option.id === 'lighter' ? 3 : option.id === 'same' ? 2 : 1;
+
+    updateEntry({
+      yesterdayId: option.id as 'lighter' | 'same' | 'heavier',
+      yesterdayLabel: option.value,
+      yesterdayIndex: yesterdayIdx,
+    });
 
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-          yesterdayIndex: yesterdayIdx,
-          yesterdayLabel: option.value,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
 
     // Recurring daily flow: proceed to Question 1 of 3 (energy)
-    router.push({
-      pathname: '/(check-in)/energy',
-      params: {
-        ...params,
-        yesterdayIndex: yesterdayIdx,
-        yesterdayLabel: option.value,
-        isFirstTime: 'false',
-      },
-    });
+    router.push('/(check-in)/energy');
   };
 
   const handleBack = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
     if (router.canGoBack()) {
@@ -139,22 +119,11 @@ export default function YesterdayScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
-      router.push({
-        pathname: '/(check-in)/saved',
-        params: {
-          ...params,
-        },
-      });
+      router.push('/(check-in)/saved');
       return;
     }
     // Recurring daily flow: skip directly to energy screen
-    router.push({
-      pathname: '/(check-in)/energy',
-      params: {
-        ...params,
-        isFirstTime: 'false',
-      },
-    });
+    router.push('/(check-in)/energy');
   };
 
   return (

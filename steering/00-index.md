@@ -56,11 +56,10 @@ heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CF
 
 1. **Ownership is unclear**: a change touches both the theme system and screen-level hardcoded colors simultaneously — the migration boundary is not settled.
 2. **Mock→real API transition**: any data hook is being wired to a real backend. The mock contract and real contract may diverge in shape.
-3. **trueBlack theme activation**: `isTrueBlack` setting exists but is not plumbed into `ThemeContext`. Activating it requires an architecture decision.
-4. **Check-in data persistence**: the check-in flow currently passes all data as URL params and never writes to storage. Any change that persists check-in answers must define an ownership model.
-5. **Paywall / subscription actions**: `handleSubscribe` is a no-op stub. Do not implement payment logic without explicit spec.
-6. **New route group**: adding a new `(group)` requires understanding which routes get the DawnBackground, which share ThemeContext, and whether the tab bar should render.
-7. **EnergyOrb design changes**: values are verbatim from design-handoff HTML/CSS. Changes require designer approval or updated handoff.
+3. **Backend API synchronization**: client-side check-in persistence is storage-backed (`CheckInContext` + `checkinStorage`). Any future integration with a remote cloud backend must define API sync contracts.
+4. **Paywall / subscription actions**: `handleSubscribe` is a no-op stub. Do not implement payment logic without explicit spec.
+5. **New route group**: adding a new `(group)` requires understanding which routes get the DawnBackground, which share ThemeContext, and whether the tab bar should render.
+6. **EnergyOrb design changes**: values are verbatim from design-handoff HTML/CSS. Changes require designer approval or updated handoff.
 
 ---
 

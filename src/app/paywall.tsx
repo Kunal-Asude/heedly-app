@@ -15,6 +15,47 @@ import { DawnBackground, EnergyOrb } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 
+// ─── Feature Row Sub-Component ────────────────────────────────────────────────
+
+function FeatureRow({
+  text,
+  textColor,
+  isOled,
+  isDark,
+}: {
+  text: string;
+  textColor: string;
+  isOled: boolean;
+  isDark: boolean;
+}) {
+  return (
+    <View style={styles.featureRow}>
+      <View
+        style={[
+          styles.checkBadge,
+          {
+            backgroundColor: isOled
+              ? "#2C4235"
+              : isDark
+                ? "rgba(100, 180, 140, 0.2)"
+                : "#529668",
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.checkBadgeIcon,
+            { color: isOled ? "#9FB8A6" : "#FFFFFF" },
+          ]}
+        >
+          ✓
+        </Text>
+      </View>
+      <Text style={[styles.featureText, { color: textColor }]}>{text}</Text>
+    </View>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PaywallScreen() {
@@ -22,6 +63,8 @@ export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const isOled = isDark && isTrueBlack;
+
   const [selectedPlan, setSelectedPlan] = useState<"annual" | "monthly">("annual");
 
   const handleBack = () => {
@@ -36,34 +79,47 @@ export default function PaywallScreen() {
     handleBack();
   };
 
-  // ─── Theme-Aware Colors ─────────────────────────────────────────────────────
+  // ─── Theme-Aware Colors (Aubade - True Black (OLED).html:1116-1163) ──────────
 
-  const titleMainColor = isDark ? "#F3E7E1" : theme.ink.display;
-  const titleAccentColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#D9735A";
-  const subtitleColor = isDark ? "rgba(199, 180, 191, 0.72)" : "rgba(74, 58, 57, 0.75)";
+  const titleMainColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
+  const titleAccentColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#D9735A";
+  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "rgba(74, 58, 57, 0.75)";
 
-  const cardBg = isDark ? "rgba(46, 33, 50, 0.95)" : "rgba(252, 246, 240, 0.96)";
-  const cardBorder = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(220, 200, 192, 0.3)";
+  const cardBg = isDark ? (isOled ? "#16111B" : "rgba(46, 33, 50, 0.95)") : "rgba(252, 246, 240, 0.96)";
+  const cardBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(220, 200, 192, 0.3)";
 
-  const featureTextColor = isDark ? "#F3E7E1" : "#3A2420";
+  const featureTextColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
 
-  const planSelectedBg = isDark ? "rgba(226, 122, 108, 0.14)" : "rgba(255, 243, 237, 0.7)";
-  const planSelectedBorder = isDark ? "rgba(226, 122, 108, 0.6)" : "#D9735A";
+  const planSelectedBg = isDark
+    ? (isOled ? "rgba(201, 123, 96, 0.25)" : "rgba(226, 122, 108, 0.14)")
+    : "rgba(255, 243, 237, 0.7)";
+  const planSelectedBorder = isDark
+    ? (isOled ? "rgba(255, 255, 255, 0.08)" : "rgba(226, 122, 108, 0.6)")
+    : "#D9735A";
 
-  const planUnselectedBg = isDark ? "rgba(38, 26, 42, 0.65)" : "#FFFFFF";
-  const planUnselectedBorder = isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(210, 195, 188, 0.55)";
+  const planUnselectedBg = isDark ? (isOled ? "#16111B" : "rgba(38, 26, 42, 0.65)") : "#FFFFFF";
+  const planUnselectedBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(210, 195, 188, 0.55)";
 
-  const planNameColor = isDark ? "#F3E7E1" : "#3A2420";
-  const planPriceColor = isDark ? "#F3E7E1" : "#3A2420";
-  const planSubColor = isDark ? "rgba(199, 180, 191, 0.72)" : "#6E5044";
+  const planNameColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
+  const planPriceColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
+  const planSubColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "#6E5044";
 
-  const bestValueBorder = isDark ? "rgba(120, 190, 150, 0.5)" : "transparent";
-  const bestValueBg = isDark ? "rgba(100, 180, 140, 0.08)" : "#D9735A";
-  const bestValueTextColor = isDark ? "#8FB996" : "#FFFFFF";
+  // BEST VALUE badge (.pw-tag)
+  const bestValueBorder = isDark ? (isOled ? "#6E9678" : "rgba(120, 190, 150, 0.5)") : "transparent";
+  const bestValueBg = isDark ? (isOled ? "transparent" : "rgba(100, 180, 140, 0.08)") : "#D9735A";
+  const bestValueTextColor = isDark ? (isOled ? "#6E9678" : "#8FB996") : "#FFFFFF";
 
-  const disclaimerColor = isDark ? "rgba(199, 180, 191, 0.65)" : "#6E5044";
-  const linkColor = isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#9B6E5C";
-  const linkDotColor = isDark ? "rgba(199, 180, 191, 0.45)" : "#907A72";
+  // CTA Button (.pw-cta)
+  const ctaGradient: [string, string, ...string[]] = isDark
+    ? (isOled ? ["#574049", "#241A20"] : ["#634256", "#8A5D7C", "#9E768E"])
+    : ["#f0a07e", "#e88970", "#e0735f"];
+  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
+  const ctaArrowColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
+
+  // Footer & Disclosure (.pw-disclosure & .pw-links)
+  const disclaimerColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.65)") : "#6E5044";
+  const linkColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#9B6E5C";
+  const linkDotColor = isDark ? (isOled ? "rgba(168,151,158,0.55)" : "rgba(199, 180, 191, 0.45)") : "#907A72";
 
   return (
     <View style={styles.root}>
@@ -77,208 +133,262 @@ export default function PaywallScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* ── Hero Orb ───────────────────────────────────────────────── */}
+          {/* ── Hero Orb (.pw-orb) ──────────────────────────────────────── */}
           <View style={styles.orbContainer}>
             <EnergyOrb state="empty" size={137} />
           </View>
 
-          {/* ── Headline (Comfortaa 400 with "step" accent) ───────────── */}
+          {/* ── Headline (.pw-headline: Comfortaa 500 with "step ahead." accent) ── */}
           <Text style={[styles.mainTitle, { color: titleMainColor }]}>
-            Stay a <Text style={{ color: titleAccentColor }}>step</Text> ahead.
+            Stay a <Text style={{ color: titleAccentColor }}>step ahead.</Text>
           </Text>
 
-          {/* ── Subtitle ───────────────────────────────────────────────── */}
+          {/* ── Subtitle (.pw-sub) ───────────────────────────────────────── */}
           <Text style={[styles.subtitleText, { color: subtitleColor }]}>
             {"heedly learns your patterns and gives you\na gentle heads-up before a crash."}
           </Text>
 
-          {/* ── Full-Width Bottom Card ──────────────────────────────────── */}
+          {/* ── Full-Width Bottom Sheet (.pw-sheet) ──────────────────────── */}
           <View
             style={[
               styles.bottomCard,
               {
                 backgroundColor: cardBg,
                 borderColor: cardBorder,
-                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 32,
+                shadowOpacity: isOled ? 0 : 0.12,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24,
               },
             ]}
           >
-            {/* ── Feature Bullets ─────────────────────────────────────── */}
+            {/* ── Feature Bullets (.pw-values) ─────────────────────────── */}
             <View style={styles.featuresList}>
-              <FeatureRow text="Crash forecasts 24–72 hours ahead" textColor={featureTextColor} />
-              <FeatureRow text="Patterns learned just for you" textColor={featureTextColor} />
-              <FeatureRow text="Private by default — your data stays yours" textColor={featureTextColor} />
-              <FeatureRow text="No ads." textColor={featureTextColor} />
+              <FeatureRow text="Crash forecasts 24–72 hours ahead" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
+              <FeatureRow text="Patterns learned just for you" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
+              <FeatureRow text="Private by default — your data stays yours" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
+              <FeatureRow text="No ads." textColor={featureTextColor} isOled={isOled} isDark={isDark} />
             </View>
 
-            {/* ── Annual Plan ─────────────────────────────────────────── */}
+            {/* ── Annual Plan Option (.pw-plan) ─────────────────────────── */}
             <Pressable
               onPress={() => setSelectedPlan("annual")}
-              style={[
-                styles.planBox,
-                {
-                  backgroundColor: selectedPlan === "annual" ? planSelectedBg : planUnselectedBg,
-                  borderColor: selectedPlan === "annual" ? planSelectedBorder : planUnselectedBorder,
-                },
-              ]}
               accessibilityRole="radio"
               accessibilityState={{ checked: selectedPlan === "annual" }}
               accessibilityLabel="Annual plan 79.99 per year"
             >
-              <View style={styles.planLeft}>
+              {isOled && selectedPlan === "annual" ? (
+                <LinearGradient
+                  colors={["#291D26", "#4A2A30"]}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={[styles.planBox, { borderColor: planSelectedBorder }]}
+                >
+                  <View style={styles.planLeft}>
+                    <View style={[styles.radioOuter, styles.radioOuterSelected, { backgroundColor: "#B85F47" }]}>
+                      <Text style={styles.radioCheck}>✓</Text>
+                    </View>
+                    <View>
+                      <View style={styles.planTitleRow}>
+                        <Text style={[styles.planName, { color: planNameColor }]}>Annual </Text>
+                        <Text style={[styles.planPrice, { color: planPriceColor }]}> $79.99/yr</Text>
+                      </View>
+                      <Text style={[styles.planSub, { color: planSubColor }]}>about $6.67/mo</Text>
+                    </View>
+                  </View>
+                  <View
+                    style={[
+                      styles.bestValueBadge,
+                      {
+                        backgroundColor: bestValueBg,
+                        borderColor: bestValueBorder,
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.bestValueText, { color: bestValueTextColor }]}>BEST VALUE</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
                 <View
                   style={[
-                    styles.radioOuter,
-                    selectedPlan === "annual"
-                      ? styles.radioOuterSelected
-                      : [
-                          styles.radioOuterUnselected,
-                          {
-                            backgroundColor: isDark ? "transparent" : "#FFFFFF",
-                            borderColor: isDark ? "rgba(199, 180, 191, 0.4)" : "rgba(170, 150, 140, 0.5)",
-                          },
-                        ],
+                    styles.planBox,
+                    {
+                      backgroundColor: selectedPlan === "annual" ? planSelectedBg : planUnselectedBg,
+                      borderColor: selectedPlan === "annual" ? planSelectedBorder : planUnselectedBorder,
+                    },
                   ]}
                 >
-                  {selectedPlan === "annual" && (
-                    <Text style={styles.radioCheck}>✓</Text>
-                  )}
-                </View>
-                <View>
-                  <View style={styles.planTitleRow}>
-                    <Text style={[styles.planName, { color: planNameColor }]}>Annual </Text>
-                    <Text style={[styles.planPrice, { color: planPriceColor }]}> $79.99/yr</Text>
+                  <View style={styles.planLeft}>
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        selectedPlan === "annual"
+                          ? [styles.radioOuterSelected, isOled && { backgroundColor: "#B85F47" }]
+                          : [
+                              styles.radioOuterUnselected,
+                              {
+                                backgroundColor: isDark ? "transparent" : "#FFFFFF",
+                                borderColor: isOled ? "rgba(255, 255, 255, 0.07)" : (isDark ? "rgba(199, 180, 191, 0.4)" : "rgba(170, 150, 140, 0.5)"),
+                              },
+                            ],
+                      ]}
+                    >
+                      {selectedPlan === "annual" && (
+                        <Text style={styles.radioCheck}>✓</Text>
+                      )}
+                    </View>
+                    <View>
+                      <View style={styles.planTitleRow}>
+                        <Text style={[styles.planName, { color: planNameColor }]}>Annual </Text>
+                        <Text style={[styles.planPrice, { color: planPriceColor }]}> $79.99/yr</Text>
+                      </View>
+                      <Text style={[styles.planSub, { color: planSubColor }]}>about $6.67/mo</Text>
+                    </View>
                   </View>
-                  <Text style={[styles.planSub, { color: planSubColor }]}>about $6.67/mo</Text>
+                  <View
+                    style={[
+                      styles.bestValueBadge,
+                      {
+                        backgroundColor: bestValueBg,
+                        borderColor: bestValueBorder,
+                        borderWidth: isDark ? 1 : 0,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.bestValueText, { color: bestValueTextColor }]}>BEST VALUE</Text>
+                  </View>
                 </View>
-              </View>
-              <View
-                style={[
-                  styles.bestValueBadge,
-                  {
-                    backgroundColor: bestValueBg,
-                    borderColor: bestValueBorder,
-                    borderWidth: isDark ? 1 : 0,
-                  },
-                ]}
-              >
-                <Text style={[styles.bestValueText, { color: bestValueTextColor }]}>BEST VALUE</Text>
-              </View>
+              )}
             </Pressable>
 
-            {/* ── Monthly Plan ────────────────────────────────────────── */}
+            {/* ── Monthly Plan Option (.pw-plan) ────────────────────────── */}
             <Pressable
               onPress={() => setSelectedPlan("monthly")}
-              style={[
-                styles.planBox,
-                styles.planBoxMonthly,
-                {
-                  backgroundColor: selectedPlan === "monthly" ? planSelectedBg : planUnselectedBg,
-                  borderColor: selectedPlan === "monthly" ? planSelectedBorder : planUnselectedBorder,
-                },
-              ]}
+              style={styles.planBoxMonthly}
               accessibilityRole="radio"
               accessibilityState={{ checked: selectedPlan === "monthly" }}
               accessibilityLabel="Monthly plan 9.99 per month"
             >
-              <View style={styles.planLeft}>
+              {isOled && selectedPlan === "monthly" ? (
+                <LinearGradient
+                  colors={["#291D26", "#4A2A30"]}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={[styles.planBox, { borderColor: planSelectedBorder }]}
+                >
+                  <View style={styles.planLeft}>
+                    <View style={[styles.radioOuter, styles.radioOuterSelected, { backgroundColor: "#B85F47" }]}>
+                      <Text style={styles.radioCheck}>✓</Text>
+                    </View>
+                    <View style={styles.planTitleRow}>
+                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly </Text>
+                      <Text style={[styles.planPrice, { color: planPriceColor }]}> $9.99/mo</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              ) : (
                 <View
                   style={[
-                    styles.radioOuter,
-                    selectedPlan === "monthly"
-                      ? styles.radioOuterSelected
-                      : [
-                          styles.radioOuterUnselected,
-                          {
-                            backgroundColor: isDark ? "transparent" : "#FFFFFF",
-                            borderColor: isDark ? "rgba(199, 180, 191, 0.4)" : "rgba(170, 150, 140, 0.5)",
-                          },
-                        ],
+                    styles.planBox,
+                    {
+                      backgroundColor: selectedPlan === "monthly" ? planSelectedBg : planUnselectedBg,
+                      borderColor: selectedPlan === "monthly" ? planSelectedBorder : planUnselectedBorder,
+                    },
                   ]}
                 >
-                  {selectedPlan === "monthly" && (
-                    <Text style={styles.radioCheck}>✓</Text>
-                  )}
+                  <View style={styles.planLeft}>
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        selectedPlan === "monthly"
+                          ? [styles.radioOuterSelected, isOled && { backgroundColor: "#B85F47" }]
+                          : [
+                              styles.radioOuterUnselected,
+                              {
+                                backgroundColor: isDark ? "transparent" : "#FFFFFF",
+                                borderColor: isOled ? "rgba(255, 255, 255, 0.07)" : (isDark ? "rgba(199, 180, 191, 0.4)" : "rgba(170, 150, 140, 0.5)"),
+                              },
+                            ],
+                      ]}
+                    >
+                      {selectedPlan === "monthly" && (
+                        <Text style={styles.radioCheck}>✓</Text>
+                      )}
+                    </View>
+                    <View style={styles.planTitleRow}>
+                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly </Text>
+                      <Text style={[styles.planPrice, { color: planPriceColor }]}> $9.99/mo</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.planTitleRow}>
-                  <Text style={[styles.planName, { color: planNameColor }]}>Monthly </Text>
-                  <Text style={[styles.planPrice, { color: planPriceColor }]}> $9.99/mo</Text>
-                </View>
-              </View>
+              )}
             </Pressable>
 
-            {/* ── CTA Button ──────────────────────────────────────────── */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.ctaButtonWrapper,
-                pressed && styles.ctaPressed,
-              ]}
-              onPress={handleSubscribe}
-              accessibilityRole="button"
-              accessibilityLabel="Start my 14 days free"
-            >
-              <LinearGradient
-                colors={isDark ? ["#634256", "#8A5D7C", "#9E768E"] : ["#f0a07e", "#e88970", "#e0735f"]}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={styles.ctaButtonGradient}
+            {/* ── Footer Container (.pw-foot) pushed to bottom ─────────── */}
+            <View style={styles.footerContainer}>
+              {/* ── CTA Button (.pw-cta) ─────────────────────────────────── */}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.ctaButtonWrapper,
+                  isOled && { shadowOpacity: 0 },
+                  pressed && styles.ctaPressed,
+                ]}
+                onPress={handleSubscribe}
+                accessibilityRole="button"
+                accessibilityLabel="Start my 14 days free"
               >
-                <Text style={styles.ctaText}>Start my 14 days free</Text>
-                <View style={styles.ctaArrowContainer}>
-                  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                    <Path
-                      d="M9 5l7 7-7 7"
-                      stroke="#FFF6F1"
-                      strokeWidth={2.4}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </Svg>
-                </View>
-              </LinearGradient>
-            </Pressable>
+                <LinearGradient
+                  colors={ctaGradient}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={[
+                    styles.ctaButtonGradient,
+                    isOled && { borderWidth: 0, borderColor: "transparent" },
+                  ]}
+                >
+                  <Text style={[styles.ctaText, { color: ctaTextColor }]}>Start my 14 days free</Text>
+                  <View style={styles.ctaArrowContainer}>
+                    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                      <Path
+                        d="M9 5l7 7-7 7"
+                        stroke={ctaArrowColor}
+                        strokeWidth={2.4}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  </View>
+                </LinearGradient>
+              </Pressable>
 
-            {/* ── Disclaimer ──────────────────────────────────────────── */}
-            <Text style={[styles.disclaimer, { color: disclaimerColor }]}>
-              14 days free, then your plan renews automatically until you cancel. Manage or cancel anytime in the App Store.
-            </Text>
+              {/* ── Disclaimer (.pw-disclosure) ─────────────────────────── */}
+              <Text style={[styles.disclaimer, { color: disclaimerColor }]}>
+                14 days free, then your plan renews automatically until you cancel. Manage or cancel anytime in the App Store.
+              </Text>
 
-            {/* ── Footer Links ────────────────────────────────────────── */}
-            <View style={styles.linksRow}>
-              <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}90` }]}>
-                  <Text style={[styles.link, { color: linkColor }]}>Restore purchases</Text>
-                </View>
-              </Pressable>
-              <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
-              <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}90` }]}>
-                  <Text style={[styles.link, { color: linkColor }]}>Terms</Text>
-                </View>
-              </Pressable>
-              <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
-              <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}90` }]}>
-                  <Text style={[styles.link, { color: linkColor }]}>Privacy</Text>
-                </View>
-              </Pressable>
+              {/* ── Footer Links (.pw-links) ─────────────────────────────── */}
+              <View style={styles.linksRow}>
+                <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                    <Text style={[styles.link, { color: linkColor }]}>Restore purchases</Text>
+                  </View>
+                </Pressable>
+                <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
+                <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                    <Text style={[styles.link, { color: linkColor }]}>Terms</Text>
+                  </View>
+                </Pressable>
+                <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
+                <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                    <Text style={[styles.link, { color: linkColor }]}>Privacy</Text>
+                  </View>
+                </Pressable>
+              </View>
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
-  );
-}
-
-// ─── Feature Row Sub-Component ────────────────────────────────────────────────
-
-function FeatureRow({ text, textColor }: { text: string; textColor: string }) {
-  return (
-    <View style={styles.featureRow}>
-      <View style={styles.checkBadge}>
-        <Text style={styles.checkBadgeIcon}>✓</Text>
-      </View>
-      <Text style={[styles.featureText, { color: textColor }]}>{text}</Text>
     </View>
   );
 }
@@ -300,51 +410,56 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    paddingTop: 16,
   },
 
-  // ── Orb ──────────────────────────────────────────────────────────────────
+  // ── Orb (.pw-orb) ─────────────────────────────────────────────────────────
 
   orbContainer: {
     alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 14,
-    marginBottom: 26,
+    marginTop: 6,
+    marginBottom: 14,
+    overflow: "visible",
   },
 
-  // ── Typography ───────────────────────────────────────────────────────────
+  // ── Typography (.pw-headline & .pw-sub) ───────────────────────────────────
 
-  // .mainTitle: Comfortaa 400, 32px, lineHeight 38px
   mainTitle: {
     fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 30,
+    lineHeight: 34,
     letterSpacing: -0.3,
     textAlign: "center",
-    marginBottom: 10,
+    marginHorizontal: 20,
+    marginBottom: 0,
   },
 
   subtitleText: {
-    fontSize: 14.5,
+    fontSize: 13.5,
     fontWeight: "400",
-    lineHeight: 21,
+    lineHeight: 20,
     textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 32,
+    marginTop: 9,
+    marginBottom: 18,
+    paddingHorizontal: 24,
+    alignSelf: "center",
+    maxWidth: 320,
   },
 
-  // ── Bottom Card ──────────────────────────────────────────────────────────
+  // ── Bottom Sheet (.pw-sheet) ──────────────────────────────────────────────
 
   bottomCard: {
     flex: 1,
     width: "100%",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    paddingHorizontal: 24,
-    paddingTop: 28,
+    paddingHorizontal: 22,
+    paddingTop: 22,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.12,
@@ -352,62 +467,60 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  // ── Features ─────────────────────────────────────────────────────────────
+  // ── Features (.pw-values) ─────────────────────────────────────────────────
 
   featuresList: {
-    gap: 16,
-    marginBottom: 24,
+    gap: 12,
+    marginBottom: 18,
   },
 
   featureRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   },
 
   checkBadge: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#529668",
+    width: 21,
+    height: 21,
+    borderRadius: 10.5,
     alignItems: "center",
     justifyContent: "center",
   },
 
   checkBadgeIcon: {
-    color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "700",
     lineHeight: 12,
   },
 
   featureText: {
-    fontSize: 15,
-    fontWeight: "600",
-    lineHeight: 21,
+    fontSize: 13.5,
+    fontWeight: "500",
+    lineHeight: 18,
     flex: 1,
   },
 
-  // ── Plan Options ─────────────────────────────────────────────────────────
+  // ── Plan Options (.pw-plans & .pw-plan) ───────────────────────────────────
 
   planBox: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 18,
+    borderRadius: 17,
     borderWidth: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
   },
 
   planBoxMonthly: {
-    marginTop: 10,
+    marginTop: 9,
   },
 
   planLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 13,
     flex: 1,
   },
 
@@ -415,18 +528,17 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    borderWidth: 1,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
   },
 
   radioOuterSelected: {
-    backgroundColor: "#E27A6C",
-    borderColor: "#E27A6C",
+    borderWidth: 0,
   },
 
   radioOuterUnselected: {
-    borderWidth: 1,
+    borderWidth: 2,
   },
 
   radioCheck: {
@@ -439,46 +551,53 @@ const styles = StyleSheet.create({
   planTitleRow: {
     flexDirection: "row",
     alignItems: "baseline",
+    gap: 9,
   },
 
   planName: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: "600",
   },
 
   planPrice: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: "600",
   },
 
   planSub: {
-    fontSize: 13,
-    fontWeight: "400",
-    lineHeight: 18,
-    marginTop: 1,
+    fontSize: 12.5,
+    fontWeight: "500",
+    lineHeight: 16,
+    marginTop: 3,
   },
 
   bestValueBadge: {
-    borderRadius: 6,
-    paddingVertical: 3,
+    borderRadius: 7,
+    paddingVertical: 4,
     paddingHorizontal: 8,
   },
 
   bestValueText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: "700",
-    letterSpacing: 0.8,
+    letterSpacing: 0.7,
     textTransform: "uppercase",
   },
 
-  // ── CTA Button ───────────────────────────────────────────────────────────
+  // ── Footer Container (.pw-foot) ───────────────────────────────────────────
+
+  footerContainer: {
+    marginTop: "auto",
+    paddingTop: 18,
+  },
+
+  // ── CTA Button (.pw-cta) ──────────────────────────────────────────────────
 
   ctaButtonWrapper: {
     width: "100%",
     height: 54,
     borderRadius: 27,
-    marginTop: 28,
-    marginBottom: 14,
+    marginBottom: 12,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
@@ -509,20 +628,22 @@ const styles = StyleSheet.create({
   },
 
   ctaArrowContainer: {
+    position: "absolute",
+    right: 21,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 1,
   },
 
-  // ── Footer ───────────────────────────────────────────────────────────────
+  // ── Footer & Disclosures (.pw-disclosure & .pw-links) ─────────────────────
 
   disclaimer: {
-    fontSize: 13.5,
-    fontWeight: "400",
-    lineHeight: 19,
+    fontSize: 12,
+    fontWeight: "500",
+    lineHeight: 18,
     textAlign: "center",
     paddingHorizontal: 8,
-    marginBottom: 14,
+    marginTop: 12,
+    marginBottom: 12,
   },
 
   linksRow: {
@@ -530,6 +651,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    marginTop: 12,
   },
 
   linkPressed: {
@@ -538,19 +660,19 @@ const styles = StyleSheet.create({
 
   linkUnderlineWrapper: {
     borderBottomWidth: 1,
-    paddingBottom: 1,
+    paddingBottom: 2,
     alignSelf: "center",
   },
 
   link: {
-    fontSize: 13.5,
+    fontSize: 12,
     fontWeight: "500",
     textDecorationLine: "none",
     letterSpacing: 0,
   },
 
   linkDot: {
-    fontSize: 13,
+    fontSize: 12,
   },
 });
 

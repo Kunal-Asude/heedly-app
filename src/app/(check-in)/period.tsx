@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +8,8 @@ import Svg, { Path } from 'react-native-svg';
 import { DawnBackground } from '@/components/core';
 import { Fonts, Spacing } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
+
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 const PERIOD_DAYS = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7+'];
 
@@ -25,20 +27,29 @@ export default function PeriodScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-  }>();
+  const { activeEntry, updateEntry } = useCheckIn();
 
+  const [selectedDay, setSelectedDay] = useState<string | null>(() => {
+    if (activeEntry.periodInfo?.startsWith('Day ')) {
+      return activeEntry.periodInfo.split(' · ')[0];
+    }
+    return null;
+  });
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
-  const [selectedQuick, setSelectedQuick] = useState<string | null>(null);
+  const [selectedFlow, setSelectedFlow] = useState<string | null>(() => {
+    if (activeEntry.periodInfo?.includes(' · ')) {
+      const parts = activeEntry.periodInfo.split(' · ');
+      return parts[1]?.replace(' flow', '') ?? null;
+    }
+    return null;
+  });
+
+  const [selectedQuick, setSelectedQuick] = useState<string | null>(() => {
+    if (activeEntry.periodInfo && QUICK_OPTIONS.includes(activeEntry.periodInfo)) {
+      return activeEntry.periodInfo;
+    }
+    return null;
+  });
 
   const handleSelectDay = (day: string) => {
     if (selectedDay === day) {
@@ -72,18 +83,7 @@ export default function PeriodScreen() {
   };
 
   const handleSkip = () => {
-    router.push({
-      pathname: '/(check-in)/saved',
-      params: {
-        yesterdayIndex: params.yesterdayIndex,
-        yesterdayLabel: params.yesterdayLabel,
-        energyIndex: params.energyIndex ?? '2',
-        energyLabel: params.energyLabel ?? 'middling',
-        bodyIndex: params.bodyIndex ?? '2',
-        bodyLabel: params.bodyLabel ?? 'tender',
-        tags: params.tags,
-      },
-    });
+    router.push('/(check-in)/saved');
   };
 
   const handleSave = () => {
@@ -94,19 +94,11 @@ export default function PeriodScreen() {
       periodInfo = selectedQuick;
     }
 
-    router.push({
-      pathname: '/(check-in)/saved',
-      params: {
-        yesterdayIndex: params.yesterdayIndex,
-        yesterdayLabel: params.yesterdayLabel,
-        energyIndex: params.energyIndex ?? '2',
-        energyLabel: params.energyLabel ?? 'middling',
-        bodyIndex: params.bodyIndex ?? '2',
-        bodyLabel: params.bodyLabel ?? 'tender',
-        tags: params.tags,
-        periodInfo: periodInfo.length > 0 ? periodInfo : undefined,
-      },
+    updateEntry({
+      periodInfo: periodInfo.length > 0 ? periodInfo : null,
     });
+
+    router.push('/(check-in)/saved');
   };
 
   return (

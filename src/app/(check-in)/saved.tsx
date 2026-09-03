@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -9,6 +9,8 @@ import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
+
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
@@ -47,84 +49,50 @@ export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const { activeEntry, saveCheckIn } = useCheckIn();
 
-  const params = useLocalSearchParams<{
-    yesterdayIndex?: string;
-    yesterdayLabel?: string;
-    energyIndex?: string;
-    energyLabel?: string;
-    bodyIndex?: string;
-    bodyLabel?: string;
-    tags?: string;
-    periodInfo?: string;
-    isFirstTime?: string;
-    isCrash?: string;
-  }>();
+  const isCrash = Boolean(activeEntry.isCrash);
+  const isFirstTime = Boolean(activeEntry.isFirstTime);
 
-  const isCrash = params.isCrash === 'true';
-  const isFirstTime = params.isFirstTime === 'true';
-
-  const yesterdayLabel = params.yesterdayLabel;
-  const energyLabel = params.energyLabel ?? (isFirstTime ? 'okay' : 'middling');
-  const energyRating = params.energyIndex ? Number(params.energyIndex) + 1 : 3;
-  const bodyLabel = params.bodyLabel ?? 'tender';
-  const bodyRating = params.bodyIndex ? Number(params.bodyIndex) + 1 : 3;
-  const tagsText = params.tags && params.tags.length > 0 ? params.tags : 'social · screens · warm room';
-  const periodInfo = params.periodInfo;
-
-  const currentParams = {
-    energyIndex: params.energyIndex,
-    energyLabel: params.energyLabel,
-    yesterdayIndex: params.yesterdayIndex,
-    yesterdayLabel: params.yesterdayLabel,
-    bodyIndex: params.bodyIndex,
-    bodyLabel: params.bodyLabel,
-    tags: params.tags,
-    periodInfo: params.periodInfo,
-    isFirstTime: params.isFirstTime,
-    isEditing: 'true',
-    isCrash: params.isCrash,
-  };
+  const yesterdayLabel = activeEntry.yesterdayLabel;
+  const energyLabel = activeEntry.energyLabel ?? (isFirstTime ? 'okay' : 'middling');
+  const energyRating =
+    activeEntry.energyIndex !== undefined && activeEntry.energyIndex !== null
+      ? activeEntry.energyIndex + 1
+      : 3;
+  const bodyLabel = activeEntry.bodyLabel ?? 'tender';
+  const bodyRating =
+    activeEntry.bodyIndex !== undefined && activeEntry.bodyIndex !== null
+      ? activeEntry.bodyIndex + 1
+      : 3;
+  const tagsText =
+    activeEntry.tags && activeEntry.tags.length > 0
+      ? activeEntry.tags.join(' · ')
+      : 'social · screens · warm room';
+  const periodInfo = activeEntry.periodInfo;
 
   const handleEditEnergy = () => {
-    router.push({
-      pathname: '/(check-in)/energy',
-      params: currentParams,
-    });
+    router.push('/(check-in)/energy?isEditing=true');
   };
 
   const handleEditBody = () => {
-    router.push({
-      pathname: '/(check-in)/body',
-      params: currentParams,
-    });
+    router.push('/(check-in)/body?isEditing=true');
   };
 
   const handleEditNotable = () => {
-    router.push({
-      pathname: '/(check-in)/noting',
-      params: currentParams,
-    });
+    router.push('/(check-in)/noting?isEditing=true');
   };
 
   const handleEditYesterday = () => {
-    router.push({
-      pathname: '/(check-in)/yesterday',
-      params: currentParams,
-    });
+    router.push('/(check-in)/yesterday?isEditing=true');
   };
 
   const handleEditCycle = () => {
-    router.push({
-      pathname: '/(check-in)/noting',
-      params: {
-        ...currentParams,
-        openPeriod: 'true',
-      },
-    });
+    router.push('/(check-in)/noting?isEditing=true&openPeriod=true');
   };
 
-  const handleBackToToday = () => {
+  const handleBackToToday = async () => {
+    await saveCheckIn();
     if (isCrash) {
       router.replace('/(tabs)?mode=rest' as any);
     } else if (isFirstTime) {

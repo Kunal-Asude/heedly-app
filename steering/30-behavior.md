@@ -5,65 +5,48 @@
 
 ---
 
-## Flow 1: Daily Check-In (Recurring User)
+## Flow 1: Daily Check-In
 
-**Entry points:**
-- A. CTA button on Today screen when `statusMode !== 'fd-empty'` → `router.push('/(check-in)/yesterday')`
-- B. Notification tap with `data.screen === 'check-in'` → `router.push('/(check-in)/yesterday')`
+### User Experience Lifecycle
 
-**Happy path (no editing, no period):**
+#### 1. Before Completion
+- The user taps **"Check in for yesterday"** on the Today screen (or enters via daily reminder notification).
+- If an unfinished draft exists in `@heedly/checkin_draft`, its selections are automatically restored.
 
-```
-/(check-in)/yesterday
-  → user selects option (lighter/same/heavier)
-  → router.push('/(check-in)/energy', params: { yesterdayIndex, yesterdayLabel, isFirstTime: 'false' })
+#### 2. During Check-In
+- Moving between screens (`yesterday` → `energy` → `body` → `noting` → `period` → `saved`) auto-persists updates to draft storage.
+- An unexpected app reload, background kill, or device restart restores the in-progress draft without loss of user selections.
+- First-time users (`fd-empty`) skip `yesterday` and begin directly at `energy`.
+- Tapping "I'm in a crash" on `energy` or `body` shortcuts directly to `saved` with crash flags preserved.
 
-/(check-in)/energy
-  → user selects energy level (0–4)
-  → router.push('/(check-in)/body', params: { ...prev, energyIndex, energyLabel })
+#### 3. After Completion
+- On the Saved screen, tapping **"Back to today"** commits the completed check-in to `@heedly/checkin_history` indexed by the recorded date (`YYYY-MM-DD`).
+- Sets `completedAt` and `updatedAt` ISO timestamps.
+- The active draft `@heedly/checkin_draft` is cleared.
+- `@heedly/last_checkin_date` is updated with the recorded date.
 
-/(check-in)/body
-  → user selects body level (0–4)
-  → router.push('/(check-in)/noting', params: { ...prev, bodyIndex, bodyLabel })
+#### 4. Review
+- Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review today's check-in"**.
+- Tapping routes directly to `/(check-in)/saved`, populating the completed record for inspection without restarting the check-in flow.
 
-/(check-in)/noting
-  → user selects tags, optionally logs period day
-  → router.push('/(check-in)/saved', params: { ...prev, tags, periodInfo })
+#### 5. Edit Individual Answers
+- On `saved.tsx`, the user taps an individual answer row (e.g., ENERGY).
+- The target screen opens with the current answer pre-selected.
+- The user adjusts the answer and proceeds back to `saved.tsx`.
+- The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle).
+- Tapping "Back to today" updates the existing historical date entry with a new `updatedAt` timestamp without creating duplicate records or modifying `completedAt`.
 
-/(check-in)/saved
-  → displays summary of all answers
-  → "Done" → router.replace('/(tabs)')
-  → Edit links set isEditing: 'true' and push back to target screen
-```
+### Date Semantics
+- Check-ins are retrospective: the stored `date` represents the **day being recorded** (e.g., yesterday's date `2026-09-01`), NOT the submission date (`2026-09-02`).
+- Submission timing is captured by `completedAt` and `updatedAt`.
 
-**First-time flow (fd-empty CTA):**
+### Implementation Status
+- **Status**: **Fully Implemented and Active**.
+- State is managed centrally via `CheckInContext` (`src/contexts/CheckInContext.tsx`) and backed by `appStorage` (`src/services/checkinStorage.ts`).
+- URL parameters are no longer used for check-in answers.
+- `resetAllData()` in `CheckInContext` is connected to the "Delete data" action in `your-data.tsx`, purging storage and returning the Today screen to its initial state.
 
-```
-/(tabs) [fd-empty] → CTA → router.push('/(check-in)/energy', { isFirstTime: 'true' })
-  (skips yesterday screen)
-  → energy → body → noting → saved → /(tabs)
-```
-
-**Crash shortcut:**
-
-```
-/(check-in)/energy
-  → "I'm crashing" press → router.push('/(check-in)/saved', { isCrash: 'true', energyIndex, energyLabel })
-  (skips body and noting)
-```
-
-**Editing flow:**
-
-```
-/(check-in)/saved
-  → tap any "edit" link → push to target screen with { ...currentParams, isEditing: 'true' }
-/(check-in)/[any screen in edit mode]
-  → select → router.push('/(check-in)/saved', { ...params })  (returns immediately)
-```
-
-**State changes:** URL params only. No persistent storage written.
-
-**Failure:** Back navigation from `yesterday` when `canGoBack() === false` → `router.replace('/(tabs)')`.
+**Failure recovery:** Back navigation from `yesterday` when `canGoBack() === false` → `router.replace('/(tabs)')`.
 
 ---
 
@@ -115,42 +98,45 @@ Based on `statusMode`:
 
 ---
 
-## Flow 4: Notification Routing
-
-**Handled in `src/app/_layout.tsx` `RootLayout` component.**
-
-Two cases:
+## Flow 4: Notification Routing and Themed Attachments
+ 
+**Handled in `src/app/_layout.tsx` `RootLayout` component and `src/services/notifications.ts`.**
+ 
+Two cases for routing:
 1. **App active/background**: `addNotificationResponseReceivedListener` fires → reads `data.screen` → routes.
 2. **Cold launch**: `getLastNotificationResponseAsync()` → reads `data.screen` → routes.
-
+ 
 ```
 data.screen === 'check-in'  → router.push('/(check-in)/yesterday')
 otherwise                   → router.replace('/(tabs)')
 ```
-
+ 
+**Theme-Wise Orb Attachments:**
+When scheduling a notification (`sendTestCautionHeadsUpNotification` or `sendDailyCheckInReminder` in `src/services/notifications.ts`), the active theme is resolved asynchronously via `getActiveTheme()` (reads `@heedly/theme_mode` and `@heedly/is_true_black` from AsyncStorage). The matching static orb image (`orb_oled.jpg`, `orb_dusk.jpg`, or `orb_dawn.jpg`) is attached to the notification payload.
+ 
 **Listener cleanup:** subscription is removed on unmount via `return () => subscription.remove()`.
-
-**Known gap:** `getLastNotificationResponseAsync` is called on every mount (not just fresh installs). If the last notification response is stale, the app will re-navigate on every hot reload. This is a development artifact.
-
+ 
 ---
-
+ 
 ## Flow 5: Settings and Theme Change
-
+ 
 ```
 /(tabs)/settings
   - reads: useUserSettings() for toggle initial values
-  - reads: useThemeMode() for { themeMode, setThemeMode, isDark }
+  - reads: useThemeMode() for { themeMode, setThemeMode, isTrueBlack, setTrueBlack, isDark }
   - reads: useAppTheme() for resolved tokens
-
+ 
 User taps theme segment (Light/Dark/System):
   → setThemeMode(mode)  [ThemeContext.setThemeMode]
   → persists to AsyncStorage under @heedly/theme_mode
   → ThemeContext re-renders with new resolvedTheme
   → entire tree re-renders with new tokens
-
+ 
 User toggles True Black:
-  → setIsTrueBlack(val)  [local useState only]
-  → NOT wired to ThemeContext — has no effect on rendered theme
+  → setTrueBlack(val)   [ThemeContext.setTrueBlack]
+  → persists to AsyncStorage under @heedly/is_true_black
+  → ThemeContext switches resolvedTheme to trueBlackTheme (if isDark)
+  → entire tree re-renders with OLED tokens
 ```
 
 Other settings toggles (reminders, AI insights, etc.) are local state only. Not persisted. See [50-contradictions.md](50-contradictions-and-open-questions.md#settings-state-is-not-persisted).
