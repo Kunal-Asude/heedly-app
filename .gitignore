@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# Locally packed @heedly/native, rebuilt by `npm run native:sync`.
+# Temporary: goes away once the package is installed from the registry.
+heedly-native-*.tgz
+
 # Expo
 .expo/
 dist/
