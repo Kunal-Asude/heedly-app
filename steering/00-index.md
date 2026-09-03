@@ -29,7 +29,7 @@ heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CF
 |---|---|
 | Theme colors / visual tokens | [10-specification.md §Theme Invariants](10-specification.md#theme-invariants) + [20-architecture.md §Theme System](20-architecture.md#theme-system) |
 | Any check-in screen | [30-behavior.md §Check-In Flow](30-behavior.md#flow-1-daily-check-in) + [20-architecture.md §Check-In Params](20-architecture.md#check-in-url-parameter-bus) |
-| Adding a new theme | [50-contradictions.md §TrueBlack](50-contradictions-and-open-questions.md#trueblack-theme-exists-but-is-not-wired) |
+| Themes & OLED mode | [10-specification.md §Theme Invariants](10-specification.md#theme-invariants) + [20-architecture.md §Theme System](20-architecture.md#theme-system) |
 | Data hooks / mock data | [20-architecture.md §Data Layer](20-architecture.md#data-layer) + [50-contradictions.md §Mock-as-Prod](50-contradictions-and-open-questions.md#all-data-is-mock-no-real-backend-wired) |
 | Notifications | [30-behavior.md §Notifications](30-behavior.md#flow-4-notification-routing) + [10-specification.md §Notification Contract](10-specification.md#notification-routing-contract) |
 | EnergyOrb component | [10-specification.md §EnergyOrb](10-specification.md#energyorb-invariants) |

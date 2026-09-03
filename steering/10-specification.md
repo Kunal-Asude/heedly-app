@@ -8,9 +8,13 @@
 ## Theme Invariants
 
 ### The Three Themes
-- **Three** themes exist: `light` (Dawn), `dark` (Dusk), `trueBlack`.
-- `trueBlack` is defined at `src/constants/themes/trueBlack.ts` and exported from `src/constants/themes/index.ts` but is **not wired into `ThemeContext`**.
-- `ThemeContext` resolves only to `lightTheme` or `darkTheme`. `trueBlack` is unreachable at runtime. See [50-contradictions.md](50-contradictions-and-open-questions.md#trueblack-theme-exists-but-is-not-wired).
+- **Three** themes exist and are fully wired: `light` (Dawn), `dark` (Dusk), and `trueBlack` (True Black / OLED).
+- `trueBlack` is defined at `src/constants/themes/trueBlack.ts`, exported from `src/constants/themes/index.ts`, and fully integrated into `ThemeContext` (`src/contexts/ThemeContext.tsx`).
+- Resolution rule:
+  - `!isDark` → `lightTheme` (Dawn)
+  - `isDark && !isTrueBlack` → `darkTheme` (Dusk)
+  - `isDark && isTrueBlack` → `trueBlackTheme` (OLED)
+- Controlled via the "True Black (OLED)" toggle in `src/app/(tabs)/settings.tsx` and persisted via `@heedly/is_true_black`.
 
 ### Theme Contract
 - `DesignTokens` interface (`src/constants/themes/tokens.ts`) is the **canonical contract** every theme must satisfy completely.
@@ -26,9 +30,11 @@ The interface has these top-level keys (all required):
 `components.energyOrb.glass` is the most complex sub-structure: ~20 fields controlling the SVG glass-sphere rendering. Values must come from design handoff, not guessed.
 
 ### Theme Persistence
-- User preference is persisted to `AsyncStorage` under the key `@heedly/theme_mode`.
-- On cold start, `ThemeContext` loads the stored mode and updates state. Until loaded, `isLoaded = false`.
-- Valid stored values: `"light"`, `"dark"`, `"system"`. Any other value is ignored; default (`"system"`) is used.
+- User preference is persisted to `AsyncStorage` under two keys:
+  - `@heedly/theme_mode`: `"light"`, `"dark"`, or `"system"`. Any other value is ignored; default (`"system"`) is used.
+  - `@heedly/is_true_black`: `"true"` or `"false"`. Controls whether dark mode resolves to Dusk or True Black (OLED).
+- On cold start, `ThemeContext` loads both stored preferences concurrently and updates state. Until loaded, `isLoaded = false`.
+- For background services and native notifications, `src/utils/getActiveTheme.ts` provides a standalone async resolver that reads these keys directly without requiring React context.
 
 ### Font Stack
 Two custom font families are required for the app to render correctly:
@@ -42,7 +48,7 @@ Fonts are loaded in `RootLayout` via `useFonts`. `SplashScreen.hideAsync()` is c
 
 ## Design Token Invariants
 
-- `components.background.type` must be `"gradient"` for Dawn and `"solid"` for Dusk (verified in light/dark themes).
+- `components.background.type` must be `"gradient"` for Dawn and `"solid"` for Dusk and True Black (verified across all themes).
 - All `EnergyOrb` state configs (`steady`, `caution`, `rest`, `wearableRead`, `learning`) must be present in the `glass` sub-token of every theme.
 - The `cta.gradient` field is typed as `[string, string, ...string[]]` (at least 2 stops). Passing a single-stop array is a TypeScript error.
 - `onboarding.chip.selectedGradient` is typed `readonly [string, string]` (exactly 2 stops).
