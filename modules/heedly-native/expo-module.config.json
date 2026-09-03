@@ -1,9 +1,0 @@
-{
-  "platforms": ["apple", "android", "web"],
-  "apple": {
-    "modules": ["HeedlyNativeModule"]
-  },
-  "android": {
-    "modules": ["expo.modules.heedlynative.HeedlyNativeModule"]
-  }
-}

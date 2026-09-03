@@ -9,7 +9,7 @@ import { CheckInProvider } from '@/contexts/CheckInContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
 // ⚠️ TEMPORARY — bridge spike. Delete once a real screen consumes native data.
-import HeedlyNative from '../../modules/heedly-native/src/HeedlyNativeModule';
+import HeedlyNative from '@heedly/native';
 
 SplashScreen.preventAutoHideAsync();
 
