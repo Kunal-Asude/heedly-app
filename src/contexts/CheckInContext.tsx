@@ -7,16 +7,43 @@ import React, {
   useState,
 } from "react";
 
+import HeedlyNative from "@heedly/native";
+
+import {
+  fromNativeCheckIn,
+  toNativeCheckIn,
+  toVerdictValue,
+} from "@/services/checkinBridge";
+// Drafts stay here. An in-progress check-in is app state, not an answer, and
+// the native contract has no concept of one — only completed records cross.
+//
+// `clearAllCheckInData` also stays, and is now incomplete: it clears the draft
+// keys but not the store, which is where completed check-ins now live. The
+// bridge has no delete method, and what "Delete all my data" must cover is a
+// product question rather than something to guess at, so it is deliberately
+// left as it was rather than half-migrated.
 import {
   clearAllCheckInData,
   clearDraft,
-  getCheckIn,
   getRecordedCheckInDate,
   loadDraft,
-  saveCheckIn as persistCheckInToHistory,
   saveDraft,
 } from "@/services/checkinStorage";
 import type { CheckInEntry } from "@/types/checkin";
+
+/**
+ * Reads a completed check-in from the store.
+ *
+ * Two records, because the store keeps them apart: the check-in and the verdict
+ * for the same day have different edit rules. `null` means no check-in exists —
+ * a real answer, not a failure, so it is returned rather than thrown.
+ */
+async function readCompletedCheckIn(date: string): Promise<CheckInEntry | null> {
+  const checkIn = await HeedlyNative.getCheckIn(date);
+  if (!checkIn) return null;
+  const verdict = await HeedlyNative.getVerdict(date);
+  return fromNativeCheckIn(checkIn, verdict);
+}
 
 // ─── Types & Contract ─────────────────────────────────────────────────────────
 
@@ -54,11 +81,16 @@ const defaultEntry: Partial<CheckInEntry> = {
   yesterdayId: null,
   yesterdayLabel: null,
   yesterdayIndex: null,
-  energyIndex: 2,
-  energyLabel: "middling",
-  bodyIndex: 2,
-  bodyLabel: "tender",
-  tags: ["social", "screens", "warm room"],
+  // Unanswered, not middling. These seed a *fresh* draft, and `handleSkip` on
+  // the energy/body screens navigates without writing — so a non-null value
+  // here is what a skipped answer would be recorded as. The screens already
+  // fall back to the middle position for *display* when this is null, so the
+  // UI is unchanged; only the recorded value is.
+  energyIndex: null,
+  energyLabel: null,
+  bodyIndex: null,
+  bodyLabel: null,
+  tags: [],
   periodInfo: null,
   isCrash: false,
   isFirstTime: false,
@@ -85,7 +117,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     async function load() {
       try {
         const [completed, draft] = await Promise.all([
-          getCheckIn(targetDate),
+          readCompletedCheckIn(targetDate),
           loadDraft(),
         ]);
 
@@ -163,7 +195,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   // ── Load Existing Check-In (Review / Edit Mode) ──────────────────────────────
   const loadExistingCheckIn = useCallback(async (date: string): Promise<boolean> => {
     try {
-      const entry = await getCheckIn(date);
+      const entry = await readCompletedCheckIn(date);
       if (entry) {
         setActiveEntry(entry);
         setIsEditing(true);
@@ -185,11 +217,11 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       yesterdayId: activeEntry.yesterdayId ?? null,
       yesterdayLabel: activeEntry.yesterdayLabel ?? null,
       yesterdayIndex: activeEntry.yesterdayIndex ?? null,
-      energyIndex: activeEntry.energyIndex ?? 2,
-      energyLabel: activeEntry.energyLabel ?? "middling",
-      bodyIndex: activeEntry.bodyIndex ?? 2,
-      bodyLabel: activeEntry.bodyLabel ?? "tender",
-      tags: activeEntry.tags ?? ["social", "screens", "warm room"],
+      energyIndex: activeEntry.energyIndex ?? null,
+      energyLabel: activeEntry.energyLabel ?? null,
+      bodyIndex: activeEntry.bodyIndex ?? null,
+      bodyLabel: activeEntry.bodyLabel ?? null,
+      tags: activeEntry.tags ?? [],
       periodInfo: activeEntry.periodInfo ?? null,
       isCrash: activeEntry.isCrash ?? false,
       isFirstTime: activeEntry.isFirstTime ?? false,
@@ -197,8 +229,22 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       updatedAt: new Date().toISOString(),
     };
 
-    // 1. Commit to history
-    await persistCheckInToHistory(completedEntry);
+    // 1. Commit to history — the native store, which is what the engine reads.
+    //
+    // Both calls are awaited and neither is wrapped: if the store cannot be
+    // written, this must reject so the screen can say so. Swallowing it would
+    // report a saved check-in that does not exist (§2 — a false reassurance is
+    // worse than a false alarm).
+    //
+    // The verdict is a separate record with its own edit rules, so it is a
+    // separate call. It is skipped entirely when the day was not rated —
+    // "not rated" is an absent row, not a value.
+    await HeedlyNative.saveCheckIn(toNativeCheckIn(completedEntry));
+
+    const verdictValue = toVerdictValue(completedEntry.yesterdayId);
+    if (verdictValue) {
+      await HeedlyNative.saveVerdict(checkInDate, verdictValue);
+    }
 
     // 2. Clear draft if not in edit mode
     if (!isEditing) {
@@ -228,7 +274,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
   // ── Refresh Status ──────────────────────────────────────────────────────────
   const refreshStatus = useCallback(async () => {
-    const completed = await getCheckIn(targetDate);
+    const completed = await readCompletedCheckIn(targetDate);
     if (completed) {
       setTodayCompleted(true);
       setTodayEntry(completed);
