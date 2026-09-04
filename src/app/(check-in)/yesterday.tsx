@@ -26,7 +26,7 @@ export default function YesterdayScreen() {
     (activeEntry.yesterdayIndex === 3
       ? 'lighter'
       : activeEntry.yesterdayIndex === 2
-      ? 'same'
+      ? 'usual'
       : activeEntry.yesterdayIndex === 1
       ? 'heavier'
       : null);
@@ -51,7 +51,7 @@ export default function YesterdayScreen() {
         : 'rgba(134, 196, 180, 0.4)',
     },
     {
-      id: 'same',
+      id: 'usual',
       value: 'About the same',
       prefix: 'About ',
       emphasis: 'the same',
@@ -88,10 +88,10 @@ export default function YesterdayScreen() {
 
   const handleSelectOption = (option: YesterdayOption) => {
     setSelectedId(option.id);
-    const yesterdayIdx = option.id === 'lighter' ? 3 : option.id === 'same' ? 2 : 1;
+    const yesterdayIdx = option.id === 'lighter' ? 3 : option.id === 'usual' ? 2 : 1;
 
     updateEntry({
-      yesterdayId: option.id as 'lighter' | 'same' | 'heavier',
+      yesterdayId: option.id as 'lighter' | 'usual' | 'heavier',
       yesterdayLabel: option.value,
       yesterdayIndex: yesterdayIdx,
     });
