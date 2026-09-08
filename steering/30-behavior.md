@@ -20,10 +20,10 @@
 - Tapping "I'm in a crash" on `energy` or `body` shortcuts directly to `saved` with crash flags preserved.
 
 #### 3. After Completion
-- On the Saved screen, tapping **"Back to today"** commits the completed check-in to `@heedly/checkin_history` indexed by the recorded date (`YYYY-MM-DD`).
-- Sets `completedAt` and `updatedAt` ISO timestamps.
+- On the Saved screen, tapping **"Back to today"** commits the completed check-in **through the native bridge into SQLite** (`HeedlyNative.saveCheckIn`, and `saveVerdict` when a yesterday answer exists), indexed by the recorded date (`YYYY-MM-DD`). **Nothing is written before that tap.**
+- `created_at` and `edited_at` are stamped by the storage layer, not sent by the app (ADR-0017). `completedAt`/`updatedAt` remain app-side bookkeeping with no storage destination.
 - The active draft `@heedly/checkin_draft` is cleared.
-- `@heedly/last_checkin_date` is updated with the recorded date.
+- ⚠️ `@heedly/checkin_history` and `@heedly/last_checkin_date` are **not** written. `persistCheckInToHistory` has no call site outside its own file (source-verified), and the AsyncStorage manifest was observed empty after every completed check-in during the 2026-09-07 verification runs.
 
 #### 4. Review
 - Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review today's check-in"**.
@@ -33,8 +33,8 @@
 - On `saved.tsx`, the user taps an individual answer row (e.g., ENERGY).
 - The target screen opens with the current answer pre-selected.
 - The user adjusts the answer and proceeds back to `saved.tsx`.
-- The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle).
-- Tapping "Back to today" updates the existing historical date entry with a new `updatedAt` timestamp without creating duplicate records or modifying `completedAt`.
+- The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle). Verified at runtime on 2026-09-07 (run R6): changing only Energy left `body_level` and both `check_in_tag` rows unchanged.
+- Tapping "Back to today" updates the existing row for that date. `created_at` is preserved and `edited_at` is stamped by storage when content actually changed; an unchanged re-save writes nothing and leaves `edited_at` NULL (ADR-0017, observed in R6 and P3-C).
 
 ### Date Semantics
 - Check-ins are retrospective: the stored `date` represents the **day being recorded** (e.g., yesterday's date `2026-09-01`), NOT the submission date (`2026-09-02`).
