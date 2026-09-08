@@ -54,21 +54,27 @@ export default function CheckInSavedScreen() {
   const isCrash = Boolean(activeEntry.isCrash);
   const isFirstTime = Boolean(activeEntry.isFirstTime);
 
+  // An unanswered question is shown as unanswered. These previously substituted
+  // a plausible middle answer — a label, three filled dots, three tag names —
+  // for values that were never given, so the screen asserted answers the store
+  // did not hold. The rows stay visible because each one is the edit affordance
+  // ("Tap any line to edit before you go"), and because a skipped answer is
+  // itself information: the person showed up and declined to answer.
   const yesterdayLabel = activeEntry.yesterdayLabel;
-  const energyLabel = activeEntry.energyLabel ?? (isFirstTime ? 'okay' : 'middling');
+  const energyLabel = activeEntry.energyLabel ?? 'skipped';
   const energyRating =
     activeEntry.energyIndex !== undefined && activeEntry.energyIndex !== null
       ? activeEntry.energyIndex + 1
-      : 3;
-  const bodyLabel = activeEntry.bodyLabel ?? 'tender';
+      : 0;
+  const bodyLabel = activeEntry.bodyLabel ?? 'skipped';
   const bodyRating =
     activeEntry.bodyIndex !== undefined && activeEntry.bodyIndex !== null
       ? activeEntry.bodyIndex + 1
-      : 3;
+      : 0;
   const tagsText =
     activeEntry.tags && activeEntry.tags.length > 0
       ? activeEntry.tags.join(' · ')
-      : 'social · screens · warm room';
+      : 'nothing noted';
   const periodInfo = activeEntry.periodInfo;
 
   const handleEditEnergy = () => {
