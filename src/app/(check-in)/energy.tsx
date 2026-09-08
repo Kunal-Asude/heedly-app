@@ -45,9 +45,12 @@ export default function EnergyScreen() {
   };
 
   const handleCrashPress = () => {
+    // Deliberately does not write energyIndex/energyLabel. selectedIndex falls
+    // back to 2 for display when nothing has been chosen, so writing it here
+    // recorded a middle answer for a question the person never answered — and
+    // a skipped answer is NULL, not a low one. handleSelectLevel already puts a
+    // real choice in the entry, so anything genuinely selected is there by now.
     updateEntry({
-      energyIndex: selectedIndex,
-      energyLabel: selectedLevel.label,
       isCrash: true,
       isFirstTime,
     });
@@ -86,9 +89,12 @@ export default function EnergyScreen() {
   };
 
   const handleNext = () => {
+    // Like handleCrashPress, this does not write energyIndex/energyLabel.
+    // selectedIndex is the highlighted option, which falls back to the middle
+    // when nothing has been chosen — advancing past an untouched picker is not
+    // an answer, and a skipped answer is NULL rather than a middling one.
+    // handleSelectLevel records a real choice as it is made.
     updateEntry({
-      energyIndex: selectedIndex,
-      energyLabel: selectedLevel.label,
       isFirstTime,
       isCrash: false,
     });

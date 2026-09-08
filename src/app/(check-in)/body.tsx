@@ -43,9 +43,10 @@ export default function BodyScreen() {
   };
 
   const handleCrashPress = () => {
+    // Deliberately does not write bodyIndex/bodyLabel — see energy.tsx for the
+    // full reasoning. selectedIndex is display state with a fallback of 2, and
+    // storing it recorded an answer nobody gave.
     updateEntry({
-      bodyIndex: selectedIndex,
-      bodyLabel: selectedLevel.label,
       isCrash: true,
     });
     router.push('/(check-in)/saved');
@@ -72,10 +73,9 @@ export default function BodyScreen() {
   };
 
   const handleNext = () => {
-    updateEntry({
-      bodyIndex: selectedIndex,
-      bodyLabel: selectedLevel.label,
-    });
+    // Writes nothing — see energy.tsx for the reasoning. Advancing past an
+    // untouched picker is not an answer, and handleSelectLevel has already
+    // recorded (and drafted) a real choice by the time this runs.
 
     if (isEditing) {
       router.push('/(check-in)/saved');
