@@ -374,7 +374,7 @@ export default function YourDataScreen() {
             <View style={styles.itemTextContainer}>
               <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Encrypted backup</Text>
               <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                {"Stored privately in iCloud, so it's there when you change phones."}
+                {"Kept on this phone. If you back up your iPhone, it's included — so it can come back when you restore to a new one."}
               </Text>
             </View>
           </View>
@@ -506,7 +506,7 @@ export default function YourDataScreen() {
                 },
               ]}
             >
-              {"This erases everything heedly keeps — every check-in and all your patterns, on this phone and in your iCloud backup. It can't be undone."}
+              {"This erases everything heedly keeps on this phone — every check-in and all your patterns. It can't be undone. Older iPhone backups may still hold a copy until they're replaced."}
             </Text>
 
             <Text

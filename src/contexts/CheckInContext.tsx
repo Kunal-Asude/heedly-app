@@ -16,12 +16,8 @@ import {
 } from "@/services/checkinBridge";
 // Drafts stay here. An in-progress check-in is app state, not an answer, and
 // the native contract has no concept of one — only completed records cross.
-//
-// `clearAllCheckInData` also stays, and is now incomplete: it clears the draft
-// keys but not the store, which is where completed check-ins now live. The
-// bridge has no delete method, and what "Delete all my data" must cover is a
-// product question rather than something to guess at, so it is deliberately
-// left as it was rather than half-migrated.
+// `clearAllCheckInData` clears those draft keys; the store is erased through
+// the bridge alongside it.
 import {
   clearAllCheckInData,
   clearDraft,
@@ -286,6 +282,13 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
   // ── Reset All Check-In Data ──────────────────────────────────────────────────
   const resetAllData = useCallback(async () => {
+    // The store first, because it holds everything the engine reads — check-ins,
+    // tags, verdicts, wearable history, sources, and the sync state. It is
+    // awaited and not wrapped: the screen tells the person their data is gone,
+    // so a failure has to reach them rather than be reported as success.
+    await HeedlyNative.deleteAllData();
+    // Then the draft. An unfinished check-in never reached the store, so
+    // erasing the store alone would leave it behind.
     await clearAllCheckInData();
     setTodayCompleted(false);
     setTodayEntry(null);
