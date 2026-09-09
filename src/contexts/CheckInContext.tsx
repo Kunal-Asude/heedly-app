@@ -56,6 +56,14 @@ export interface CheckInContextValue {
   isTodayCompleted: boolean;
   /** The completed check-in record for the target recorded date, if completed */
   todayEntry: CheckInEntry | null;
+  /**
+   * True once the person has recorded any check-in, ever. Read from the store,
+   * not inferred from the target date — someone returning after a missed day
+   * would otherwise be mistaken for a first-time user.
+   */
+  hasEverCheckedIn: boolean;
+  /** The day still awaiting a verdict, or null when none is. Only ever yesterday. */
+  unratedDay: string | null;
   /** Updates the active entry immediately in state and debounced/asynchronously to draft */
   updateEntry: (updates: Partial<CheckInEntry>) => void;
   /** Initializes or resets a fresh check-in draft for the target recorded date */
@@ -103,6 +111,12 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [todayCompleted, setTodayCompleted] = useState<boolean>(false);
   const [todayEntry, setTodayEntry] = useState<CheckInEntry | null>(null);
+  // Whether the person has ever checked in, and whether yesterday still needs a
+  // verdict. Both come from the store, because neither can be inferred from the
+  // target date alone: someone returning after a missed day looks exactly like
+  // someone new if you only ask about yesterday.
+  const [hasEverCheckedIn, setHasEverCheckedIn] = useState<boolean>(false);
+  const [unratedDay, setUnratedDay] = useState<string | null>(null);
 
   const targetDate = useMemo(() => getRecordedCheckInDate(), []);
 
@@ -112,12 +126,17 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
     async function load() {
       try {
-        const [completed, draft] = await Promise.all([
+        const [completed, draft, firstCheckInDay, unrated] = await Promise.all([
           readCompletedCheckIn(targetDate),
           loadDraft(),
+          HeedlyNative.getFirstCheckInDay(),
+          HeedlyNative.getUnratedDay(),
         ]);
 
         if (!isMounted) return;
+
+        setHasEverCheckedIn(firstCheckInDay !== null);
+        setUnratedDay(unrated);
 
         if (completed) {
           setTodayCompleted(true);
@@ -240,7 +259,16 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     const verdictValue = toVerdictValue(completedEntry.yesterdayId);
     if (verdictValue) {
       await HeedlyNative.saveVerdict(checkInDate, verdictValue);
+      // That day is rated now, so it must stop being offered. Skipping writes
+      // no verdict and deliberately leaves this alone — a skip is a
+      // postponement that runs out at midnight, not a refusal.
+      //
+      // Read through the setter rather than closing over `unratedDay`, so this
+      // cannot act on a value captured before the save.
+      setUnratedDay((current) => (current === checkInDate ? null : current));
     }
+    // A row exists from here on, whatever was answered.
+    setHasEverCheckedIn(true);
 
     // 2. Clear draft if not in edit mode
     if (!isEditing) {
@@ -290,6 +318,10 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     // Then the draft. An unfinished check-in never reached the store, so
     // erasing the store alone would leave it behind.
     await clearAllCheckInData();
+    // Every check-in and verdict is gone, so the person is new again and
+    // yesterday is unrated once more.
+    setHasEverCheckedIn(false);
+    setUnratedDay(await HeedlyNative.getUnratedDay());
     setTodayCompleted(false);
     setTodayEntry(null);
     setActiveEntry({
@@ -308,6 +340,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       editingDate,
       isTodayCompleted: todayCompleted,
       todayEntry,
+      hasEverCheckedIn,
+      unratedDay,
       updateEntry,
       startNewCheckIn,
       loadExistingCheckIn,
@@ -323,6 +357,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       editingDate,
       todayCompleted,
       todayEntry,
+      hasEverCheckedIn,
+      unratedDay,
       updateEntry,
       startNewCheckIn,
       loadExistingCheckIn,

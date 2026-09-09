@@ -20,7 +20,7 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { isTodayCompleted, startNewCheckIn } = useCheckIn();
+  const { isTodayCompleted, startNewCheckIn, hasEverCheckedIn, unratedDay } = useCheckIn();
   const params = useLocalSearchParams<{ mode?: string }>();
 
   const validParamMode =
@@ -68,15 +68,23 @@ export default function TodayScreen() {
       router.push('/(check-in)/saved');
       return;
     }
-    if (statusMode === 'fd-empty') {
+    // Routed from the store, not from statusMode. statusMode selects the demo
+    // visual state of this screen and knows nothing about what was recorded.
+    if (!hasEverCheckedIn) {
+      // A first-ever check-in has no previous day to rate, so it opens at the
+      // energy question rather than the verdict.
       startNewCheckIn(true);
       router.push({
         pathname: '/(check-in)/energy',
         params: { isFirstTime: 'true' },
       });
-    } else {
+    } else if (unratedDay) {
       startNewCheckIn(false);
       router.push('/(check-in)/yesterday');
+    } else {
+      // Returning, and yesterday is already rated — nothing to ask.
+      startNewCheckIn(false);
+      router.push('/(check-in)/energy');
     }
   };
 
