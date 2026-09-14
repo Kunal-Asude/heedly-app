@@ -6,6 +6,8 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import HeedlyNative from '@heedly/native';
+
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
@@ -29,6 +31,7 @@ export default function ConnectWearableScreen() {
   const { wearables } = useUserSettings();
   const [selectedDevice, setSelectedDevice] = useState<DeviceId | null>(null);
   const [isNoDataSheetVisible, setIsNoDataSheetVisible] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
 
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
@@ -38,8 +41,33 @@ export default function ConnectWearableScreen() {
     setSelectedDevice((current) => (current === id ? null : id));
   };
 
-  const handleContinue = () => {
-    setIsNoDataSheetVisible(true);
+  // Connect Apple Health, then decide what the person is told based on whether
+  // anything actually arrived.
+  //
+  // The count is rows, not days, and is only ever read as zero / non-zero. A
+  // person who declined and a person who granted access but has nothing Heedly
+  // can read both produce 0 — Apple does not disclose a refusal, so the two are
+  // indistinguishable here and the sheet speaks to both.
+  //
+  // A throw lands in the same place. `ERR_HEALTH_DATA_UNAVAILABLE` and
+  // `ERR_HEALTH_AUTHORIZATION` are diagnostics, not something to put in front of
+  // someone mid-onboarding, and connecting is optional either way.
+  const handleContinue = async () => {
+    if (isConnecting) return;
+    setIsConnecting(true);
+    try {
+      const rowsWritten = await HeedlyNative.connectHealthKit();
+      if (rowsWritten > 0) {
+        router.push('/(onboarding)/conditions');
+        return;
+      }
+      setIsNoDataSheetVisible(true);
+    } catch (error) {
+      console.warn('[Connect] Apple Health connection failed:', error);
+      setIsNoDataSheetVisible(true);
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   const handleDismissSheet = () => {
@@ -85,7 +113,7 @@ export default function ConnectWearableScreen() {
           <View style={styles.grid}>
             {wearables.map((card) => {
               const isSelected = selectedDevice === card.id;
-              const isWaiting = isSelected && isNoDataSheetVisible;
+              const isWaiting = isSelected && (isNoDataSheetVisible || isConnecting);
               const cardTokens = theme.components.onboarding.card;
 
               return (
@@ -199,8 +227,8 @@ export default function ConnectWearableScreen() {
               selectedDevice === null && styles.continueButtonHidden,
               pressed && selectedDevice !== null && styles.continueButtonPressed,
             ]}
-            onPress={selectedDevice !== null ? handleContinue : undefined}
-            pointerEvents={selectedDevice !== null ? 'auto' : 'none'}
+            onPress={selectedDevice !== null && !isConnecting ? handleContinue : undefined}
+            pointerEvents={selectedDevice !== null && !isConnecting ? 'auto' : 'none'}
             accessibilityRole="button"
             accessibilityLabel="Continue">
             <LinearGradient
