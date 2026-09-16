@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { DawnBackground, EnergyOrbState } from "@/components/core";
@@ -80,7 +80,9 @@ export function TodayScreenLayout({
   footerNote,
   onFooterPress,
 }: TodayScreenLayoutProps) {
-  const actualOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+  const { height: windowHeight } = useWindowDimensions();
+  const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+  const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
 
   return (
     <View style={styles.root}>
@@ -195,7 +197,10 @@ export function LearningScreenLayout({
   footerNote,
   onFooterPress,
 }: LearningScreenLayoutProps) {
-  const actualOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+  const { height: windowHeight } = useWindowDimensions();
+  const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
+  const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
+  const isSmallOrb = orbState === "empty";
 
   return (
     <View style={styles.root}>
@@ -210,11 +215,11 @@ export function LearningScreenLayout({
           />
 
           <View style={styles.learningContentGroup}>
-            <View style={styles.orbSlot}>
+            <View style={[styles.orbSlot, isSmallOrb && styles.smallOrbSlot]}>
               <TodayOrbContainer state={orbState} size={actualOrbSize} />
             </View>
 
-            <View style={styles.headlineSlot}>
+            <View style={[styles.headlineSlot, isSmallOrb && styles.smallOrbHeadlineSlot]}>
               <TodayHeadline
                 headline1={headline1}
                 headline2={headline2}
@@ -235,7 +240,7 @@ export function LearningScreenLayout({
               <TodaySupportingText text={supportingText} />
             </View>
 
-            <View style={styles.forecastSlot}>
+            <View style={[styles.forecastSlot, isSmallOrb && styles.smallOrbForecastSlot]}>
               <TodayForecastCard
                 forecast={forecast}
                 learningNote={learningNote}
@@ -274,7 +279,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: Spacing.four,
-    paddingBottom: 76, // Shifts the CTA button slightly lower down towards the floating tab bar
+    paddingBottom: 92,
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -308,8 +313,8 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 10,
   },
 
   smallOrbHeadlineSlot: {
@@ -335,7 +340,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 22,
+    marginTop: 16,
     marginBottom: 4,
   },
 
@@ -349,7 +354,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 28,
+    minHeight: 0,
   },
 
   secondarySlot: {
