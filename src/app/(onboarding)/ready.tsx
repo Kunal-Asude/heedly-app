@@ -1,20 +1,34 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
+import { useFirstName } from '@/contexts/NameContext';
+import { appStorage } from '@/utils/storage';
+import { ONBOARDING_COMPLETE_KEY } from '@/utils/storageKeys';
 
 export default function ReadyScreen() {
   const router = useRouter();
   const theme = useTheme();
   const ctaTokens = theme.components.cta;
+  const { setFirstName } = useFirstName();
+  const [nameInput, setNameInput] = useState('');
 
-  const handleGoToToday = () => {
+  // Optional throughout. An empty field is a complete answer, so nothing is
+  // validated and the CTA never gates on it — skipping is a product principle.
+  // Skipping must not overwrite a name given earlier, so an empty field writes
+  // nothing rather than writing "".
+  const handleGoToToday = async () => {
+    if (nameInput.trim()) {
+      setFirstName(nameInput);
+    }
+    await appStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
     router.replace('/(tabs)');
   };
 
@@ -24,7 +38,15 @@ export default function ReadyScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
+        <KeyboardAvoidingView
+          style={styles.fill}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView
+            style={styles.fill}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}>
+            <View style={styles.content}>
 
           {/* ── Signature Animated Glass Orb (152px, same as Welcome) ──── */}
           <View style={styles.orbContainer}>
@@ -47,6 +69,46 @@ export default function ReadyScreen() {
             The more days you check in, the clearer your patterns become.
             {" We'll do the rest quietly."}
           </Text>
+
+          {/* ── Optional first name ───────────────────────────────────
+              Asked here rather than on Welcome, where a text field would sit
+              directly under "No account needed" and contradict it. A name is
+              not an account; it only lets the app address someone warmly. */}
+          <View style={styles.nameField}>
+            <Text
+              style={[
+                styles.nameLabel,
+                { color: theme.components.supportingText.noteColor },
+              ]}>
+              What should we call you?
+            </Text>
+            <TextInput
+              style={[
+                styles.nameInput,
+                {
+                  color: theme.ink.display,
+                  borderColor: theme.components.onboarding.card.border,
+                  backgroundColor: theme.components.onboarding.card.waitingBackground,
+                },
+              ]}
+              value={nameInput}
+              onChangeText={setNameInput}
+              placeholder="Name"
+              placeholderTextColor={theme.ink.muted}
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="done"
+              maxLength={40}
+              accessibilityLabel="Your first name, optional"
+            />
+            <Text
+              style={[
+                styles.nameHint,
+                { color: theme.components.supportingText.noteColor },
+              ]}>
+              You can skip this.
+            </Text>
+          </View>
 
           {/* ── Primary CTA (Theme-aware gradient) ──── */}
           <Pressable
@@ -81,7 +143,9 @@ export default function ReadyScreen() {
             </LinearGradient>
           </Pressable>
 
-        </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -96,6 +160,16 @@ const styles = StyleSheet.create({
   // .ob.center: justify-content center, align-items center, text-align center
   safeArea: {
     flex: 1,
+  },
+
+  fill: {
+    flex: 1,
+  },
+
+  // Carries the centring and the 26pt gutter the screen had before the
+  // keyboard wrappers existed. Applied once, here, so nothing doubles it.
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 26,
@@ -106,6 +180,41 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // ── Optional first name ───────────────────────────────────────────────────
+  // ── Optional first name ───────────────────────────────────────────────────
+  // Sized and shaped like the onboarding cards and the CTA: a 1pt light border
+  // over the warm card fill, a full pill radius, and the same soft shadow. The
+  // screen is centred throughout, so the field is too.
+  nameField: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 26,
+  },
+
+  nameLabel: {
+    fontSize: 17,
+    lineHeight: 25,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+
+  nameInput: {
+    width: '100%',
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    paddingHorizontal: 22,
+    fontSize: 17,
+    textAlign: 'center',
+  },
+
+  nameHint: {
+    fontSize: 14.5,
+    lineHeight: 21,
+    textAlign: 'center',
+    marginTop: 10,
   },
 
   // ── Orb Container (.ob-orb: margin 0 0 26px) ──────────────────────────────
