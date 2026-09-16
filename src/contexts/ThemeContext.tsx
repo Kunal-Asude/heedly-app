@@ -34,11 +34,12 @@ import { lightTheme } from "@/constants/themes/light";
 import type { DesignTokens } from "@/constants/themes/tokens";
 import { trueBlackTheme } from "@/constants/themes/trueBlack";
 import { appStorage } from "@/utils/storage";
+import type { StorageKey } from "@/utils/storageKeys";
 
 export type AppThemeMode = "light" | "dark" | "system";
 
-const THEME_STORAGE_KEY = "@heedly/theme_mode";
-const TRUE_BLACK_STORAGE_KEY = "@heedly/is_true_black";
+const THEME_STORAGE_KEY: StorageKey = "@heedly/theme_mode";
+const TRUE_BLACK_STORAGE_KEY: StorageKey = "@heedly/is_true_black";
 
 interface ThemeContextValue {
   themeMode: AppThemeMode;
