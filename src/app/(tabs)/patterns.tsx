@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { DawnBackground } from "@/components/core";
+import { DawnBackground, EmptyState } from "@/components/core";
 import { Fonts } from "@/constants/theme";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 import { usePatterns } from "@/hooks/data";
 
@@ -86,6 +87,8 @@ export default function PatternsScreen() {
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const [isTankTooltipVisible, setIsTankTooltipVisible] = useState(false);
+  const { isHydrating, hasEverCheckedIn } = useCheckIn();
+  const showEmptyState = !isHydrating && !hasEverCheckedIn;
 
   const {
     thisWeekDays,
@@ -186,14 +189,21 @@ export default function PatternsScreen() {
           {"What we've noticed"}
         </Text>
 
+        {showEmptyState ? (
+          <EmptyState
+            title="Nothing to show yet."
+            body={"Patterns need a few days of check-ins before they mean anything. Yours will appear here."}
+          />
+        ) : (
+        <>
         {/* ── Subtitle Block (.pt-sub) ─────────────────────────────────── */}
         <View style={styles.subtitleRow}>
           <Text style={[styles.subtitleLeft, { color: subtitleColor }]}>
-            {"A few small things we're\nlearning about you."}
+            {"A few small things we're\nseeing in your patterns."}
           </Text>
           <View style={styles.subtitleRightContainer}>
             <Text style={[styles.subtitleRightLabel, { color: learningSinceLabelColor }]}>
-              LEARNING SINCE
+              TRACKING SINCE
             </Text>
             <Text style={[styles.subtitleRightDate, { color: learningSinceDateColor }]}>
               MARCH 14
@@ -467,6 +477,8 @@ export default function PatternsScreen() {
         <Text style={[styles.bottomExplanatoryText, { color: footnoteColor }]}>
           {"We only share patterns we're reasonably sure about. Tap a card to see the days behind it."}
         </Text>
+        </>
+        )}
 
       </ScrollView>
     </View>
