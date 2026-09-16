@@ -16,16 +16,15 @@ import {
 } from "@/services/checkinBridge";
 // Drafts stay here. An in-progress check-in is app state, not an answer, and
 // the native contract has no concept of one — only completed records cross.
-// `clearAllCheckInData` clears those draft keys; the store is erased through
-// the bridge alongside it.
 import {
-  clearAllCheckInData,
   clearDraft,
   getRecordedCheckInDate,
   loadDraft,
   saveDraft,
 } from "@/services/checkinStorage";
 import type { CheckInEntry } from "@/types/checkin";
+import { clearErasableStorage } from "@/utils/storageKeys";
+import { useFirstName } from "@/contexts/NameContext";
 
 /**
  * Reads a completed check-in from the store.
@@ -117,6 +116,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   // someone new if you only ask about yesterday.
   const [hasEverCheckedIn, setHasEverCheckedIn] = useState<boolean>(false);
   const [unratedDay, setUnratedDay] = useState<string | null>(null);
+  const { clearFirstName } = useFirstName();
 
   const targetDate = useMemo(() => getRecordedCheckInDate(), []);
 
@@ -315,9 +315,10 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     // awaited and not wrapped: the screen tells the person their data is gone,
     // so a failure has to reach them rather than be reported as success.
     await HeedlyNative.deleteAllData();
-    // Then the draft. An unfinished check-in never reached the store, so
-    // erasing the store alone would leave it behind.
-    await clearAllCheckInData();
+    // Then everything the app keeps locally — the draft, the check-in mirror,
+    // the first name. Theme preferences are not the person's data and stay.
+    await clearErasableStorage();
+    clearFirstName();
     // Every check-in and verdict is gone, so the person is new again and
     // yesterday is unrated once more.
     setHasEverCheckedIn(false);
@@ -330,7 +331,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     });
     setIsEditing(false);
     setEditingDate(null);
-  }, [targetDate]);
+  }, [targetDate, clearFirstName]);
 
   const value = useMemo<CheckInContextValue>(
     () => ({
