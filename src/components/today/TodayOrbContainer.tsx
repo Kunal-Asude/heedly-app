@@ -14,7 +14,7 @@ export function TodayOrbContainer({
   size = TODAY_ORB_SIZE,
 }: TodayOrbContainerProps) {
   return (
-    <View style={styles.orbSlot}>
+    <View style={[styles.orbSlot, { height: size }]}>
       <EnergyOrb size={size} state={state} />
     </View>
   );

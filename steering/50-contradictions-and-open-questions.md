@@ -20,9 +20,9 @@
 
 ## Check-In Data Is Storage-Backed; Other Features Remain Mock (No Backend API)
 
-**Code:** Check-in data is now backed by persistent client-side storage (`CheckInContext` + `checkinStorage.ts` via `appStorage`). Check-in drafts, completed entries by date, and last check-in date persist across app reloads, backgrounding, and cold launches. Other data hooks (`useForecast`, `useUserSettings`, `useNotes`, `usePatterns`) continue to initialize from hardcoded constants in `src/data/mock/`.
+**Code:** Completed check-ins are persisted to **SQLite through the native bridge** (`HeedlyNative.saveCheckIn` / `getCheckIn` / `saveVerdict`), not to AsyncStorage. `appStorage` retains only the in-progress **draft** (`@heedly/checkin_draft`). `@heedly/checkin_history` and `@heedly/last_checkin_date` remain defined in `checkinStorage.ts` but are never written — `persistCheckInToHistory` has no call site (source-verified 2026-09-07). Other data hooks (`useForecast`, `useUserSettings`, `useNotes`, `usePatterns`) continue to initialize from hardcoded constants in `src/data/mock/`.
 
-**Implication:** User answers from check-in persist locally on the device. Forecast status and pattern data remain local mock representations.
+**Implication:** User answers persist locally in the engine's SQLite store, which is what the engine reads. Drafts remain on AsyncStorage. Forecast status and pattern data remain local mock representations.
 
 **Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
 
@@ -97,6 +97,71 @@
 **Code:** `your-data.tsx` exists in `(tabs)` with `href: null` in the tab bar options (it is hidden from tab bar). It can only be reached programmatically. No screen in the current codebase contains a `router.push('/(tabs)/your-data')` call.
 
 **Severity:** Low. Screen may be reachable from a future deep-link or from Settings "Your Data" row. Currently unreachable in normal user flow.
+
+---
+
+## ~~Check-In Display Fallbacks Were Persisted As Real Answers~~ ✅ RESOLVED
+
+Three related defects, all the same mechanism: UI state that existed only so a
+control had something to show was written into storage, or onto the summary, as
+though the person had answered. All three were confirmed by reproduction at
+runtime, not by reading code.
+
+**Was — P1 (`energy.tsx`, `body.tsx`).** `selectedIndex` served two purposes at
+once: which option is highlighted, and what the person answered. It seeds to `2`
+so the picker is not blank. `handleNext` and `handleCrashPress` wrote it
+unconditionally, so advancing or tapping "I'm in a crash" past an untouched
+picker stored `toLevel(2) = 3` — a **middle** answer for a question nobody
+answered, which passes `CHECK (energy_level BETWEEN 1 AND 5)` and so failed
+silently.
+
+**Was — P2 (`noting.tsx`).** `selectedTags` — the one set that is both rendered
+and stored — was seeded from `MOCK_INITIAL_SELECTED_TAGS`
+(`social interaction`, `screens`, `warm room`) whenever the entry had no tags.
+Nothing then distinguished seeded members from chosen ones, so all four exits via
+`navigateToSaved` wrote them, and `handleToggleTag` carried them along with the
+first genuine tap. It also affected editing: a stored check-in with no tags
+hydrates as `tags: []`, hit the same fallback, and had the three defaults
+silently *added* on save.
+
+**Was — P3 (`saved.tsx`).** The summary substituted
+`'okay'`/`'middling'`, `'tender'`, a rating of `3`, and the literal
+`'social · screens · warm room'` when stored values were absent — asserting
+answers the database did not hold. A display defect, not corruption. Revealed
+rather than caused by the P1/P2 fixes: before them the screen and the store were
+wrong together.
+
+**Resolution (2026-09-07):**
+- `handleNext` and `handleCrashPress` no longer write the level in either screen; `handleSelectLevel` already records a real choice as it is made.
+- `initialTags` seeds only from `activeEntry.tags ?? []`. No replacement visual default was introduced.
+- `saved.tsx` shows `skipped` with five empty dots for an unanswered level, and `nothing noted` for no tags. Rows stay visible because each is the edit affordance. The three accessibility labels interpolate the same corrected values.
+- `npx tsc --noEmit` and `npx expo lint` both exit 0. **These proved nothing** — they passed cleanly on the broken code at every stage, which is why every claim below rests on runtime evidence instead.
+
+**Verified through the real UI plus read-only SQLite from a separate process:**
+R1 (unanswered Next → NULL/NULL/0 tags), R2 (real levels and tags persist
+exactly), R3 (Skip path), R4 (toggling a tag off leaves only the remaining one),
+R6 (editing a level preserves Body and both tags; `created_at` held, `edited_at`
+stamped), R7-A/B/C (crash paths unaffected by the `handleNext` change), and
+P3-A/B/C (unanswered displays honestly; real answers still display; an
+unanswered check-in round-trips through edit without manufacturing values).
+
+⚠️ **Not fully closed — do not read this entry as complete coverage:**
+- **Crash while editing was never exercised.** Tapping "I'm in a crash" inside an edit flow is the one crash path with no runtime evidence.
+- **No standalone period test.** `period:day-N` encoding was only ever exercised alongside real exposure tags (R2, R4).
+- **Every positive control used equal Energy and Body values** (5/5, 4/4, 4/4), so an Energy/Body field swap has never been ruled out.
+- **VoiceOver was never run.** The corrected accessibility labels are source-verified only.
+- **A further eight-test regression pass was specified and never executed** — no UI automation is available in this environment.
+- **Two historical observations remain unexplained** and are not resolved by this entry: an earlier manual test recorded 0 tag rows where the seeding should have produced three, and a completed check-in stored exactly the three chosen tags rather than those plus the three defaults.
+
+---
+
+## No Automated Protection Against These Regressions
+
+**Code:** There is no `test` script in `package.json` and no test files anywhere in the repository (see `60-verification.md`).
+
+**Implication:** The P1/P2/P3 fixes above are protected only by the manual runs listed in that entry. Re-introducing any of them would pass `tsc` and `expo lint` silently, exactly as the original defects did.
+
+**Severity:** Medium-high for this specific area. The defects wrote plausible, in-range values that no constraint rejects.
 
 ---
 

@@ -11,6 +11,7 @@ import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 
 import { useCheckIn } from '@/contexts/CheckInContext';
+import { greetingWithName, useFirstName } from '@/contexts/NameContext';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
@@ -50,25 +51,32 @@ export default function CheckInSavedScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { activeEntry, saveCheckIn } = useCheckIn();
+  const { firstName } = useFirstName();
 
   const isCrash = Boolean(activeEntry.isCrash);
   const isFirstTime = Boolean(activeEntry.isFirstTime);
 
+  // An unanswered question is shown as unanswered. These previously substituted
+  // a plausible middle answer — a label, three filled dots, three tag names —
+  // for values that were never given, so the screen asserted answers the store
+  // did not hold. The rows stay visible because each one is the edit affordance
+  // ("Tap any line to edit before you go"), and because a skipped answer is
+  // itself information: the person showed up and declined to answer.
   const yesterdayLabel = activeEntry.yesterdayLabel;
-  const energyLabel = activeEntry.energyLabel ?? (isFirstTime ? 'okay' : 'middling');
+  const energyLabel = activeEntry.energyLabel ?? 'skipped';
   const energyRating =
     activeEntry.energyIndex !== undefined && activeEntry.energyIndex !== null
       ? activeEntry.energyIndex + 1
-      : 3;
-  const bodyLabel = activeEntry.bodyLabel ?? 'tender';
+      : 0;
+  const bodyLabel = activeEntry.bodyLabel ?? 'skipped';
   const bodyRating =
     activeEntry.bodyIndex !== undefined && activeEntry.bodyIndex !== null
       ? activeEntry.bodyIndex + 1
-      : 3;
+      : 0;
   const tagsText =
     activeEntry.tags && activeEntry.tags.length > 0
       ? activeEntry.tags.join(' · ')
-      : 'social · screens · warm room';
+      : 'nothing noted';
   const periodInfo = activeEntry.periodInfo;
 
   const handleEditEnergy = () => {
@@ -147,17 +155,21 @@ export default function CheckInSavedScreen() {
           {isCrash ? (
             <Text style={styles.heading}>
               <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Logged.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest now, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest now', firstName)}</Text>
             </Text>
           ) : isFirstTime ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Thank you, '}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>
+                {firstName ? 'Thank you, ' : 'Thank you.'}
+              </Text>
+              {firstName ? (
+                <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{`${firstName}.`}</Text>
+              ) : null}
             </Text>
           ) : (
             <Text style={styles.heading}>
               <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Saved.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest well, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest well', firstName)}</Text>
             </Text>
           )}
 

@@ -9,8 +9,8 @@ interface TodayHeaderProps {
 }
 
 export function TodayHeader({
-  dateText = "TUESDAY · 10 JUNE",
-  greeting = "Hello, Sam.",
+  dateText,
+  greeting = "Hello.",
   onSettingsPress,
 }: TodayHeaderProps) {
   const theme = useTheme();

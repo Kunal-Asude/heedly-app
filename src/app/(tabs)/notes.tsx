@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { DawnBackground } from "@/components/core";
+import { DawnBackground, EmptyState } from "@/components/core";
 import { Fonts } from "@/constants/theme";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 import { useNotes } from "@/hooks/data";
 
@@ -78,6 +79,8 @@ export default function NotesScreen() {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const { isHydrating, hasEverCheckedIn } = useCheckIn();
+  const showEmptyState = !isHydrating && !hasEverCheckedIn;
 
   const {
     userName,
@@ -183,6 +186,13 @@ export default function NotesScreen() {
           {"Everything you've been living, now on one page."}
         </Text>
 
+        {showEmptyState ? (
+          <EmptyState
+            title="Nothing to bring yet."
+            body={"Once you've checked in for a few days, your notes will collect here — ready to take to an appointment."}
+          />
+        ) : (
+        <>
         {/* ── 90-DAY SUMMARY Card (.nt-card) ─────────────────────────── */}
         <NotesCard isDark={isDark} isTrueBlack={isTrueBlack} style={styles.summary90Card}>
           {/* Header Row (.nt-card-head) */}
@@ -288,6 +298,8 @@ export default function NotesScreen() {
             Add a personal note ›
           </Text>
         </Pressable>
+        </>
+        )}
       </ScrollView>
 
       {/* ── Sticky Floating Bottom Action Panel (.nt-actions) ────────── */}

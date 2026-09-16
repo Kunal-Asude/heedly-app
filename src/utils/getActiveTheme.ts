@@ -1,6 +1,7 @@
 import { Appearance } from "react-native";
 
 import { appStorage } from "@/utils/storage";
+import type { StorageKey } from "@/utils/storageKeys";
 
 /**
  * Resolves the user's active theme without React context.
@@ -19,8 +20,8 @@ export type ActiveThemeName = "dawn" | "dusk" | "oled";
 
 export async function getActiveTheme(): Promise<ActiveThemeName> {
   const [mode, trueBlackRaw] = await Promise.all([
-    appStorage.getItem("@heedly/theme_mode"),
-    appStorage.getItem("@heedly/is_true_black"),
+    appStorage.getItem("@heedly/theme_mode" satisfies StorageKey),
+    appStorage.getItem("@heedly/is_true_black" satisfies StorageKey),
   ]);
 
   // Resolve isDark: follow the same logic as ThemeContext

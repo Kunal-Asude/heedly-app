@@ -7,16 +7,38 @@ import React, {
   useState,
 } from "react";
 
+import HeedlyNative from "@heedly/native";
+
 import {
-  clearAllCheckInData,
+  fromNativeCheckIn,
+  toNativeCheckIn,
+  toVerdictValue,
+} from "@/services/checkinBridge";
+// Drafts stay here. An in-progress check-in is app state, not an answer, and
+// the native contract has no concept of one — only completed records cross.
+import {
   clearDraft,
-  getCheckIn,
   getRecordedCheckInDate,
   loadDraft,
-  saveCheckIn as persistCheckInToHistory,
   saveDraft,
 } from "@/services/checkinStorage";
 import type { CheckInEntry } from "@/types/checkin";
+import { clearErasableStorage } from "@/utils/storageKeys";
+import { useFirstName } from "@/contexts/NameContext";
+
+/**
+ * Reads a completed check-in from the store.
+ *
+ * Two records, because the store keeps them apart: the check-in and the verdict
+ * for the same day have different edit rules. `null` means no check-in exists —
+ * a real answer, not a failure, so it is returned rather than thrown.
+ */
+async function readCompletedCheckIn(date: string): Promise<CheckInEntry | null> {
+  const checkIn = await HeedlyNative.getCheckIn(date);
+  if (!checkIn) return null;
+  const verdict = await HeedlyNative.getVerdict(date);
+  return fromNativeCheckIn(checkIn, verdict);
+}
 
 // ─── Types & Contract ─────────────────────────────────────────────────────────
 
@@ -33,6 +55,14 @@ export interface CheckInContextValue {
   isTodayCompleted: boolean;
   /** The completed check-in record for the target recorded date, if completed */
   todayEntry: CheckInEntry | null;
+  /**
+   * True once the person has recorded any check-in, ever. Read from the store,
+   * not inferred from the target date — someone returning after a missed day
+   * would otherwise be mistaken for a first-time user.
+   */
+  hasEverCheckedIn: boolean;
+  /** The day still awaiting a verdict, or null when none is. Only ever yesterday. */
+  unratedDay: string | null;
   /** Updates the active entry immediately in state and debounced/asynchronously to draft */
   updateEntry: (updates: Partial<CheckInEntry>) => void;
   /** Initializes or resets a fresh check-in draft for the target recorded date */
@@ -54,11 +84,16 @@ const defaultEntry: Partial<CheckInEntry> = {
   yesterdayId: null,
   yesterdayLabel: null,
   yesterdayIndex: null,
-  energyIndex: 2,
-  energyLabel: "middling",
-  bodyIndex: 2,
-  bodyLabel: "tender",
-  tags: ["social", "screens", "warm room"],
+  // Unanswered, not middling. These seed a *fresh* draft, and `handleSkip` on
+  // the energy/body screens navigates without writing — so a non-null value
+  // here is what a skipped answer would be recorded as. The screens already
+  // fall back to the middle position for *display* when this is null, so the
+  // UI is unchanged; only the recorded value is.
+  energyIndex: null,
+  energyLabel: null,
+  bodyIndex: null,
+  bodyLabel: null,
+  tags: [],
   periodInfo: null,
   isCrash: false,
   isFirstTime: false,
@@ -75,6 +110,13 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [todayCompleted, setTodayCompleted] = useState<boolean>(false);
   const [todayEntry, setTodayEntry] = useState<CheckInEntry | null>(null);
+  // Whether the person has ever checked in, and whether yesterday still needs a
+  // verdict. Both come from the store, because neither can be inferred from the
+  // target date alone: someone returning after a missed day looks exactly like
+  // someone new if you only ask about yesterday.
+  const [hasEverCheckedIn, setHasEverCheckedIn] = useState<boolean>(false);
+  const [unratedDay, setUnratedDay] = useState<string | null>(null);
+  const { clearFirstName } = useFirstName();
 
   const targetDate = useMemo(() => getRecordedCheckInDate(), []);
 
@@ -84,12 +126,17 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
     async function load() {
       try {
-        const [completed, draft] = await Promise.all([
-          getCheckIn(targetDate),
+        const [completed, draft, firstCheckInDay, unrated] = await Promise.all([
+          readCompletedCheckIn(targetDate),
           loadDraft(),
+          HeedlyNative.getFirstCheckInDay(),
+          HeedlyNative.getUnratedDay(),
         ]);
 
         if (!isMounted) return;
+
+        setHasEverCheckedIn(firstCheckInDay !== null);
+        setUnratedDay(unrated);
 
         if (completed) {
           setTodayCompleted(true);
@@ -163,7 +210,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   // ── Load Existing Check-In (Review / Edit Mode) ──────────────────────────────
   const loadExistingCheckIn = useCallback(async (date: string): Promise<boolean> => {
     try {
-      const entry = await getCheckIn(date);
+      const entry = await readCompletedCheckIn(date);
       if (entry) {
         setActiveEntry(entry);
         setIsEditing(true);
@@ -185,11 +232,11 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       yesterdayId: activeEntry.yesterdayId ?? null,
       yesterdayLabel: activeEntry.yesterdayLabel ?? null,
       yesterdayIndex: activeEntry.yesterdayIndex ?? null,
-      energyIndex: activeEntry.energyIndex ?? 2,
-      energyLabel: activeEntry.energyLabel ?? "middling",
-      bodyIndex: activeEntry.bodyIndex ?? 2,
-      bodyLabel: activeEntry.bodyLabel ?? "tender",
-      tags: activeEntry.tags ?? ["social", "screens", "warm room"],
+      energyIndex: activeEntry.energyIndex ?? null,
+      energyLabel: activeEntry.energyLabel ?? null,
+      bodyIndex: activeEntry.bodyIndex ?? null,
+      bodyLabel: activeEntry.bodyLabel ?? null,
+      tags: activeEntry.tags ?? [],
       periodInfo: activeEntry.periodInfo ?? null,
       isCrash: activeEntry.isCrash ?? false,
       isFirstTime: activeEntry.isFirstTime ?? false,
@@ -197,8 +244,31 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       updatedAt: new Date().toISOString(),
     };
 
-    // 1. Commit to history
-    await persistCheckInToHistory(completedEntry);
+    // 1. Commit to history — the native store, which is what the engine reads.
+    //
+    // Both calls are awaited and neither is wrapped: if the store cannot be
+    // written, this must reject so the screen can say so. Swallowing it would
+    // report a saved check-in that does not exist (§2 — a false reassurance is
+    // worse than a false alarm).
+    //
+    // The verdict is a separate record with its own edit rules, so it is a
+    // separate call. It is skipped entirely when the day was not rated —
+    // "not rated" is an absent row, not a value.
+    await HeedlyNative.saveCheckIn(toNativeCheckIn(completedEntry));
+
+    const verdictValue = toVerdictValue(completedEntry.yesterdayId);
+    if (verdictValue) {
+      await HeedlyNative.saveVerdict(checkInDate, verdictValue);
+      // That day is rated now, so it must stop being offered. Skipping writes
+      // no verdict and deliberately leaves this alone — a skip is a
+      // postponement that runs out at midnight, not a refusal.
+      //
+      // Read through the setter rather than closing over `unratedDay`, so this
+      // cannot act on a value captured before the save.
+      setUnratedDay((current) => (current === checkInDate ? null : current));
+    }
+    // A row exists from here on, whatever was answered.
+    setHasEverCheckedIn(true);
 
     // 2. Clear draft if not in edit mode
     if (!isEditing) {
@@ -228,7 +298,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
   // ── Refresh Status ──────────────────────────────────────────────────────────
   const refreshStatus = useCallback(async () => {
-    const completed = await getCheckIn(targetDate);
+    const completed = await readCompletedCheckIn(targetDate);
     if (completed) {
       setTodayCompleted(true);
       setTodayEntry(completed);
@@ -240,7 +310,19 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
   // ── Reset All Check-In Data ──────────────────────────────────────────────────
   const resetAllData = useCallback(async () => {
-    await clearAllCheckInData();
+    // The store first, because it holds everything the engine reads — check-ins,
+    // tags, verdicts, wearable history, sources, and the sync state. It is
+    // awaited and not wrapped: the screen tells the person their data is gone,
+    // so a failure has to reach them rather than be reported as success.
+    await HeedlyNative.deleteAllData();
+    // Then everything the app keeps locally — the draft, the check-in mirror,
+    // the first name. Theme preferences are not the person's data and stay.
+    await clearErasableStorage();
+    clearFirstName();
+    // Every check-in and verdict is gone, so the person is new again and
+    // yesterday is unrated once more.
+    setHasEverCheckedIn(false);
+    setUnratedDay(await HeedlyNative.getUnratedDay());
     setTodayCompleted(false);
     setTodayEntry(null);
     setActiveEntry({
@@ -249,7 +331,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     });
     setIsEditing(false);
     setEditingDate(null);
-  }, [targetDate]);
+  }, [targetDate, clearFirstName]);
 
   const value = useMemo<CheckInContextValue>(
     () => ({
@@ -259,6 +341,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       editingDate,
       isTodayCompleted: todayCompleted,
       todayEntry,
+      hasEverCheckedIn,
+      unratedDay,
       updateEntry,
       startNewCheckIn,
       loadExistingCheckIn,
@@ -274,6 +358,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       editingDate,
       todayCompleted,
       todayEntry,
+      hasEverCheckedIn,
+      unratedDay,
       updateEntry,
       startNewCheckIn,
       loadExistingCheckIn,

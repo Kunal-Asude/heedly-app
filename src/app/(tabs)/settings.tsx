@@ -153,7 +153,7 @@ export default function SettingsScreen() {
 
   // Other local control states
   const [isReduceMotion, setIsReduceMotion] = useState(settings.isReduceMotion);
-  const [isAiInsights, setIsAiInsights] = useState(settings.isAiInsights);
+  // const [isAiInsights, setIsAiInsights] = useState(settings.isAiInsights);
   const [isHormonalOptionsOpen, setIsHormonalOptionsOpen] = useState(false);
   const [selectedHormonalContext, setSelectedHormonalContext] = useState('Cycling regularly');
   const [isCycleNotTypical, setIsCycleNotTypical] = useState(settings.isCycleNotTypical);
@@ -462,7 +462,7 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsCard>
 
-        {/* ── 3. AI INSIGHTS (.sx-sec) ─────────────────────────────────── */}
+        {/* ── 3. AI INSIGHTS — deferred to a later phase ────────────────
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>AI INSIGHTS</Text>
 
         <SettingsCard isDark={isDark} isTrueBlack={isTrueBlack}>
@@ -476,6 +476,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
         </SettingsCard>
+        */}
 
         {/* ── 4. HORMONAL CONTEXT (.sx-sec) ────────────────────────────── */}
         <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>HORMONAL CONTEXT</Text>

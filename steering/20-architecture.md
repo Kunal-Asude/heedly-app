@@ -135,17 +135,16 @@ Check-in answer data must **not** be passed between screens through route/query 
   - Automatically restored when the user re-enters the check-in flow or reopens the app.
   - Cleared upon successful submission on the Saved screen.
 
-#### B. History Storage
-- **Key**: `@heedly/checkin_history`
-- **Type**: `Record<string, CheckInEntry>` (dictionary keyed by date string `YYYY-MM-DD`)
-- **Purpose**:
-  - Stores completed, final check-ins.
-  - Keyed by the date being recorded (e.g., `{"2026-09-01": {...}}`).
-  - Forms the durable foundation for historical views, weekly pattern trends, doctor-ready notes, and backend synchronization.
+#### B. History Storage — **SQLite via the native bridge, not AsyncStorage**
+- **Where**: `check_in` and `check_in_tag` in the Swift core's SQLite database, reached through `HeedlyNative.saveCheckIn` / `getCheckIn`.
+- **Keyed by** the date being recorded (`YYYY-MM-DD`), which is the primary key.
+- **Purpose**: the durable foundation for historical views, pattern trends and doctor-ready notes. This is the store the engine reads.
+- ⚠️ **`@heedly/checkin_history` is legacy and unwritten.** `persistCheckInToHistory` in `checkinStorage.ts` still exists but has **no call site** outside that file (source-verified 2026-09-07), so the key is never populated. Do not read it and do not treat it as a source of truth.
 
 #### Convenience Reference
 - **Key**: `@heedly/last_checkin_date`
-- **Purpose**: Fast reference string (`YYYY-MM-DD`) to the most recently completed check-in date for instant query checks without loading the full history dictionary. It is **not** the primary source of historical check-in data.
+- **Intended purpose**: a fast reference string (`YYYY-MM-DD`) to the most recently completed check-in date. It is **not** the primary source of historical check-in data.
+- ⚠️ **Never written.** Like `@heedly/checkin_history`, its only writer is `persistCheckInToHistory`, which has no call site (source-verified 2026-09-07). Completion is determined by reading the date's row from SQLite through the bridge during hydration.
 
 ### Date Semantics — Very Important
 `CheckInEntry.date` represents the **DATE THE CHECK-IN IS ABOUT**. It does **NOT** represent the submission timestamp.
@@ -167,10 +166,10 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
 
 1. **NEW CHECK-IN Mode**:
    - Entry: Today screen → "Check in for yesterday"
-   - Flow: Initialize active entry for target date → update draft on each step → complete on Saved screen → save to `@heedly/checkin_history` → clear `@heedly/checkin_draft`.
+   - Flow: Initialize active entry for target date → update draft on each step → complete on Saved screen → **save to SQLite through the bridge** → clear `@heedly/checkin_draft`.
 2. **EDIT EXISTING CHECK-IN Mode**:
    - Entry: Today screen → "Review today's check-in"
-   - Flow: Load existing record from `@heedly/checkin_history` into active state → user edits a specific answer (e.g., Energy) → returns to Saved screen → saves back to the **same historical date key** → updates `updatedAt` while preserving `completedAt` → **does not create a duplicate historical entry**.
+   - Flow: Load the existing record **from SQLite through the bridge** into active state → user edits a specific answer (e.g., Energy) → returns to Saved screen → saves back to the **same date key** → storage preserves `created_at` and stamps `edited_at` only when content actually changed → **does not create a duplicate entry**.
 
 ### Hydration & Restoration
 - When `CheckInProvider` mounts, it hydrates from `appStorage` to restore any existing draft and verify whether the check-in for the target date has already been completed.
@@ -192,7 +191,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
 - **Services & Context**: `src/services/checkinStorage.ts` and `src/contexts/CheckInContext.tsx` are active. `CheckInProvider` wraps the app in `src/app/_layout.tsx`.
 - **Screen Migration**: All screens (`yesterday.tsx`, `energy.tsx`, `body.tsx`, `noting.tsx`, `period.tsx`, `saved.tsx`) read and persist via `useCheckIn()`.
 - **Answer URL Parameters**: Completely eliminated. Only UI-control parameters (`openPeriod=true`, `isFirstTime=true`) are permitted.
-- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx` to clear `@heedly/checkin_history`, `@heedly/checkin_draft`, `@heedly/last_checkin_date`, and reset Today CTA.
+- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx`. It calls `HeedlyNative.deleteAllData()` **first** — emptying all eight SQLite tables in one transaction, then `VACUUM` — and only then clears the AsyncStorage check-in keys and resets the Today CTA. The bridge call is awaited and unwrapped, so a storage failure rejects rather than reporting a false success (ADR-0026). Verified at runtime 2026-09-07: 10 rows across six tables → 0, `user_version` still 2, schema intact.
 
 ---
 
@@ -200,7 +199,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
 
 `appStorage` (`src/utils/storage.ts`) is the only abstraction over AsyncStorage. Direct `AsyncStorage` imports elsewhere are a layering violation. Consumers:
 - `ThemeContext` & `getActiveTheme` (`@heedly/theme_mode`, `@heedly/is_true_black`)
-- `checkinStorage` (`@heedly/checkin_draft`, `@heedly/checkin_history`, `@heedly/last_checkin_date`)
+- `checkinStorage` — `@heedly/checkin_draft` is the only key actually written for check-ins. `@heedly/checkin_history` and `@heedly/last_checkin_date` are defined and cleared but never populated (see History Storage above); completed check-ins live in SQLite.
 
 ---
 

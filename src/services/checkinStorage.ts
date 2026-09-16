@@ -1,5 +1,6 @@
 import { CheckInEntry } from "@/types/checkin";
 import { appStorage } from "@/utils/storage";
+import type { StorageKey } from "@/utils/storageKeys";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 
@@ -10,7 +11,7 @@ export const STORAGE_KEYS = {
   HISTORY: "@heedly/checkin_history",
   /** Convenience reference to the most recently completed check-in date (YYYY-MM-DD) */
   LAST_CHECKIN_DATE: "@heedly/last_checkin_date",
-} as const;
+} as const satisfies Record<string, StorageKey>;
 
 // ─── Date Helpers ─────────────────────────────────────────────────────────────
 
@@ -35,6 +36,14 @@ export function getRecordedCheckInDate(referenceDate: Date = new Date()): string
 /** Returns today's calendar date string (YYYY-MM-DD) */
 export function getTodayDateString(referenceDate: Date = new Date()): string {
   return formatDateString(referenceDate);
+}
+
+/** Today's date for the header, e.g. "Sunday · 14 September". en-GB pins the
+ *  day-before-month order the design uses; the style uppercases it. */
+export function formatHeaderDate(referenceDate: Date = new Date()): string {
+  const weekday = referenceDate.toLocaleDateString("en-GB", { weekday: "long" });
+  const dayMonth = referenceDate.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  return `${weekday} · ${dayMonth}`;
 }
 
 // ─── Draft Storage Operations ─────────────────────────────────────────────────
@@ -167,20 +176,5 @@ export async function getLastCheckInDate(): Promise<string | null> {
   } catch (error) {
     console.warn("[checkinStorage] Error loading last check-in date:", error);
     return null;
-  }
-}
-
-/**
- * Deletes all check-in history, drafts, and last check-in references from storage.
- */
-export async function clearAllCheckInData(): Promise<void> {
-  try {
-    await Promise.all([
-      appStorage.removeItem(STORAGE_KEYS.DRAFT),
-      appStorage.removeItem(STORAGE_KEYS.HISTORY),
-      appStorage.removeItem(STORAGE_KEYS.LAST_CHECKIN_DATE),
-    ]);
-  } catch (error) {
-    console.warn("[checkinStorage] Error clearing all check-in data:", error);
   }
 }

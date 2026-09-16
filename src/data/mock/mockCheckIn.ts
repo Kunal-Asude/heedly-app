@@ -108,7 +108,7 @@ export const MOCK_YESTERDAY_OPTIONS: YesterdayOption[] = [
     cardBorder: "rgba(133, 181, 142, 0.4)",
   },
   {
-    id: "same",
+    id: "usual",
     prefix: "About the ",
     emphasis: "same",
     value: "About the same",

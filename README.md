@@ -10,6 +10,18 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
+   > **Before publish**, `@heedly/native` is installed from a tarball that is
+   > not committed, so a fresh clone has nothing to install. Build it first:
+   >
+   > ```bash
+   > npm run native:sync
+   > ```
+   >
+   > This packs the package from the Heedly repository, which it expects as a
+   > sibling of this one (`../../Heedly`), and installs the result. Re-run it
+   > after any Swift change — the app compiles a snapshot, not the source.
+   > Once `@heedly/native` is published, plain `npm install` is enough.
+
 2. Start the app
 
    ```bash

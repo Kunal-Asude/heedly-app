@@ -65,8 +65,8 @@ export const MOCK_COST_PATTERNS: PatternCardData[] = [
 ];
 
 export const MOCK_PATTERNS_DATA: PatternsData = {
-  learningSinceText: "LEARNING SINCE\nMARCH 14",
-  subtitleLeftText: "A few small things we're\nlearning about you.",
+  learningSinceText: "TRACKING SINCE\nMARCH 14",
+  subtitleLeftText: "A few small things we're\nseeing in your patterns.",
   tankTooltipTitle: "HOW IS THE TANK MEASURED?",
   tankTooltipBody:
     "Your tank is measured against your own recent weeks, not a fixed target — so as your baseline shifts, what a 'full tank' means shifts with it.",

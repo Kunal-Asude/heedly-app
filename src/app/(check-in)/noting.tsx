@@ -50,7 +50,7 @@ export default function NotingScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { categories, allTags, initialSelectedTags, periodDays } = useCheckInConfig();
+  const { categories, allTags, periodDays } = useCheckInConfig();
   const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
     isEditing?: string;
@@ -60,9 +60,11 @@ export default function NotingScreen() {
   const isEditing = params.isEditing === 'true' || contextIsEditing;
   const openPeriod = params.openPeriod === 'true';
 
-  const initialTags = activeEntry.tags && activeEntry.tags.length > 0
-    ? new Set(activeEntry.tags)
-    : new Set(initialSelectedTags);
+  // Seeded only from what the person has actually chosen. Seeding this with a
+  // default set made those defaults indistinguishable from real selections:
+  // every exit wrote them, and handleToggleTag carried them along with the
+  // first real tap. Untouched means no tags, not three.
+  const initialTags = new Set(activeEntry.tags ?? []);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTags);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState<boolean>(false);

@@ -2,7 +2,7 @@
 
 ## What This System Is
 
-heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CFS, Long COVID, POTS, Fibromyalgia, and related conditions. It is a **design-prototype / MVP stage** app — all data is mocked; no backend exists. The core value loop is: onboard → daily energy check-in → view today's forecast status → review weekly patterns/notes → adjust settings/notifications. The app is themed ("Dawn" light, "Dusk" dark) with a pixel-matched design system sourced from design-handoff HTML/CSS files.
+heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CFS, Long COVID, POTS, Fibromyalgia, and related conditions. It is a **design-prototype / MVP stage** app — check-ins and verdicts persist to on-device SQLite through the native bridge; forecast, patterns and notes are still mocked; no backend exists. The core value loop is: onboard → daily energy check-in → view today's forecast status → review weekly patterns/notes → adjust settings/notifications. The app is themed ("Dawn" light, "Dusk" dark) with a pixel-matched design system sourced from design-handoff HTML/CSS files.
 
 ---
 

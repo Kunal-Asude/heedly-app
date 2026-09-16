@@ -18,8 +18,14 @@ export interface CheckInEntry {
   /** The target day being recorded (YYYY-MM-DD), NOT the submission date. */
   date: string;
 
-  /** Rating for yesterday: 'lighter' | 'same' | 'heavier' */
-  yesterdayId?: "lighter" | "same" | "heavier" | null;
+  /**
+   * Rating for yesterday: 'lighter' | 'usual' | 'heavier'.
+   *
+   * These are the native contract's values (HeedlyEngine `VerdictValue`), not
+   * display labels — they cross the bridge verbatim. The middle option is
+   * "usual" even though the UI reads "About the same".
+   */
+  yesterdayId?: "lighter" | "usual" | "heavier" | null;
   yesterdayLabel?: string | null;
   yesterdayIndex?: number | null;
 
