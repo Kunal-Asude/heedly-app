@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { CheckInProvider } from '@/contexts/CheckInContext';
+import { NameProvider } from '@/contexts/NameContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
 // ⚠️ TEMPORARY — bridge spike. Delete once a real screen consumes native data.
@@ -96,9 +97,11 @@ export default function RootLayout() {
 
   return (
     <AppThemeProvider initialMode="system">
-      <CheckInProvider>
-        <RootNavigator />
-      </CheckInProvider>
+      <NameProvider>
+        <CheckInProvider>
+          <RootNavigator />
+        </CheckInProvider>
+      </NameProvider>
     </AppThemeProvider>
   );
 }

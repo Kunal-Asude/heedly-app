@@ -11,6 +11,7 @@ import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 
 import { useCheckIn } from '@/contexts/CheckInContext';
+import { greetingWithName, useFirstName } from '@/contexts/NameContext';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
@@ -50,6 +51,7 @@ export default function CheckInSavedScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { activeEntry, saveCheckIn } = useCheckIn();
+  const { firstName } = useFirstName();
 
   const isCrash = Boolean(activeEntry.isCrash);
   const isFirstTime = Boolean(activeEntry.isFirstTime);
@@ -153,17 +155,21 @@ export default function CheckInSavedScreen() {
           {isCrash ? (
             <Text style={styles.heading}>
               <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Logged.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest now, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest now', firstName)}</Text>
             </Text>
           ) : isFirstTime ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Thank you, '}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>
+                {firstName ? 'Thank you, ' : 'Thank you.'}
+              </Text>
+              {firstName ? (
+                <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{`${firstName}.`}</Text>
+              ) : null}
             </Text>
           ) : (
             <Text style={styles.heading}>
               <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Saved.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>Rest well, Sam.</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest well', firstName)}</Text>
             </Text>
           )}
 
