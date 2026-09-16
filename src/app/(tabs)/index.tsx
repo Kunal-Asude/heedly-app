@@ -10,6 +10,8 @@ import { Fonts } from "@/constants/theme";
 import { useTheme } from "@/constants/themes";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
+import { greetingWithName, useFirstName } from "@/contexts/NameContext";
+import { formatHeaderDate } from "@/services/checkinStorage";
 import { useForecast } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
 
@@ -20,7 +22,8 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { isTodayCompleted, startNewCheckIn, hasEverCheckedIn, unratedDay } = useCheckIn();
+  const { isTodayCompleted, startNewCheckIn, hasEverCheckedIn, unratedDay, isHydrating } = useCheckIn();
+  const { firstName } = useFirstName();
   const params = useLocalSearchParams<{ mode?: string }>();
 
   const validParamMode =
@@ -40,7 +43,9 @@ export default function TodayScreen() {
     setCustomMode(null);
   }
 
-  const statusMode = customMode ?? validParamMode ?? "fd-empty";
+  const showEmptyState = !isHydrating && !hasEverCheckedIn;
+  const requestedMode = customMode ?? validParamMode ?? "fd-empty";
+  const statusMode = showEmptyState ? "fd-empty" : requestedMode;
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
     "caution",
@@ -51,6 +56,7 @@ export default function TodayScreen() {
   const activeWhyData = whyModalConfigs[whyModalType];
 
   const cycleStatusMode = () => {
+    if (showEmptyState) return;
     const modes: TodayStatusMode[] = [
       "fd-empty",
       "fd-wearable",
@@ -228,8 +234,8 @@ export default function TodayScreen() {
     <View style={styles.root}>
       {isLearningState ? (
         <LearningScreenLayout
-          dateText="TUESDAY · 10 JUNE"
-          greeting="Hello, Sam."
+          dateText={formatHeaderDate()}
+          greeting={greetingWithName("Hello", firstName)}
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
           orbState={currentConfig.waterState}
           orbSize={currentConfig.orbSize}
@@ -258,8 +264,8 @@ export default function TodayScreen() {
         />
       ) : (
         <TodayScreenLayout
-          dateText="TUESDAY · 10 JUNE"
-          greeting="Hello, Sam."
+          dateText={formatHeaderDate()}
+          greeting={greetingWithName("Hello", firstName)}
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
           orbState={currentConfig.waterState}
           headline1={currentConfig.headline1}
