@@ -8,13 +8,13 @@ const COLORS = {
 
 export const MOCK_STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
   "fd-empty": {
-    headline1: "Still learning ",
-    headline2: "you.",
-    indicatorText: "LEARNING",
+    headline1: "Early days ",
+    headline2: "yet.",
+    indicatorText: "EARLY DAYS",
     indicatorDotColor: "#7E9B6A",
-    microText: "Getting to know your patterns.",
+    microText: "Tracking your patterns.",
     noteText:
-      "Your forecast appears once I've learned your rhythm — usually a few days.",
+      "Your forecast appears once your personal pattern takes shape — usually a few days.",
     ctaText: "Start your first check-in",
     footerNote: "You can do this lying down.",
     isFirstDay: true,
@@ -24,10 +24,10 @@ export const MOCK_STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
   "fd-wearable": {
     headline1: "An early ",
     headline2: "read.",
-    indicatorText: "LEARNING",
+    indicatorText: "EARLY DAYS",
     indicatorDotColor: "#7E9B6A",
     microText: "A first read from your wearable.",
-    noteText: "These get sharper as I learn you.",
+    noteText: "These get sharper as your baseline fills in.",
     ctaText: "What's going on",
     isFirstDay: true,
     orbSize: 254,

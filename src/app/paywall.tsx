@@ -145,7 +145,7 @@ export default function PaywallScreen() {
 
           {/* ── Subtitle (.pw-sub) ───────────────────────────────────────── */}
           <Text style={[styles.subtitleText, { color: subtitleColor }]}>
-            {"heedly learns your patterns and gives you\na gentle heads-up before a crash."}
+            {"heedly tracks your patterns and gives you\na gentle heads-up before a crash."}
           </Text>
 
           {/* ── Full-Width Bottom Sheet (.pw-sheet) ──────────────────────── */}
@@ -163,7 +163,7 @@ export default function PaywallScreen() {
             {/* ── Feature Bullets (.pw-values) ─────────────────────────── */}
             <View style={styles.featuresList}>
               <FeatureRow text="Crash forecasts 24–72 hours ahead" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
-              <FeatureRow text="Patterns learned just for you" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
+              <FeatureRow text="Patterns from your own data" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
               <FeatureRow text="Private by default — your data stays yours" textColor={featureTextColor} isOled={isOled} isDark={isDark} />
               <FeatureRow text="No ads." textColor={featureTextColor} isOled={isOled} isDark={isDark} />
             </View>

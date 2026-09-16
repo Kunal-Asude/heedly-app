@@ -66,7 +66,7 @@ export function TodayBadge({
               { color: badgeTokens.learning.text },
             ]}
           >
-            LEARNING
+            {indicatorText}
           </Text>
         </Pressable>
       ) : (

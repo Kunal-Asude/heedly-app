@@ -386,7 +386,10 @@ export default function YourDataScreen() {
         <DataCard isDark={isDark} isTrueBlack={isTrueBlack} style={{ paddingVertical: 14 }}>
           <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Private by default.</Text>
           <Text style={[styles.paragraphDescription, { color: itemDescColor }]}>
+            {/* Restore alongside the AI insights setting:
             {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
+            */}
+            {"We don't sell your data. Everything is worked out on your phone, and none of it leaves your device."}
           </Text>
         </DataCard>
 
