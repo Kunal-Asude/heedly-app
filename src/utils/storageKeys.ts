@@ -14,6 +14,7 @@ export const STORAGE_KEY_POLICY = {
   "@heedly/last_checkin_date": "erase",
   "@heedly/first_name": "erase",
   "@heedly/onboarding_complete": "erase",
+  "@heedly/start_date": "erase",
   "@heedly/theme_mode": "preserve",
   "@heedly/is_true_black": "preserve",
 } as const satisfies Record<`@heedly/${string}`, ErasurePolicy>;
@@ -22,6 +23,17 @@ export type StorageKey = keyof typeof STORAGE_KEY_POLICY;
 
 /** Set on finishing onboarding; its absence sends the app back through it. */
 export const ONBOARDING_COMPLETE_KEY: StorageKey = "@heedly/onboarding_complete";
+
+/**
+ * When this person started using Heedly, ISO-8601, written once at the end of
+ * onboarding. Personal, so it is erased with everything else — a surviving
+ * start date would report a history the erase promised to forget.
+ *
+ * Nothing else can stand in for it: the first check-in can be days later, and
+ * every HealthKit timestamp describes the data rather than the person. An
+ * install from before this key existed has no recoverable date and shows none.
+ */
+export const START_DATE_KEY: StorageKey = "@heedly/start_date";
 
 const ERASABLE_KEYS = (Object.keys(STORAGE_KEY_POLICY) as StorageKey[]).filter(
   (key) => STORAGE_KEY_POLICY[key] === "erase",
