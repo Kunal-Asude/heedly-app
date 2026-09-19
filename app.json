@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "com.heedly.app"
+      "bundleIdentifier": "com.heedly.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
