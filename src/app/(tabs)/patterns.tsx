@@ -96,6 +96,7 @@ export default function PatternsScreen() {
     costPatterns,
     tankTooltipTitle,
     tankTooltipBody,
+    learningSinceText,
   } = usePatterns();
 
   // Dynamic Theme Colors (Dawn vs Dusk vs True Black / OLED)
@@ -206,7 +207,7 @@ export default function PatternsScreen() {
               TRACKING SINCE
             </Text>
             <Text style={[styles.subtitleRightDate, { color: learningSinceDateColor }]}>
-              MARCH 14
+              {learningSinceText}
             </Text>
           </View>
         </View>
@@ -320,8 +321,12 @@ export default function PatternsScreen() {
           {/* 7-Day Circles Row (.pt-chart) */}
           <View style={styles.daysRow}>
             {thisWeekDays.map((dayItem, index) => {
+              // `none` first. Without it a day with no reading falls through
+              // to the rest colour and claims a crash that never happened.
               const dotColor =
-                dayItem.type === "steady"
+                dayItem.type === "none"
+                  ? dayItem.color
+                  : dayItem.type === "steady"
                   ? isDark && isTrueBlack
                     ? "#6E9678"
                     : STATE_COLORS.steady
