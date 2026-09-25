@@ -56,10 +56,16 @@ export interface CheckInEntry {
   updatedAt?: string;
 }
 
+/** A tag as the interface handles it: `id` is stored, `label` is shown. */
+export interface TagOption {
+  id: string;
+  label: string;
+}
+
 export interface CheckInCategory {
   id: string;
   label: string;
-  tags: string[];
+  tags: TagOption[];
 }
 
 export interface EnergyLevel {
@@ -99,9 +105,6 @@ export interface PlanningPrediction {
 }
 
 export interface CheckInConfig {
-  categories: CheckInCategory[];
-  allTags: string[];
-  initialSelectedTags: string[];
   periodDays: number[];
   yesterdayOptions: YesterdayOption[];
   recurringEnergyLevels: EnergyLevel[];

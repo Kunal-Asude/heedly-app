@@ -7,9 +7,6 @@ export function useCheckInConfig() {
 
   return {
     config,
-    categories: config.categories,
-    allTags: config.allTags,
-    initialSelectedTags: config.initialSelectedTags,
     periodDays: config.periodDays,
     yesterdayOptions: config.yesterdayOptions,
     recurringEnergyLevels: config.recurringEnergyLevels,

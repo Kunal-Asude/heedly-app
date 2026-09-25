@@ -19,7 +19,7 @@ import { CORAL, Fonts, INK } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useTheme } from "@/constants/themes";
 import { useThemeMode } from "@/contexts/ThemeContext";
-import { useCheckInConfig } from "@/hooks/data";
+import { useCheckInConfig, useTagCatalogue } from '@/hooks/data';
 
 // ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
 
@@ -50,7 +50,8 @@ export default function NotingScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { categories, allTags, periodDays } = useCheckInConfig();
+  const { periodDays } = useCheckInConfig();
+  const { categories, allTags } = useTagCatalogue();
   const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
   const params = useLocalSearchParams<{
     isEditing?: string;
@@ -157,7 +158,7 @@ export default function NotingScreen() {
   const baseTags = activeCategory ? activeCategory.tags : allTags;
 
   const filteredTags = baseTags.filter((tag) =>
-    tag.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+    tag.label.toLowerCase().includes(searchQuery.trim().toLowerCase()),
   );
 
   return (
@@ -454,11 +455,11 @@ export default function NotingScreen() {
             showsVerticalScrollIndicator={false}
           >
             {filteredTags.map((tag) => {
-              const isSelected = selectedTags.has(tag);
+              const isSelected = selectedTags.has(tag.id);
               return (
                 <Pressable
-                  key={tag}
-                  onPress={() => handleToggleTag(tag)}
+                  key={tag.id}
+                  onPress={() => handleToggleTag(tag.id)}
                   style={({ pressed }) => [
                     styles.tagChip,
                     {
@@ -490,7 +491,7 @@ export default function NotingScreen() {
                   ]}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: isSelected }}
-                  accessibilityLabel={tag}
+                  accessibilityLabel={tag.label}
                 >
                   {isSelected && (
                     <Text style={[styles.tagCheckIcon, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b0532f" }]}>
@@ -511,7 +512,7 @@ export default function NotingScreen() {
                       },
                     ]}
                   >
-                    {tag}
+                    {tag.label}
                   </Text>
                 </Pressable>
               );
