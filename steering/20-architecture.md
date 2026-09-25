@@ -90,7 +90,7 @@ For non-React execution contexts (such as background services and notification s
 ## Data Layer
 
 ### Mock-First Architecture
-All data in the app currently comes from `src/data/mock/`. The data hooks (`src/hooks/data/`) are thin wrappers that initialize React `useState` from mock constants. There is no real API, no network call, no cache, no real persistence of user data.
+All data in the app currently comes from `src/data/mock/`. The data hooks (`src/hooks/data/`) are thin wrappers that initialize React `useState` from mock constants. There is no real API, no network call and no cache. Check-ins and verdicts do persist, to on-device SQLite (see § Check-In State below), and the Today orb's tank band is engine-driven.
 
 ### Hook → Mock Mapping
 | Hook | Mock constant | Type |
@@ -104,7 +104,7 @@ All data in the app currently comes from `src/data/mock/`. The data hooks (`src/
 ### State Ownership
 - `useForecast`, `useNotes`, `usePatterns`, `useCheckInConfig`: state is **read-only** to callers. No mutation is exposed.
 - `useUserSettings`: exposes `updateSetting<K>(key, value)` which mutates in-memory state only (not persisted, not broadcast to other hook instances).
-- Check-in answers: transitioning from URL parameter bus to storage-backed `CheckInContext` and `checkinStorage`.
+- Check-in answers: migrated from the URL parameter bus to storage-backed `CheckInContext` and `checkinStorage`.
 
 ---
 
@@ -191,7 +191,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
 - **Services & Context**: `src/services/checkinStorage.ts` and `src/contexts/CheckInContext.tsx` are active. `CheckInProvider` wraps the app in `src/app/_layout.tsx`.
 - **Screen Migration**: All screens (`yesterday.tsx`, `energy.tsx`, `body.tsx`, `noting.tsx`, `period.tsx`, `saved.tsx`) read and persist via `useCheckIn()`.
 - **Answer URL Parameters**: Completely eliminated. Only UI-control parameters (`openPeriod=true`, `isFirstTime=true`) are permitted.
-- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx`. It calls `HeedlyNative.deleteAllData()` **first** — emptying all eight SQLite tables in one transaction, then `VACUUM` — and only then clears the AsyncStorage check-in keys and resets the Today CTA. The bridge call is awaited and unwrapped, so a storage failure rejects rather than reporting a false success (ADR-0026). Verified at runtime 2026-09-07: 10 rows across six tables → 0, `user_version` still 2, schema intact.
+- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx`. It calls `HeedlyNative.deleteAllData()` **first** — emptying all eight SQLite tables in one transaction, then `VACUUM` — and only then clears the AsyncStorage check-in keys and resets the Today CTA. The bridge call is awaited and unwrapped, so a storage failure rejects rather than reporting a false success (ADR-0026). Verified at runtime on the iPhone 17 Pro Simulator, 2026-09-07: 10 rows across six tables → 0, schema intact. The schema was at migration 2 then; it is now at 5. No physical-device verification.
 
 ---
 

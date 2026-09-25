@@ -137,7 +137,7 @@ wrong together.
 - `saved.tsx` shows `skipped` with five empty dots for an unanswered level, and `nothing noted` for no tags. Rows stay visible because each is the edit affordance. The three accessibility labels interpolate the same corrected values.
 - `npx tsc --noEmit` and `npx expo lint` both exit 0. **These proved nothing** — they passed cleanly on the broken code at every stage, which is why every claim below rests on runtime evidence instead.
 
-**Verified through the real UI plus read-only SQLite from a separate process:**
+**Verified on the iPhone 17 Pro Simulator, through the real UI plus read-only SQLite from a separate process (no physical device):**
 R1 (unanswered Next → NULL/NULL/0 tags), R2 (real levels and tags persist
 exactly), R3 (Skip path), R4 (toggling a tag off leaves only the remaining one),
 R6 (editing a level preserves Body and both tags; `created_at` held, `edited_at`
@@ -170,5 +170,5 @@ unanswered check-in round-trips through edit without manufacturing values).
 1. **True user lifecycle:** What happens when a user "onboards" in production? Is there an account, an auth token, a server-side user ID? Nothing in the codebase suggests an answer.
 2. **AI insights feature:** `isAiInsights` setting exists. No AI inference code exists anywhere. Where does AI-driven pattern analysis live?
 3. **Weekly recap notification:** `isWeeklyRecap` setting exists. No scheduling or content generation for weekly recaps exists.
-4. **Wearable data integration:** The connect screen and `DeviceId` type suggest Oura, Apple Watch, etc. No SDK calls, OAuth flows, or Health kit integration exists.
+4. ~~**Wearable data integration**~~ — **RESOLVED.** Apple HealthKit ingestion is implemented in the Swift core and is reached from `(onboarding)/connect.tsx` and from Settings. Simulator-verified only; no physical device, no TestFlight.
 5. **Subscription model:** `paywall.tsx` shows annual/monthly plans. No pricing, entitlement checking, or RevenueCat/StoreKit integration exists.

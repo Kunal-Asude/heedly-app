@@ -2,7 +2,7 @@
 
 ## What This System Is
 
-heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CFS, Long COVID, POTS, Fibromyalgia, and related conditions. It is a **design-prototype / MVP stage** app — check-ins and verdicts persist to on-device SQLite through the native bridge; forecast, patterns and notes are still mocked; no backend exists. The core value loop is: onboard → daily energy check-in → view today's forecast status → review weekly patterns/notes → adjust settings/notifications. The app is themed ("Dawn" light, "Dusk" dark) with a pixel-matched design system sourced from design-handoff HTML/CSS files.
+heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CFS, Long COVID, POTS, Fibromyalgia, and related conditions. It is a **design-prototype / MVP stage** app — check-ins and verdicts persist to on-device SQLite through the native bridge; the Today orb (tank band) is engine-driven; the headline, status indicator and three-day forecast row are still provisional mock UI; no backend exists. The core value loop is: onboard → daily energy check-in → view today's forecast status → review weekly patterns/notes → adjust settings/notifications. The app is themed ("Dawn" light, "Dusk" dark) with a pixel-matched design system sourced from design-handoff HTML/CSS files.
 
 ---
 
@@ -12,7 +12,7 @@ heedly is an Expo 57 / React Native mobile app (iOS-first) for people with ME/CF
 |---|---|---|
 | Routing / Navigation | `src/app/` (Expo Router file-based) | [20-architecture.md §Routing](20-architecture.md#routing) |
 | Theme System | `src/contexts/ThemeContext.tsx`, `src/constants/themes/` | [20-architecture.md §Theme](20-architecture.md#theme-system), [10-specification.md §Theme](10-specification.md#theme-invariants) |
-| Data Layer (mock) | `src/data/mock/`, `src/hooks/data/`, `src/types/` | [20-architecture.md §Data](20-architecture.md#data-layer), [50-contradictions.md](50-contradictions-and-open-questions.md) |
+| Data Layer (mixed: engine-backed + mock) | `src/data/mock/`, `src/hooks/data/`, `src/types/` | [20-architecture.md §Data](20-architecture.md#data-layer), [50-contradictions.md](50-contradictions-and-open-questions.md) |
 | Check-In Flow | `src/app/(check-in)/` | [30-behavior.md §Check-In](30-behavior.md#flow-1-daily-check-in) |
 | Onboarding Flow | `src/app/(onboarding)/` | [30-behavior.md §Onboarding](30-behavior.md#flow-2-onboarding) |
 | Today Screen | `src/app/(tabs)/index.tsx`, `src/components/today/` | [30-behavior.md §Today](30-behavior.md#flow-3-today-screen-status-display) |

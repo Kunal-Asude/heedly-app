@@ -23,7 +23,7 @@
 - On the Saved screen, tapping **"Back to today"** commits the completed check-in **through the native bridge into SQLite** (`HeedlyNative.saveCheckIn`, and `saveVerdict` when a yesterday answer exists), indexed by the recorded date (`YYYY-MM-DD`). **Nothing is written before that tap.**
 - `created_at` and `edited_at` are stamped by the storage layer, not sent by the app (ADR-0017). `completedAt`/`updatedAt` remain app-side bookkeeping with no storage destination.
 - The active draft `@heedly/checkin_draft` is cleared.
-- ⚠️ `@heedly/checkin_history` and `@heedly/last_checkin_date` are **not** written. `persistCheckInToHistory` has no call site outside its own file (source-verified), and the AsyncStorage manifest was observed empty after every completed check-in during the 2026-09-07 verification runs.
+- ⚠️ `@heedly/checkin_history` and `@heedly/last_checkin_date` are **not** written. `persistCheckInToHistory` has no call site outside its own file (source-verified), and the AsyncStorage manifest was observed empty after every completed check-in during the 2026-09-07 verification runs on the iPhone 17 Pro Simulator.
 
 #### 4. Review
 - Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review today's check-in"**.
@@ -33,7 +33,7 @@
 - On `saved.tsx`, the user taps an individual answer row (e.g., ENERGY).
 - The target screen opens with the current answer pre-selected.
 - The user adjusts the answer and proceeds back to `saved.tsx`.
-- The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle). Verified at runtime on 2026-09-07 (run R6): changing only Energy left `body_level` and both `check_in_tag` rows unchanged.
+- The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle). Verified at runtime on the iPhone 17 Pro Simulator, 2026-09-07 (run R6): changing only Energy left `body_level` and both `check_in_tag` rows unchanged.
 - Tapping "Back to today" updates the existing row for that date. `created_at` is preserved and `edited_at` is stamped by storage when content actually changed; an unchanged re-save writes nothing and leaves `edited_at` NULL (ADR-0017, observed in R6 and P3-C).
 
 ### Date Semantics
@@ -91,6 +91,16 @@ Based on `statusMode`:
 - `steady` | `caution` | `rest` → renders `TodayScreenLayout`
 
 `useForecast(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only).
+
+⚠️ **Only the orb is engine-driven.** Its water state follows the tank band read
+from the native bridge (`useTankState`, refreshed by the `onTankUpdated` event).
+The headline text, the status indicator ("holding steady" and similar) and the
+three-day forecast row all come from `statusConfigs`, which is provisional mock
+UI with no engine behind it — **they can contradict the orb.** Do not treat them
+as engine output, and do not build logic on them.
+
+The bridge sends only the qualitative band. The internal 0–100 reserve never
+crosses into JavaScript, so it is not available to this app by design.
 
 **"Why" modal** opens when user presses the secondary link on caution/rest. It is a slide-up `Modal` (React Native), rendered inline in the screen. Data comes from `whyModalConfigs[whyModalType]`.
 

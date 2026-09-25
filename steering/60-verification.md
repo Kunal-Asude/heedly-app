@@ -15,6 +15,11 @@
 
 This was verified by filesystem search. The Expo README mentions Jest as an option but it is not set up.
 
+**Scope:** this statement covers `heedly-app` only. The Swift core in the sibling
+repository has **402 passing tests** — Engine 138, Storage 162, Health 35,
+Ingest 67 — covering the engine, storage and HealthKit ingestion, but nothing in
+this app's screens.
+
 ---
 
 ## Type Checking (TypeScript)
@@ -74,6 +79,8 @@ No automated build verification or CI pipeline exists.
 | Navigation flow completeness | No E2E test |
 | Cross-platform (iOS vs Android) parity | No automated test |
 | Dark mode visual correctness | No automated test |
+| Today orb / tank band correctness | Depends on the native engine. Simulator-only; no physical device |
+| HealthKit permission-upgrade flow (Exercise Minutes) | **Not verified on a physical device and not verified through TestFlight.** TestFlight is configured; that is not the same as verified |
 
 ---
 
