@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { openURL } from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
@@ -32,6 +33,10 @@ export default function ConnectWearableScreen() {
   const [selectedDevice, setSelectedDevice] = useState<DeviceId | null>(null);
   const [isNoDataSheetVisible, setIsNoDataSheetVisible] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  // A count, never a measurement — what the bridge contract allows across. It
+  // is the only thing that separates "nothing arrived" from "we never asked".
+  const [importOutcome, setImportOutcome] = useState<string | null>(null);
+  const [openHealthError, setOpenHealthError] = useState<string | null>(null);
 
 
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
@@ -61,9 +66,12 @@ export default function ConnectWearableScreen() {
         router.push('/(onboarding)/conditions');
         return;
       }
+      setImportOutcome('Apple Health returned no records Heedly can read.');
       setIsNoDataSheetVisible(true);
     } catch (error) {
       console.warn('[Connect] Apple Health connection failed:', error);
+      // Distinct from an empty result: this one never got as far as asking.
+      setImportOutcome('Heedly could not reach Apple Health on this device.');
       setIsNoDataSheetVisible(true);
     } finally {
       setIsConnecting(false);
@@ -77,6 +85,15 @@ export default function ConnectWearableScreen() {
   const handleProceedToConditions = () => {
     setIsNoDataSheetVisible(false);
     router.push('/(onboarding)/conditions');
+  };
+
+  const handleOpenAppleHealth = async () => {
+    setOpenHealthError(null);
+    try {
+      await openURL('x-apple-health://');
+    } catch {
+      setOpenHealthError('Heedly could not open Apple Health from here.');
+    }
   };
 
   return (
@@ -113,6 +130,10 @@ export default function ConnectWearableScreen() {
           <View style={styles.grid}>
             {wearables.map((card) => {
               const isSelected = selectedDevice === card.id;
+              // Backfill runs to completion before resolving, so this state can
+              // last a while. Calling it "No data yet" told testers they had
+              // failed while it was still working.
+              const isBusy = isSelected && isConnecting;
               const isWaiting = isSelected && (isNoDataSheetVisible || isConnecting);
               const cardTokens = theme.components.onboarding.card;
 
@@ -187,7 +208,13 @@ export default function ConnectWearableScreen() {
                       isSelected && { color: cardTokens.selectedActionColor },
                       isWaiting && { color: cardTokens.waitingActionColor },
                     ]}>
-                    {isWaiting ? 'No data yet' : isSelected ? '✓ Connected' : 'Connect'}
+                    {isBusy
+                      ? 'Reading…'
+                      : isWaiting
+                        ? 'No data yet'
+                        : isSelected
+                          ? '✓ Connected'
+                          : 'Connect'}
                   </Text>
                 </Pressable>
               );
@@ -292,6 +319,26 @@ export default function ConnectWearableScreen() {
               {', and nothing has arrived yet.'}
             </Text>
 
+            {importOutcome !== null && (
+              <Text
+                style={[
+                  styles.sheetBody,
+                  { color: theme.components.supportingText.noteColor },
+                ]}>
+                {importOutcome}
+              </Text>
+            )}
+
+            {openHealthError !== null && (
+              <Text
+                style={[
+                  styles.sheetBody,
+                  { color: theme.components.supportingText.noteColor },
+                ]}>
+                {openHealthError}
+              </Text>
+            )}
+
             {/* Numbered Steps (.nd-steps) */}
             <View style={styles.stepsContainer}>
               {/* Step 1 */}
@@ -332,7 +379,7 @@ export default function ConnectWearableScreen() {
                 },
                 pressed && styles.sheetCtaPressed,
               ]}
-              onPress={handleProceedToConditions}
+              onPress={handleOpenAppleHealth}
               accessibilityRole="button"
               accessibilityLabel="Open Apple Health">
               <LinearGradient
@@ -352,8 +399,10 @@ export default function ConnectWearableScreen() {
               ]}
               onPress={handleProceedToConditions}
               accessibilityRole="button"
-              accessibilityLabel="Check again">
-              <Text style={[styles.sheetSkipText, { color: theme.ink.muted }]}>Check again</Text>
+              accessibilityLabel="Continue without Apple Health">
+              <Text style={[styles.sheetSkipText, { color: theme.ink.muted }]}>
+                Continue without Apple Health
+              </Text>
             </Pressable>
           </View>
         </View>
