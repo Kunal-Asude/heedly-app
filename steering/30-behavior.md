@@ -81,10 +81,15 @@
 **Today screen** (`src/app/(tabs)/index.tsx`) resolves the current status mode in this priority:
 
 ```
-1. customMode (set by tapping the status badge — dev/debug cycle)
+1. customMode (set by tapping the status badge — __DEV__ builds only)
 2. validParamMode (from URL param ?mode=)
 3. Default: "fd-empty"
 ```
+
+⚠️ `?mode=` is **production navigation, not a debug hatch**. `saved.tsx` returns
+to `?mode=rest` / `?mode=fd-wearable` / `?mode=steady` after a check-in, and
+`energy.tsx` and `your-data.tsx` use `?mode=fd-empty`. Gating it would break
+those returns. Only the badge cycler is development-only.
 
 Based on `statusMode`:
 - `fd-empty` | `fd-wearable` → renders `LearningScreenLayout`

@@ -254,7 +254,7 @@ export default function TodayScreen() {
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={currentConfig.indicatorText}
           indicatorDotColor={currentConfig.indicatorDotColor}
-          onBadgePress={cycleStatusMode}
+          onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
           forecast={
             statusMode === "fd-wearable" ? currentConfig.forecast : undefined
@@ -283,7 +283,7 @@ export default function TodayScreen() {
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={currentConfig.indicatorText}
           indicatorDotColor={currentConfig.indicatorDotColor}
-          onBadgePress={cycleStatusMode}
+          onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
           forecast={currentConfig.forecast}
           learningNote={undefined}
