@@ -12,7 +12,7 @@ import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { greetingWithName, useFirstName } from "@/contexts/NameContext";
 import { formatHeaderDate } from "@/services/checkinStorage";
-import { useForecast } from "@/hooks/data";
+import { useForecast, useTankState } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -54,6 +54,15 @@ export default function TodayScreen() {
   const { statusConfigs, whyModalConfigs } = useForecast(statusMode);
   const currentConfig = statusConfigs[statusMode];
   const activeWhyData = whyModalConfigs[whyModalType];
+
+  // ⚠️ Provisional. The orb is the tank (brief §7), so it follows the real band
+  // computed natively. Everything else on this screen is the forecast, which
+  // has no engine yet — §6.1 keeps the two apart, and so does this.
+  //
+  // Null until there is a real band: no data leaves the existing visual alone
+  // rather than defaulting to a healthy orb.
+  const { orbState: tankOrbState } = useTankState();
+  const orbState = tankOrbState ?? currentConfig.waterState;
 
   const cycleStatusMode = () => {
     if (showEmptyState) return;
@@ -237,7 +246,7 @@ export default function TodayScreen() {
           dateText={formatHeaderDate()}
           greeting={greetingWithName("Hello", firstName)}
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
-          orbState={currentConfig.waterState}
+          orbState={orbState}
           orbSize={currentConfig.orbSize}
           headline1={currentConfig.headline1}
           headline2={currentConfig.headline2}
@@ -267,7 +276,7 @@ export default function TodayScreen() {
           dateText={formatHeaderDate()}
           greeting={greetingWithName("Hello", firstName)}
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
-          orbState={currentConfig.waterState}
+          orbState={orbState}
           headline1={currentConfig.headline1}
           headline2={currentConfig.headline2}
           isHeadlineAccent={true}
