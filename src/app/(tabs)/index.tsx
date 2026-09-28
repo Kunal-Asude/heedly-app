@@ -1,11 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type { TankDirection } from "@heedly/native";
+import type { TankBand, TankDirection } from "@heedly/native";
 
 import type { EnergyOrbState } from "@/components/core";
 import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
@@ -18,6 +18,13 @@ import { COLORS } from "@/data/mock/mockForecast";
 import { formatHeaderDate } from "@/services/checkinStorage";
 import { useForecast, useTankState } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
+
+/** The headline is the band. Direction never changes it. */
+const BAND_MODE: Record<TankBand, TodayStatusMode> = {
+  good_reserves: "steady",
+  half_tank: "caution",
+  nearly_empty: "rest",
+};
 
 /** The badge is the direction; the orb is the band. They may differ. */
 const DIRECTION_DOT: Record<TankDirection, string> = {
@@ -44,11 +51,12 @@ export default function TodayScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
 
   const validParamMode =
-    params.mode === "fd-empty" ||
-    params.mode === "fd-wearable" ||
-    params.mode === "steady" ||
-    params.mode === "caution" ||
-    params.mode === "rest"
+    __DEV__ &&
+    (params.mode === "fd-empty" ||
+      params.mode === "fd-wearable" ||
+      params.mode === "steady" ||
+      params.mode === "caution" ||
+      params.mode === "rest")
       ? (params.mode as TodayStatusMode)
       : null;
 
@@ -60,9 +68,20 @@ export default function TodayScreen() {
     setCustomMode(null);
   }
 
+  const { orbState: tankOrbState, band, direction, refresh: refreshTank } =
+    useTankState();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshTank();
+    }, [refreshTank]),
+  );
+
   const showEmptyState = !isHydrating && !hasEverCheckedIn;
-  const requestedMode = customMode ?? validParamMode ?? "fd-empty";
-  const statusMode = showEmptyState ? "fd-empty" : requestedMode;
+  const bandMode = band ? BAND_MODE[band] : null;
+  const statusMode = showEmptyState
+    ? "fd-empty"
+    : customMode ?? bandMode ?? validParamMode ?? "fd-empty";
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
     "caution",
@@ -72,13 +91,12 @@ export default function TodayScreen() {
   const currentConfig = statusConfigs[statusMode];
   const activeWhyData = whyModalConfigs[whyModalType];
 
-  // ⚠️ Provisional. The orb is the tank (brief §7), so it follows the real band
-  // computed natively. Everything else on this screen is the forecast, which
-  // has no engine yet — §6.1 keeps the two apart, and so does this.
+  // ⚠️ Provisional. The orb and the headline are the tank (brief §7), so both
+  // follow the real band computed natively. The three-day forecast has no
+  // engine yet — §6.1 keeps the two apart, and so does this.
   //
   // Null until there is a real band: no data leaves the existing visual alone
   // rather than defaulting to a healthy orb.
-  const { orbState: tankOrbState, direction } = useTankState();
 
   // "empty" is the orb with no water — the honest shape for "no band yet".
   // Loading and no-data look the same deliberately: both mean the engine has

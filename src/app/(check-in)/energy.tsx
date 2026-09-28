@@ -79,7 +79,7 @@ export default function EnergyScreen() {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace('/(tabs)?mode=fd-empty' as any);
+        router.replace('/(tabs)' as any);
       }
     } else {
       if (router.canGoBack()) {

@@ -93,7 +93,7 @@ export default function YourDataScreen() {
     setIsDeleteModalVisible(false);
     await resetAllData();
     // Reset to fresh state on today
-    router.replace("/(tabs)?mode=fd-empty" as any);
+    router.replace("/(tabs)" as any);
   };
 
   // Theme-aware tokens (Dawn vs Dusk vs True Black / OLED)

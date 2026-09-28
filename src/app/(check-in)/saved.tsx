@@ -106,13 +106,7 @@ export default function CheckInSavedScreen() {
 
   const handleBackToToday = async () => {
     await saveCheckIn();
-    if (isCrash) {
-      router.replace('/(tabs)?mode=rest' as any);
-    } else if (isFirstTime) {
-      router.replace('/(tabs)?mode=fd-wearable' as any);
-    } else {
-      router.replace('/(tabs)?mode=steady' as any);
-    }
+    router.replace('/(tabs)' as any);
   };
 
   return (
