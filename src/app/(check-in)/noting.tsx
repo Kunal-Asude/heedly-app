@@ -86,6 +86,7 @@ export default function NotingScreen() {
 
   const handleToggleTag = (tag: string) => {
     const next = new Set(selectedTags);
+    const clearsPeriod = tag === 'period' && next.has(tag);
     if (next.has(tag)) {
       next.delete(tag);
       if (tag === 'period') {
@@ -98,7 +99,11 @@ export default function NotingScreen() {
       }
     }
     setSelectedTags(next);
-    updateEntry({ tags: Array.from(next) });
+    updateEntry(
+      clearsPeriod
+        ? { tags: Array.from(next), periodInfo: null }
+        : { tags: Array.from(next) },
+    );
   };
 
   const handleToggleCategoryDrawer = () => {
@@ -151,8 +156,10 @@ export default function NotingScreen() {
   const handleSaveButtonPress = () => {
     if (isEditing) {
       navigateToSaved(activeEntry.periodInfo ?? undefined);
-    } else {
+    } else if (selectedTags.has('period')) {
       handleOpenPeriodSheet();
+    } else {
+      navigateToSaved(undefined);
     }
   };
 
