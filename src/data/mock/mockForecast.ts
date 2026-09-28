@@ -1,6 +1,6 @@
 import type { ForecastData, TodayStatusMode, StatusConfig, WhyModalData } from "@/types/forecast";
 
-const COLORS = {
+export const COLORS = {
   greenDot: "#7E9B6A",
   cautionDot: "#D99843",
   restDot: "#E0735F",

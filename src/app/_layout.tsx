@@ -67,11 +67,30 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // A first-ever check-in has no previous day to rate, so it opens at the
+    // energy question. This runs above CheckInProvider, so it asks the store.
+    const openCheckIn = async () => {
+      let firstDay: string | null = null;
+      try {
+        firstDay = await HeedlyNative.getFirstCheckInDay();
+      } catch {
+        firstDay = null;
+      }
+      if (firstDay === null) {
+        router.push({
+          pathname: '/(check-in)/energy',
+          params: { isFirstTime: 'true' },
+        } as any);
+      } else {
+        router.push('/(check-in)/yesterday' as any);
+      }
+    };
+
     // 1. Handle notification click when app is already open or in background
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
       if (data?.screen === 'check-in') {
-        router.push('/(check-in)/yesterday' as any);
+        void openCheckIn();
       } else {
         // Default / caution heads-up notification -> go directly to Today page
         router.replace('/(tabs)');
@@ -83,7 +102,7 @@ export default function RootLayout() {
       if (response) {
         const data = response.notification.request.content.data;
         if (data?.screen === 'check-in') {
-          router.push('/(check-in)/yesterday' as any);
+          void openCheckIn();
         } else {
           router.replace('/(tabs)');
         }

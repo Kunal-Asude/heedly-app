@@ -5,15 +5,32 @@ import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { LearningScreenLayout, TodayScreenLayout } from "@/components/today";
+import type { TankDirection } from "@heedly/native";
+
+import type { EnergyOrbState } from "@/components/core";
+import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
 import { Fonts } from "@/constants/theme";
 import { useTheme } from "@/constants/themes";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { greetingWithName, useFirstName } from "@/contexts/NameContext";
+import { COLORS } from "@/data/mock/mockForecast";
 import { formatHeaderDate } from "@/services/checkinStorage";
 import { useForecast, useTankState } from "@/hooks/data";
 import type { TodayStatusMode } from "@/types/forecast";
+
+/** The badge is the direction; the orb is the band. They may differ. */
+const DIRECTION_DOT: Record<TankDirection, string> = {
+  building: COLORS.greenDot,
+  holding: COLORS.cautionDot,
+  draining: COLORS.restDot,
+};
+
+const DIRECTION_TEXT: Record<TankDirection, string> = {
+  building: "building",
+  holding: "holding steady",
+  draining: "draining",
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -61,8 +78,25 @@ export default function TodayScreen() {
   //
   // Null until there is a real band: no data leaves the existing visual alone
   // rather than defaulting to a healthy orb.
-  const { orbState: tankOrbState } = useTankState();
-  const orbState = tankOrbState ?? currentConfig.waterState;
+  const { orbState: tankOrbState, direction } = useTankState();
+
+  // "empty" is the orb with no water — the honest shape for "no band yet".
+  // Loading and no-data look the same deliberately: both mean the engine has
+  // not said anything, and the difference is not the orb's to express. The
+  // mock waterState is not used — a healthy orb before the real one arrives is
+  // a false reassurance (§2), and the orb is the one thing people read.
+  const orbState: EnergyOrbState = tankOrbState ?? "empty";
+
+  // The engine already decides this; the screen only names it. Until a
+  // direction exists — no band, or a first recompute with no predecessor — the
+  // existing forecast copy stands rather than inventing a trend.
+  const indicatorText = direction
+    ? DIRECTION_TEXT[direction]
+    : currentConfig.indicatorText;
+
+  const indicatorDotColor = direction
+    ? DIRECTION_DOT[direction]
+    : currentConfig.indicatorDotColor;
 
   const cycleStatusMode = () => {
     if (showEmptyState) return;
@@ -102,6 +136,12 @@ export default function TodayScreen() {
       router.push('/(check-in)/energy');
     }
   };
+
+  const ctaLabel = isTodayCompleted
+    ? "Review today's check-in"
+    : hasEverCheckedIn && unratedDay
+      ? "Check in for yesterday"
+      : currentConfig.ctaText;
 
   const handleOpenWhyModal = () => {
     if (statusMode === "rest") {
@@ -252,8 +292,8 @@ export default function TodayScreen() {
           headline2={currentConfig.headline2}
           isHeadlineAccent={true}
           isFirstDay={currentConfig.isFirstDay}
-          indicatorText={currentConfig.indicatorText}
-          indicatorDotColor={currentConfig.indicatorDotColor}
+          indicatorText={indicatorText}
+          indicatorDotColor={indicatorDotColor}
           onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
           forecast={
@@ -266,7 +306,7 @@ export default function TodayScreen() {
             statusMode === "fd-wearable" ? currentConfig.noteText : undefined
           }
           isSecondaryLink={false}
-          ctaLabel={isTodayCompleted ? "Review today's check-in" : currentConfig.ctaText}
+          ctaLabel={ctaLabel}
           onCtaPress={handleCtaPress}
           footerNote={currentConfig.footerNote}
           onFooterPress={handleFooterPress}
@@ -277,12 +317,13 @@ export default function TodayScreen() {
           greeting={greetingWithName("Hello", firstName)}
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
           orbState={orbState}
+          orbSize={TODAY_ORB_SIZE}
           headline1={currentConfig.headline1}
           headline2={currentConfig.headline2}
           isHeadlineAccent={true}
           isFirstDay={currentConfig.isFirstDay}
-          indicatorText={currentConfig.indicatorText}
-          indicatorDotColor={currentConfig.indicatorDotColor}
+          indicatorText={indicatorText}
+          indicatorDotColor={indicatorDotColor}
           onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
           forecast={currentConfig.forecast}
@@ -290,7 +331,7 @@ export default function TodayScreen() {
           secondaryText={currentConfig.whyText}
           isSecondaryLink={Boolean(currentConfig.whyText)}
           onSecondaryPress={handleOpenWhyModal}
-          ctaLabel={isTodayCompleted ? "Review today's check-in" : currentConfig.ctaText}
+          ctaLabel={ctaLabel}
           onCtaPress={handleCtaPress}
           footerNote={currentConfig.footerNote}
           onFooterPress={handleFooterPress}

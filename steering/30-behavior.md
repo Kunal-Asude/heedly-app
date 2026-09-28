@@ -97,12 +97,16 @@ Based on `statusMode`:
 
 `useForecast(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only).
 
-⚠️ **Only the orb is engine-driven.** Its water state follows the tank band read
-from the native bridge (`useTankState`, refreshed by the `onTankUpdated` event).
-The headline text, the status indicator ("holding steady" and similar) and the
-three-day forecast row all come from `statusConfigs`, which is provisional mock
-UI with no engine behind it — **they can contradict the orb.** Do not treat them
-as engine output, and do not build logic on them.
+⚠️ **The orb and the status indicator are engine-driven; the rest is not.** Both
+read `useTankState`, refreshed by the `onTankUpdated` event — the orb follows the
+tank band, and the indicator names the tank direction (`building` /
+`holding steady` / `draining`). With no band the orb is `"empty"`, and with no
+direction the indicator falls back to `statusConfigs`.
+
+The headline text and the three-day forecast row still come from
+`statusConfigs`, which is provisional mock UI with no engine behind it — **they
+can contradict the orb.** Do not treat them as engine output, and do not build
+logic on them.
 
 The bridge sends only the qualitative band. The internal 0–100 reserve never
 crosses into JavaScript, so it is not available to this app by design.
