@@ -200,10 +200,10 @@ export function fromNativeCheckIn(
 /** The wording the yesterday screen shows for a stored verdict. */
 function verdictLabel(value: VerdictValue): string {
     return value === 'lighter'
-        ? 'Lighter than usual'
+        ? 'Better than usual'
         : value === 'usual'
-          ? 'About the same'
-          : 'Heavier than usual';
+          ? 'A normal day'
+          : 'Worse than usual';
 }
 
 /** The 3/2/1 ordering the existing screens use for the same three values. */

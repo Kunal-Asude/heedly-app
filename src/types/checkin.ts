@@ -23,7 +23,7 @@ export interface CheckInEntry {
    *
    * These are the native contract's values (HeedlyEngine `VerdictValue`), not
    * display labels — they cross the bridge verbatim. The middle option is
-   * "usual" even though the UI reads "About the same".
+   * "usual" even though the UI reads "A normal day".
    */
   yesterdayId?: "lighter" | "usual" | "heavier" | null;
   yesterdayLabel?: string | null;
