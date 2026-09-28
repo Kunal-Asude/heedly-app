@@ -63,7 +63,20 @@ export interface CheckInContextValue {
   hasEverCheckedIn: boolean;
   /** The day still awaiting a verdict, or null when none is. Only ever yesterday. */
   unratedDay: string | null;
-  /** Updates the active entry immediately in state and debounced/asynchronously to draft */
+  /**
+   * The unsaved edit in progress, or null when there is none. Question screens
+   * read this in preference to `activeEntry`; nothing else should.
+   */
+  editDraft: Partial<CheckInEntry> | null;
+  /** The value a question screen should show: the draft when editing, else the entry. */
+  currentEntry: Partial<CheckInEntry>;
+  /** Opens an edit session on the current entry. Leaves the entry untouched. */
+  beginEdit: () => void;
+  /** Throws the edit away. The entry is whatever it was before `beginEdit`. */
+  cancelEdit: () => void;
+  /** Accepts the edit into the entry. Does not persist — `saveCheckIn` still does that. */
+  commitEdit: () => void;
+  /** Updates the edit draft when one is open, otherwise the active entry */
   updateEntry: (updates: Partial<CheckInEntry>) => void;
   /** Initializes or resets a fresh check-in draft for the target recorded date */
   startNewCheckIn: (isFirstTime?: boolean) => void;
@@ -107,6 +120,9 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const [activeEntry, setActiveEntry] = useState<Partial<CheckInEntry>>(defaultEntry);
   const [isHydrating, setIsHydrating] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  // In memory only, deliberately. An abandoned edit should not outlive the
+  // session — writing it to the draft store is what let one escape before.
+  const [editDraft, setEditDraft] = useState<Partial<CheckInEntry> | null>(null);
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [todayCompleted, setTodayCompleted] = useState<boolean>(false);
   const [todayEntry, setTodayEntry] = useState<CheckInEntry | null>(null);
@@ -179,21 +195,44 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   // ── Update Active Entry ─────────────────────────────────────────────────────
   const updateEntry = useCallback(
     (updates: Partial<CheckInEntry>) => {
+      // An open edit session takes every write. The entry it was opened from
+      // stays as it was until commitEdit, which is what makes Back a discard
+      // rather than a silent save.
+      if (editDraft) {
+        setEditDraft((prev) => ({ ...(prev ?? {}), ...updates }));
+        return;
+      }
       setActiveEntry((prev) => {
         const next = { ...prev, ...updates };
-        // Save to draft storage if not in historical edit mode
-        if (!isEditing) {
-          saveDraft(next);
-        }
+        saveDraft(next);
         return next;
       });
     },
-    [isEditing]
+    [editDraft]
   );
+
+  const beginEdit = useCallback(() => {
+    setEditDraft((prev) => prev ?? { ...activeEntry });
+    setIsEditing(true);
+  }, [activeEntry]);
+
+  const cancelEdit = useCallback(() => {
+    setEditDraft(null);
+    setIsEditing(false);
+  }, []);
+
+  const commitEdit = useCallback(() => {
+    setEditDraft((draft) => {
+      if (draft) setActiveEntry(draft);
+      return null;
+    });
+    setIsEditing(false);
+  }, []);
 
   // ── Start New Check-In ──────────────────────────────────────────────────────
   const startNewCheckIn = useCallback(
     (isFirstTime = false) => {
+      setEditDraft(null);
       setIsEditing(false);
       setEditingDate(null);
       const fresh: Partial<CheckInEntry> = {
@@ -213,6 +252,9 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       const entry = await readCompletedCheckIn(date);
       if (entry) {
         setActiveEntry(entry);
+        // A past day opens straight into an edit session, so Back discards
+        // there too rather than writing over the stored answer.
+        setEditDraft({ ...entry });
         setIsEditing(true);
         setEditingDate(date);
         return true;
@@ -281,6 +323,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       setTodayEntry(completedEntry);
     }
     setActiveEntry(completedEntry);
+    setEditDraft(null);
     setIsEditing(false);
     setEditingDate(null);
   }, [activeEntry, editingDate, isEditing, targetDate]);
@@ -292,6 +335,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       ...defaultEntry,
       date: targetDate,
     });
+    setEditDraft(null);
     setIsEditing(false);
     setEditingDate(null);
   }, [targetDate]);
@@ -336,6 +380,11 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CheckInContextValue>(
     () => ({
       activeEntry,
+      editDraft,
+      currentEntry: editDraft ?? activeEntry,
+      beginEdit,
+      cancelEdit,
+      commitEdit,
       isHydrating,
       isEditing,
       editingDate,
@@ -353,6 +402,10 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       activeEntry,
+      editDraft,
+      beginEdit,
+      cancelEdit,
+      commitEdit,
       isHydrating,
       isEditing,
       editingDate,

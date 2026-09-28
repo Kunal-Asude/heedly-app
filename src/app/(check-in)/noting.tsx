@@ -52,7 +52,13 @@ export default function NotingScreen() {
   const { isDark, isTrueBlack } = useThemeMode();
   const { periodDays } = useCheckInConfig();
   const { categories, allTags } = useTagCatalogue();
-  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
+  const {
+    currentEntry: activeEntry,
+    updateEntry,
+    isEditing: contextIsEditing,
+    cancelEdit,
+    commitEdit,
+  } = useCheckIn();
   const params = useLocalSearchParams<{
     isEditing?: string;
     openPeriod?: string;
@@ -109,6 +115,7 @@ export default function NotingScreen() {
 
   const handleBack = () => {
     if (isEditing) {
+      cancelEdit();
       router.push("/(check-in)/saved");
       return;
     }
@@ -133,6 +140,11 @@ export default function NotingScreen() {
       tags: Array.from(selectedTags),
       periodInfo: periodInfo !== undefined ? periodInfo : activeEntry.periodInfo ?? null,
     });
+    // Every route through here is a deliberate forward move, so it is the
+    // commit boundary. Back is the only discard, and it does not come here.
+    if (isEditing) {
+      commitEdit();
+    }
     router.push("/(check-in)/saved");
   };
 
