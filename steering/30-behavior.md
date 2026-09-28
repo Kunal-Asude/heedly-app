@@ -14,7 +14,9 @@
 - If an unfinished draft exists in `@heedly/checkin_draft`, its selections are automatically restored.
 
 #### 2. During Check-In
-- Moving between screens (`yesterday` → `energy` → `body` → `noting` → `period` → `saved`) auto-persists updates to draft storage.
+- Moving between screens (`yesterday` → `energy` → `body` → `noting` → `saved`) auto-persists updates to draft storage.
+- The period question is a bottom sheet on `noting`, not a screen of its own. It opens when the `period` tag is selected, and from the CYCLE row on `saved` (`openPeriod=true`). Without the `period` tag, Save goes straight to `saved`.
+- `period.tsx` exists in the route directory but **no route reaches it**; the sheet in `noting.tsx` is what collects the answer.
 - An unexpected app reload, background kill, or device restart restores the in-progress draft without loss of user selections.
 - First-time users (`fd-empty`) skip `yesterday` and begin directly at `energy`.
 - Tapping "I'm in a crash" on `energy` or `body` shortcuts directly to `saved` with crash flags preserved.
@@ -33,6 +35,8 @@
 - On `saved.tsx`, the user taps an individual answer row (e.g., ENERGY).
 - The target screen opens with the current answer pre-selected.
 - The user adjusts the answer and proceeds back to `saved.tsx`.
+- Edits accumulate in a separate draft layer held by `CheckInContext` (`beginEdit` / `commitEdit` / `cancelEdit`). A deliberate forward move commits them; **Back discards them**. Screens read `currentEntry`, which is the edit draft when one is open and the active entry otherwise.
+- Removing the `period` tag while editing also clears `periodInfo`, so no `period:*` tag is written for that check-in. Verified on the iPhone 17 Pro Simulator, 2026-09-28: removing the tag left `headache` as the only row for that date and deleted `period:day-4`.
 - The edited field updates immediately while **all unrelated answers remain untouched** (e.g. changing Energy does not clear Body, Tags, or Cycle). Verified at runtime on the iPhone 17 Pro Simulator, 2026-09-07 (run R6): changing only Energy left `body_level` and both `check_in_tag` rows unchanged.
 - Tapping "Back to today" updates the existing row for that date. `created_at` is preserved and `edited_at` is stamped by storage when content actually changed; an unchanged re-save writes nothing and leaves `edited_at` NULL (ADR-0017, observed in R6 and P3-C).
 
@@ -102,6 +106,17 @@ read `useTankState`, refreshed by the `onTankUpdated` event — the orb follows 
 tank band, and the indicator names the tank direction (`building` /
 `holding steady` / `draining`). With no band the orb is `"empty"`, and with no
 direction the indicator falls back to `statusConfigs`.
+
+The indicator's **dot colour follows the direction, not the band** — the orb
+answers "where are the reserves now", the badge answers "where are they
+heading". The two are allowed to disagree: `good_reserves` + `draining` is a
+real state and renders a green orb beside a red dot. Simulator-verified across
+all five band/direction combinations on 2026-09-28.
+
+The primary CTA is read from the store like its routing already was
+(`isTodayCompleted` → "Review today's check-in"; an unrated previous day →
+"Check in for yesterday"); it is **not** taken from `statusConfigs`, whose
+`fd-empty` text claims a first check-in whatever the store holds.
 
 The headline text and the three-day forecast row still come from
 `statusConfigs`, which is provisional mock UI with no engine behind it — **they
