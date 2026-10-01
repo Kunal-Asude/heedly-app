@@ -66,6 +66,13 @@ export default function ConnectWearableScreen() {
         router.push('/(onboarding)/conditions');
         return;
       }
+
+      const tank = await HeedlyNative.getTankState();
+      if (tank.dataState !== 'no_data') {
+        router.push('/(onboarding)/conditions');
+        return;
+      }
+
       setImportOutcome('Apple Health returned no records Heedly can read.');
       setIsNoDataSheetVisible(true);
     } catch (error) {
