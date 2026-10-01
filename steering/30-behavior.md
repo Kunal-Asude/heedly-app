@@ -56,7 +56,16 @@
 
 ## Flow 2: Onboarding
 
-**No persistence of completion state.** Every cold launch starts here (`src/app/index.tsx` redirects unconditionally to `/(onboarding)`).
+**Completion is persisted.** `src/app/index.tsx` reads `ONBOARDING_COMPLETE_KEY`
+and redirects to `/(tabs)` when it is `'true'`, otherwise to `/(onboarding)`.
+`ready.tsx` writes that key and `START_DATE_KEY`; both are `erase` under
+`STORAGE_KEY_POLICY`, so "Delete all my data" sends the person through onboarding
+again.
+
+⚠️ The native ingestion phase is **separate state** and the two can disagree.
+Deleting data clears the key and the `backfill_state` row together, but a person
+who connects Apple Health and then stops before `ready.tsx` is left `.ready`
+natively while the interface still treats them as new.
 
 ```
 /(onboarding)/index  [Welcome — EnergyOrb(empty, 152px) + wordmark]
@@ -64,8 +73,12 @@
 
 /(onboarding)/connect  [Select wearable device]
   → user taps wearable card (toggles selectedDevice)
-  → "Continue" → shows NoDataSheet bottom sheet
-  → "Proceed anyway" in sheet → router.push('/(onboarding)/conditions')
+  → "Continue" → await HeedlyNative.connectHealthKit()
+       rows > 0                      → router.push('/(onboarding)/conditions')
+       rows 0, a tank already exists → router.push('/(onboarding)/conditions')
+       rows 0, no tank               → NoDataSheet
+       throw                         → NoDataSheet, different message
+  → "Continue without Apple Health" in sheet → router.push('/(onboarding)/conditions')
 
 /(onboarding)/conditions  [Select health conditions — multi-select chips]
   → "Continue" → router.push('/(onboarding)/ready')
@@ -74,9 +87,17 @@
   → "Go to today" → router.replace('/(tabs)')
 ```
 
-**State:** wearable selection and conditions are local `useState` within each screen — not persisted, not passed forward.
+**State:** wearable selection and conditions are local `useState` within each screen — not persisted, not passed forward. The first name and start date written by `ready.tsx` are the exception.
 
 **Failure:** No validation. All steps can proceed with nothing selected.
+
+⚠️ **Zero rows does not mean Apple Health is unreadable.** `connectHealthKit()`
+returns rows written by *that call*, so an install already `.ready` with current
+anchors legitimately returns 0. The tank check above is what separates "nothing
+new" from "nothing there"; it is a narrower signal than the `getConnectionState()`
+the contract declares but nothing implements. A real import too sparse to score a
+tank still reaches the sheet. **Code-verified; the already-connected path has not
+been runtime-verified.**
 
 ---
 
@@ -85,15 +106,22 @@
 **Today screen** (`src/app/(tabs)/index.tsx`) resolves the current status mode in this priority:
 
 ```
-1. customMode (set by tapping the status badge — __DEV__ builds only)
-2. validParamMode (from URL param ?mode=)
-3. Default: "fd-empty"
+1. showEmptyState (no check-in has ever been recorded) → "fd-empty"
+2. customMode (set by tapping the status badge — __DEV__ builds only)
+3. bandMode (the real Tank band, via useTankState)
+4. validParamMode (from URL param ?mode= — __DEV__ builds only)
+5. Default: "fd-empty"
 ```
 
-⚠️ `?mode=` is **production navigation, not a debug hatch**. `saved.tsx` returns
-to `?mode=rest` / `?mode=fd-wearable` / `?mode=steady` after a check-in, and
-`energy.tsx` and `your-data.tsx` use `?mode=fd-empty`. Gating it would break
-those returns. Only the badge cycler is development-only.
+⚠️ `?mode=` is **no longer production navigation.** `saved.tsx` returns with
+`router.replace('/(tabs)')` and no query string; no `?mode=` call site remains in
+`src/`. `validParamMode` is gated on `__DEV__`, as the badge cycler already was.
+
+⚠️ **`showEmptyState` short-circuits before `bandMode` is consulted**, so an
+install holding a real band shows "Early days yet" until the first check-in — while
+the orb, which reads `tankOrbState` directly, draws the real level on the same
+screen. Observed on the Simulator, 2026-09-30. Not yet resolved; it is a product
+question about what that screen should say, not only a branching bug.
 
 Based on `statusMode`:
 - `fd-empty` | `fd-wearable` → renders `LearningScreenLayout`
