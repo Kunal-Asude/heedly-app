@@ -70,7 +70,11 @@ export function useTagCatalogue() {
 
   return {
     categories: toCategories(tags),
-    allTags: tags.map((tag) => ({ id: tag.id, label: tag.label })),
+    allTags: tags.map((tag) => ({
+      id: tag.id,
+      label: tag.label,
+      category: tag.category,
+    })),
     isLoaded,
   };
 }

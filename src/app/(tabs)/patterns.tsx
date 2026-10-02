@@ -413,7 +413,7 @@ export default function PatternsScreen() {
               ]}
             >
               <SymbolView
-                name={pattern.icon === "moon.fill" ? "moon" : "clock"}
+                name={pattern.icon}
                 size={17}
                 tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
               />
@@ -456,13 +456,7 @@ export default function PatternsScreen() {
               ]}
             >
               <SymbolView
-                name={
-                  pattern.icon === "person.2.fill"
-                    ? "person.2"
-                    : pattern.icon === "bolt.fill"
-                    ? "bolt"
-                    : "sun.max"
-                }
+                name={pattern.icon}
                 size={17}
                 tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
               />
