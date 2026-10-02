@@ -16,9 +16,13 @@
 This was verified by filesystem search. The Expo README mentions Jest as an option but it is not set up.
 
 **Scope:** this statement covers `heedly-app` only. The Swift core in the sibling
-repository has **402 passing tests** — Engine 138, Storage 162, Health 35,
-Ingest 67 — covering the engine, storage and HealthKit ingestion, but nothing in
-this app's screens.
+repository has **554 passing tests** (2026-10-02) — Engine 202, Storage 245,
+Health 35, Ingest 72 — covering the engine, storage, exposure–lag learning and
+HealthKit ingestion, but nothing in this app's screens.
+
+⚠️ The absence of a runner here is now a blocker rather than a gap: the Patterns
+copy layer (`src/copy/patterns.ts`) is pure TypeScript and was verified only by
+one-off execution on 2026-10-02, not by a committed suite.
 
 ---
 

@@ -22,7 +22,9 @@
 
 **Code:** Completed check-ins are persisted to **SQLite through the native bridge** (`HeedlyNative.saveCheckIn` / `getCheckIn` / `saveVerdict`), not to AsyncStorage. `appStorage` retains only the in-progress **draft** (`@heedly/checkin_draft`). `@heedly/checkin_history` and `@heedly/last_checkin_date` remain defined in `checkinStorage.ts` but are never written — `persistCheckInToHistory` has no call site (source-verified 2026-09-07). Other data hooks (`useForecast`, `useUserSettings`, `useNotes`, `usePatterns`) continue to initialize from hardcoded constants in `src/data/mock/`.
 
-**Implication:** User answers persist locally in the engine's SQLite store, which is what the engine reads. Drafts remain on AsyncStorage. Forecast status and pattern data remain local mock representations.
+**Updated 2026-10-02 (source-verified).** `usePatterns` now reads `HeedlyNative.getPatterns(startDate)` and its mock import is commented out; `useNotes` likewise returns empty values. `useForecast` and `useUserSettings` **still** initialize from `src/data/mock/`, and both are reachable in production — the Today three-day forecast, the "Why caution/rest today?" modal, the connected-wearable card in Settings, and the planning prediction in `plan-result` are all fabricated.
+
+**Implication:** User answers and learned patterns come from the engine's SQLite store. Drafts remain on AsyncStorage. Forecast status and connected-wearable status remain local mock representations shown to real users.
 
 **Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
 
