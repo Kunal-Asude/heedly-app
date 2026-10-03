@@ -79,11 +79,13 @@ export function patternCopy(
   const subject = sentenceCase(label);
   const verb = PLURAL_TAGS.has(pattern.tagId) ? "tend" : "tends";
 
+  const sentence =
+    pattern.kind === "costs"
+      ? costSentence(subject, verb, pattern.lag)
+      : helpSentence(subject, verb, pattern.lag);
+
   return {
-    bodyText:
-      pattern.kind === "costs"
-        ? costSentence(subject, verb, pattern.lag)
-        : helpSentence(subject, verb, pattern.lag),
+    bodyText: pattern.isEarlyPattern ? `Early pattern · ${sentence}` : sentence,
     subtitleText: subtitle(pattern.n),
   };
 }
