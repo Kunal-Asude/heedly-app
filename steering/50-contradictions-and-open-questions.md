@@ -24,9 +24,39 @@
 
 **Updated 2026-10-02 (source-verified).** `usePatterns` now reads `HeedlyNative.getPatterns(startDate)` and its mock import is commented out; `useNotes` likewise returns empty values. `useForecast` and `useUserSettings` **still** initialize from `src/data/mock/`, and both are reachable in production — the Today three-day forecast, the "Why caution/rest today?" modal, the connected-wearable card in Settings, and the planning prediction in `plan-result` are all fabricated.
 
-**Implication:** User answers and learned patterns come from the engine's SQLite store. Drafts remain on AsyncStorage. Forecast status and connected-wearable status remain local mock representations shown to real users.
+**Re-verified 2026-10-03, and one hook was missing from the list above.** The fabrications reachable in production come from **three** hooks, not two: `useCheckInConfig` is the third. Most of `MOCK_CHECKIN_CONFIG` is legitimately static option lists, but `defaultPlanningPrediction` is a fabricated `caution` verdict with its own explanation and recommendation, and it is what `plan-result` renders. `src/data/mock/mockPatterns.ts` and `mockNotes.ts` remain in the tree, imported only by commented-out lines.
+
+**Implication:** User answers and the patterns computed from them come from the engine's SQLite store. Drafts remain on AsyncStorage. Forecast status and connected-wearable status remain local mock representations shown to real users.
 
 **Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
+
+---
+
+## Helps Has Two Empty Slots, Costs Has Three — and the Engine Returns Three of Each
+
+**UNRESOLVED. Recorded here, deliberately not decided.**
+
+**Code (source-verified 2026-10-03):** `usePatterns.ts` defines `EMPTY_HELP` with
+two placeholder cards (`help-1`, `help-2`) and `EMPTY_COST` with three
+(`cost-1`…`cost-3`). The engine's `LiftConfig.surfacedPerKind` is **3**, applied
+to both kinds alike, so `getPatterns` can return three helps.
+
+**What this does and does not break.** `toCards` appends the real cards first and
+pads only the remainder — `[...cards, ...slots.slice(cards.length)]` — so a third
+qualifying help **does** render. Nothing is dropped. The asymmetry is visible only
+in the empty and partially-filled states: with no helps the section shows two
+placeholders and with one help it shows one, while Costs shows three and two.
+
+**Why it is open.** Two readings are available and the documents do not settle it:
+either the design intends Helps to be a two-slot section, in which case the engine
+should surface two and the third is a silent inconsistency; or the slot array is
+simply short by one and should be three for symmetry. Engine Parameters §7 says
+*"Show top 3"* without distinguishing kinds, which argues for three — but the
+empty-state layout came from the design handoff, which argues the opposite.
+
+**Severity:** Low functionally, medium for design fidelity. Do not change either
+number without a decision — changing `surfacedPerKind` alters what the engine
+reports, and changing `EMPTY_HELP` alters a handoff-sourced layout.
 
 ---
 

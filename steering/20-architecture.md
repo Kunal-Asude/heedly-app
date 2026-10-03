@@ -15,16 +15,29 @@ src/app/ (screens)
   → src/constants/themes/ (design tokens)
   → src/utils/storage.ts (persistence)
   → src/types/ (type definitions)
-  → src/data/mock/ (mock data — temporary, to be replaced by API)
-  → src/services/ (side-effecting services: notifications)
+  → src/data/mock/ (mock data — temporary, to be replaced by the engine)
+  → src/services/ (side-effecting services: notifications, bridge adapters)
+  → src/copy/ (pure copy builders — no React, no I/O)
 ```
+
+`src/copy/` was added 2026-10-02 for the Patterns sentences. It is pure
+TypeScript: it takes engine values and the tag catalogue and returns strings. It
+imports nothing from `src/hooks/`, `src/app/` or `src/components/`, and keeping it
+that way is what makes it testable the moment a runner exists.
 
 **Forbidden paths:**
 - `src/types/` must not import from `src/components/`, `src/hooks/`, `src/app/`, or `src/data/`.
 - `src/data/mock/` must not import from `src/hooks/` or `src/app/`.
 - `src/constants/themes/` must not import from `src/contexts/`, `src/hooks/`, or `src/app/`.
 - `src/utils/` must not import from `src/hooks/` or `src/app/`.
+- `src/copy/` must not import from `src/hooks/`, `src/app/` or `src/components/`.
 - Screens (`src/app/`) must not import directly from `src/data/mock/` — they must go through `src/hooks/data/`.
+
+⚠️ **That last rule has one live violation**, source-verified 2026-10-03:
+`src/app/(tabs)/index.tsx` imports `COLORS` from `@/data/mock/mockForecast`. What
+it imports is a palette, not data, so nothing fabricated reaches the screen by
+that path — but the import is still a screen reaching into `src/data/mock/`, and
+the colours belong in `src/constants/themes/`. Recorded, not fixed.
 
 ---
 
@@ -89,17 +102,29 @@ For non-React execution contexts (such as background services and notification s
 
 ## Data Layer
 
-### Mock-First Architecture
-All data in the app currently comes from `src/data/mock/`. The data hooks (`src/hooks/data/`) are thin wrappers that initialize React `useState` from mock constants. There is no real API, no network call and no cache. Check-ins and verdicts do persist, to on-device SQLite (see § Check-In State below), and the Today orb's tank band is engine-driven.
+### Mixed: Engine-Backed and Mock (source-verified 2026-10-03)
+The data layer is **no longer uniformly mock**, and the distinction matters because
+the mock half renders to real users. There is still no real API, no network call
+and no cache.
 
-### Hook → Mock Mapping
-| Hook | Mock constant | Type |
+**Engine-backed, through the native bridge:** check-ins and verdicts (see
+§ Check-In State below), the Today orb's tank band (`useTankState`), the tag
+vocabulary (`useTagCatalogue`), and the Patterns tab (`usePatterns` →
+`HeedlyNative.getPatterns(startDate)`).
+
+**Still mock, and reachable in production.** Three hooks initialize `useState`
+from constants in `src/data/mock/`:
+
+| Hook | Mock constant | What a real user sees from it |
 |---|---|---|
-| `useForecast(mode)` | `MOCK_FORECAST_DATA` | `ForecastData` |
-| `useCheckInConfig()` | `MOCK_CHECKIN_CONFIG` | `CheckInConfig` |
-| `useUserSettings()` | `MOCK_USER_CONTEXT_DATA` | `UserContextData` |
-| `useNotes()` | `MOCK_NOTES_DATA` | `NotesData` |
-| `usePatterns()` | `MOCK_PATTERNS_DATA` | `PatternsData` |
+| `useForecast(mode)` | `MOCK_FORECAST_DATA` | The Today status headline and the "Why caution/rest today?" modal body |
+| `useUserSettings()` | `MOCK_USER_CONTEXT_DATA` | The Settings wearable card — the literal strings `"Oura Ring"` and `"Connected · syncing in the background"`, regardless of what is actually connected |
+| `useCheckInConfig()` | `MOCK_CHECKIN_CONFIG` | Mostly option lists, which are legitimately static — **except `defaultPlanningPrediction`**, a fabricated `caution` verdict with its own explanation and recommendation, rendered in `plan-result` |
+
+**Mock imports now commented out, not deleted:** `useNotes` returns empty values
+and `usePatterns` reads the bridge. Both keep the commented import because the
+mock still documents the shape. `src/app/(tabs)/index.tsx` imports `COLORS` from
+`mockForecast.ts` — a palette constant, not fabricated data.
 
 ### State Ownership
 - `useForecast`, `useNotes`, `usePatterns`, `useCheckInConfig`: state is **read-only** to callers. No mutation is exposed.
@@ -191,7 +216,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
 - **Services & Context**: `src/services/checkinStorage.ts` and `src/contexts/CheckInContext.tsx` are active. `CheckInProvider` wraps the app in `src/app/_layout.tsx`.
 - **Screen Migration**: All screens (`yesterday.tsx`, `energy.tsx`, `body.tsx`, `noting.tsx`, `period.tsx`, `saved.tsx`) read and persist via `useCheckIn()`.
 - **Answer URL Parameters**: Completely eliminated. Only UI-control parameters (`openPeriod=true`, `isFirstTime=true`) are permitted.
-- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx`. It calls `HeedlyNative.deleteAllData()` **first** — emptying all eight SQLite tables in one transaction, then `VACUUM` — and only then clears the AsyncStorage check-in keys and resets the Today CTA. The bridge call is awaited and unwrapped, so a storage failure rejects rather than reporting a false success (ADR-0026). Verified at runtime on the iPhone 17 Pro Simulator, 2026-09-07: 10 rows across six tables → 0, schema intact. The schema was at migration 2 then; it is now at 5. No physical-device verification.
+- **Data Deletion**: `resetAllData()` is wired into `src/app/(tabs)/your-data.tsx`. It calls `HeedlyNative.deleteAllData()` **first** — emptying **all ten** SQLite tables in one transaction, then `VACUUM` — and only then clears the AsyncStorage check-in keys and resets the Today CTA. The bridge call is awaited and unwrapped, so a storage failure rejects rather than reporting a false success (ADR-0026). Verified at runtime on the iPhone 17 Pro Simulator, 2026-09-07: 10 rows across six tables → 0, schema intact. ⚠️ **The schema was at migration 2 for that run; it is now at migration 8**, and the two tables added since — `tank_state` (migration 4) and `trigger_stability` (migration 7) — were not part of what was observed. Their inclusion in the erase list is source-verified only. No physical-device verification.
 
 ---
 
