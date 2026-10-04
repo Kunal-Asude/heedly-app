@@ -40,7 +40,8 @@
   },
   "scripts": {
     "start": "expo start",
-    "native:sync": "npm pack ../../Heedly/npm/heedly-native && npm install",
+    "native:sync": "npm pack ../../Heedly/npm/heedly-native && npm install ./heedly-native-0.1.0.tgz",
+    "copy:check": "tsc src/copy/forecast.ts src/copy/forecast.spec.ts src/copy/patterns.ts src/copy/patterns.spec.ts --ignoreConfig --ignoreDeprecations 6.0 --outDir node_modules/.cache/heedly-copy-check --module commonjs --target es2022 --moduleResolution node --types node --strict --skipLibCheck && node node_modules/.cache/heedly-copy-check/forecast.spec.js && node node_modules/.cache/heedly-copy-check/patterns.spec.js",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",

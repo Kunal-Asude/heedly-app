@@ -48,6 +48,13 @@ export function getTheme(mode: ThemeMode): DesignTokens {
   return themes[mode];
 }
 
+/** The three status dots. Same values the screen has always used. */
+export const STATE_DOT = {
+  greenDot: "#7E9B6A",
+  cautionDot: "#D99843",
+  restDot: "#E0735F",
+} as const;
+
 // ─── Direct Exports ──────────────────────────────────────────────────────
 
 export { darkTheme } from "./dark";
