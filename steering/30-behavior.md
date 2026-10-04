@@ -127,7 +127,7 @@ Based on `statusMode`:
 - `fd-empty` | `fd-wearable` → renders `LearningScreenLayout`
 - `steady` | `caution` | `rest` → renders `TodayScreenLayout`
 
-`useForecast(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only).
+`useTodayChrome(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only). It was `useForecast(statusMode)` until 2026-10-04, when `useForecast()` became the engine-backed hook and the mock chrome was renamed out of its way.
 
 ⚠️ **The orb and the status indicator are engine-driven; the rest is not.** Both
 read `useTankState`, refreshed by the `onTankUpdated` event — the orb follows the
@@ -146,15 +146,23 @@ The primary CTA is read from the store like its routing already was
 "Check in for yesterday"); it is **not** taken from `statusConfigs`, whose
 `fd-empty` text claims a first check-in whatever the store holds.
 
-The headline text and the three-day forecast row still come from
-`statusConfigs`, which is provisional mock UI with no engine behind it — **they
-can contradict the orb.** Do not treat them as engine output, and do not build
-logic on them.
+**The headline and the three-day forecast row are engine-driven since 2026-10-04**
+(Heedly ADR-0038). Both read `useForecast()` → `HeedlyNative.getForecast(startDate)`;
+the copy layer is `src/copy/forecast.ts`, and the headline is rendered for
+horizon 0 only. `BAND_MODE` — which made the tank band pick the headline, so the
+two could never disagree — was deleted.
+
+**They can still contradict the orb, and that is now correct rather than a
+defect.** The orb answers "where are the reserves now" and the forecast answers
+"how likely is a heavier stretch coming" (§6.1); a healthy orb above a Caution
+headline is a reachable state. The one combination that cannot occur is
+`nearly_empty` + `steady`. What remains mock on this screen is the surrounding
+chrome from `statusConfigs` — see § Data Layer in `20-architecture.md`.
 
 The bridge sends only the qualitative band. The internal 0–100 reserve never
 crosses into JavaScript, so it is not available to this app by design.
 
-**"Why" modal** opens when user presses the secondary link on caution/rest. It is a slide-up `Modal` (React Native), rendered inline in the screen. Data comes from `whyModalConfigs[whyModalType]`.
+**"Why" modal** opens when user presses the secondary link on caution/rest. It is a slide-up `Modal` (React Native), rendered inline in the screen. Its body — badge label, heading, subtitle, reassurance — comes from `whyModalConfigs[whyModalType]` and is mock. Its **reason row is engine-driven** since 2026-10-04: one reason, from the forecast's `reasonKey` plus `n` via `src/copy/forecast.ts`. One reason and not a drill-down, per `specs/bridge.ts` — v1 shows the reason and `n`, underlying days are v2.
 
 **Footer press** for "Planning something this week?" → `router.push('/(check-in)/plan')`.
 

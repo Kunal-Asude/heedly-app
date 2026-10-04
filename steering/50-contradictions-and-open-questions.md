@@ -26,7 +26,9 @@
 
 **Re-verified 2026-10-03, and one hook was missing from the list above.** The fabrications reachable in production come from **three** hooks, not two: `useCheckInConfig` is the third. Most of `MOCK_CHECKIN_CONFIG` is legitimately static option lists, but `defaultPlanningPrediction` is a fabricated `caution` verdict with its own explanation and recommendation, and it is what `plan-result` renders. `src/data/mock/mockPatterns.ts` and `mockNotes.ts` remain in the tree, imported only by commented-out lines.
 
-**Implication:** User answers and the patterns computed from them come from the engine's SQLite store. Drafts remain on AsyncStorage. Forecast status and connected-wearable status remain local mock representations shown to real users.
+**Updated 2026-10-05 (source-verified).** `useForecast` is now engine-backed: `useForecast()` reads `HeedlyNative.getForecast(startDate)` and drives the headline, the three-day row and the why modal's reason row. The mock half of that file was renamed `useTodayChrome(mode)` and still returns `MOCK_FORECAST_DATA`. So the fabrications reachable in production are now the Today chrome and the why modal's body (`useTodayChrome`), the connected-wearable card (`useUserSettings`) and the planning prediction (`useCheckInConfig`) — the forecast itself is no longer among them. No screen imports from `src/data/mock/` any more.
+
+**Implication:** User answers, the patterns computed from them and the three-day forecast come from the engine's SQLite store. Drafts remain on AsyncStorage. Connected-wearable status remains a local mock representation shown to real users.
 
 **Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
 
@@ -34,7 +36,8 @@
 
 ## Helps Has Two Empty Slots, Costs Has Three — and the Engine Returns Three of Each
 
-**UNRESOLVED. Recorded here, deliberately not decided.**
+**RESOLVED 2026-10-04 — see the note at the end of this section.** The record
+below is kept as written, because it is why the decision went the way it did.
 
 **Code (source-verified 2026-10-03):** `usePatterns.ts` defines `EMPTY_HELP` with
 two placeholder cards (`help-1`, `help-2`) and `EMPTY_COST` with three
@@ -57,6 +60,21 @@ empty-state layout came from the design handoff, which argues the opposite.
 **Severity:** Low functionally, medium for design fidelity. Do not change either
 number without a decision — changing `surfacedPerKind` alters what the engine
 reports, and changing `EMPTY_HELP` alters a handoff-sourced layout.
+
+### Resolved 2026-10-04 — neither number; no padding at all
+
+Decided, and recorded in Heedly's ADR-0038 (amendment, *"`n` is evidence"*,
+decision 1): **three is a maximum, not a slot count.** Each section renders 0–3
+real cards and pads with nothing. `EMPTY_HELP` and `EMPTY_COST` are gone and
+`patternCards` has no `slots` parameter to pad with, so the asymmetry has no
+expression left — source-verified 2026-10-05: no `slots` identifier remains in
+`src/copy/patterns.ts` or `src/hooks/data/usePatterns.ts`.
+
+`surfacedPerKind` is **unchanged at 3** and nothing in the engine moved: §7's
+gates, the lift and the stability requirement are untouched. Costs were outside
+the decision as first written and were brought in line once the asymmetry was
+seen on screen. Exercised on an **iPhone 17 Pro Simulator (iOS 26.5)**;
+screen-level observation, not a database read.
 
 ---
 
