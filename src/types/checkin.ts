@@ -23,7 +23,7 @@ export interface CheckInEntry {
    *
    * These are the native contract's values (HeedlyEngine `VerdictValue`), not
    * display labels — they cross the bridge verbatim. The middle option is
-   * "usual" even though the UI reads "About the same".
+   * "usual" even though the UI reads "A normal day".
    */
   yesterdayId?: "lighter" | "usual" | "heavier" | null;
   yesterdayLabel?: string | null;
@@ -56,10 +56,16 @@ export interface CheckInEntry {
   updatedAt?: string;
 }
 
+/** A tag as the interface handles it: `id` is stored, `label` is shown. */
+export interface TagOption {
+  id: string;
+  label: string;
+}
+
 export interface CheckInCategory {
   id: string;
   label: string;
-  tags: string[];
+  tags: TagOption[];
 }
 
 export interface EnergyLevel {
@@ -99,9 +105,6 @@ export interface PlanningPrediction {
 }
 
 export interface CheckInConfig {
-  categories: CheckInCategory[];
-  allTags: string[];
-  initialSelectedTags: string[];
   periodDays: number[];
   yesterdayOptions: YesterdayOption[];
   recurringEnergyLevels: EnergyLevel[];

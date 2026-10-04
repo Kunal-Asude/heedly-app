@@ -68,18 +68,21 @@ Fonts are loaded in `RootLayout` via `useFonts`. `SplashScreen.hideAsync()` is c
 
 ## Check-In Flow Invariants
 
-- Check-in state is carried entirely via Expo Router URL params (`useLocalSearchParams`). **There is no shared check-in state store** (no context, no global state).
-- All params are strings (Expo Router limitation). Boolean params use the string `'true'` / `'false'`.
-- The canonical params object passed between check-in screens:
-  - `yesterdayIndex` (string: '1'|'2'|'3'), `yesterdayLabel` (string)
-  - `energyIndex` (string: '0'–'4'), `energyLabel` (string)
-  - `bodyIndex` (string: '0'–'4'), `bodyLabel` (string)
-  - `tags` (string: pipe-separated `' · '`)
-  - `periodInfo` (string, e.g. `'Day 3'` or absent)
+- Check-in answers live in a shared store, **not** in URL params. `CheckInContext`
+  (`src/contexts/CheckInContext.tsx`) holds the in-progress entry; every check-in
+  screen reads and writes it through `useCheckIn()`.
+- **Check-in answers are persisted to on-device SQLite** through the native
+  bridge (`HeedlyNative.saveCheckIn` / `getCheckIn`). They survive an app restart.
+  A draft in progress is additionally kept under `@heedly/checkin_draft`.
+- **Answer data must not be passed through route or query parameters** — no
+  `energyIndex`, `bodyIndex`, `yesterdayId`, `tags` or `periodInfo` in the URL.
+  See `20-architecture.md` § URL Parameter Rule.
+- Navigation-only params are still used and are strings (Expo Router limitation);
+  boolean params use `'true'` / `'false'`:
   - `isFirstTime` ('true'|'false'), `isEditing` ('true'|'false'), `isCrash` ('true'|'false')
+  - `openPeriod` ('true'|'false')
 - The `isEditing` flag changes navigation: screens route back to `/(check-in)/saved` instead of advancing the flow.
 - The `isCrash` flag, when `'true'`, tells the Saved screen to show a crash confirmation UI.
-- Check-in answers are **never persisted** to `AsyncStorage` or any backend. On app restart, all check-in state is lost.
 
 ---
 
@@ -112,7 +115,8 @@ The notifications service (`src/services/notifications.ts`) configures foregroun
 - Native: `AsyncStorage` → in-memory fallback
 - **All errors are silently swallowed.** Storage calls must never crash the app.
 - In-memory fallback means data may be lost on process restart.
-- Only one key is currently stored: `@heedly/theme_mode`.
+- Keys currently stored: `@heedly/theme_mode`, `@heedly/is_true_black`,
+  `@heedly/checkin_draft`.
 
 ---
 

@@ -49,21 +49,21 @@ export function TodayBadge({
           style={[
             styles.learningChip,
             {
-              backgroundColor: badgeTokens.learning.background,
-              borderColor: badgeTokens.learning.border,
+              backgroundColor: `${resolvedDotColor}29`,
+              borderColor: `${resolvedDotColor}5C`,
             },
           ]}
         >
           <View
             style={[
               styles.learningDotCenter,
-              { backgroundColor: badgeTokens.learning.dot },
+              { backgroundColor: resolvedDotColor },
             ]}
           />
           <Text
             style={[
               styles.learningText,
-              { color: badgeTokens.learning.text },
+              { color: resolvedDotColor },
             ]}
           >
             {indicatorText}

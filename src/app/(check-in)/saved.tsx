@@ -50,7 +50,7 @@ export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, saveCheckIn } = useCheckIn();
+  const { activeEntry, saveCheckIn, beginEdit } = useCheckIn();
   const { firstName } = useFirstName();
 
   const isCrash = Boolean(activeEntry.isCrash);
@@ -80,34 +80,33 @@ export default function CheckInSavedScreen() {
   const periodInfo = activeEntry.periodInfo;
 
   const handleEditEnergy = () => {
+    beginEdit();
     router.push('/(check-in)/energy?isEditing=true');
   };
 
   const handleEditBody = () => {
+    beginEdit();
     router.push('/(check-in)/body?isEditing=true');
   };
 
   const handleEditNotable = () => {
+    beginEdit();
     router.push('/(check-in)/noting?isEditing=true');
   };
 
   const handleEditYesterday = () => {
+    beginEdit();
     router.push('/(check-in)/yesterday?isEditing=true');
   };
 
   const handleEditCycle = () => {
+    beginEdit();
     router.push('/(check-in)/noting?isEditing=true&openPeriod=true');
   };
 
   const handleBackToToday = async () => {
     await saveCheckIn();
-    if (isCrash) {
-      router.replace('/(tabs)?mode=rest' as any);
-    } else if (isFirstTime) {
-      router.replace('/(tabs)?mode=fd-wearable' as any);
-    } else {
-      router.replace('/(tabs)?mode=steady' as any);
-    }
+    router.replace('/(tabs)' as any);
   };
 
   return (

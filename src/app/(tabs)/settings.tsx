@@ -10,6 +10,7 @@ import { Fonts } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
 import { sendTestCautionHeadsUpNotification } from '@/services/notifications';
+import HeedlyNative from '@heedly/native';
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
@@ -160,6 +161,39 @@ export default function SettingsScreen() {
   const [isDailyReminder, setIsDailyReminder] = useState(settings.isDailyReminder);
   const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(settings.isHarderDaysReminder);
   const [isWeeklyRecap, setIsWeeklyRecap] = useState(settings.isWeeklyRecap);
+  const [isConnectingHealth, setIsConnectingHealth] = useState(false);
+
+  // Recovery for an import that was interrupted. Importing years of history
+  // takes a while, and closing the app part-way leaves it unfinished — the
+  // automatic sync then correctly refuses to run, and without this there is
+  // no way back.
+  //
+  // The same call onboarding makes. It resumes from wherever it stopped and
+  // does no setup work again if there is none left, so pressing it on a
+  // healthy install is a plain sync.
+  const handleConnectHealth = async () => {
+    if (isConnectingHealth) return;
+    setIsConnectingHealth(true);
+    try {
+      const rowsWritten = await HeedlyNative.connectHealthKit();
+      Alert.alert(
+        rowsWritten > 0 ? 'Apple Health is up to date' : 'Nothing new to import',
+        rowsWritten > 0
+          ? 'Your history has been brought up to date.'
+          : 'Heedly could not find anything new. If you have just connected, check Heedly is allowed in the Health app.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.warn('[Settings] Apple Health connection failed:', error);
+      Alert.alert(
+        'Could not reach Apple Health',
+        'Something went wrong reading your health data. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsConnectingHealth(false);
+    }
+  };
 
 
   const handleBack = () => {
@@ -458,6 +492,31 @@ export default function SettingsScreen() {
             </View>
             <Text style={[styles.rowDescription, { color: rowDescColor, paddingLeft: 42 }]}>
               Apple Watch, Garmin, Whoop, Apple Health …
+            </Text>
+          </Pressable>
+
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+          {/* Connect or finish importing from Apple Health */}
+          <Pressable
+            onPress={handleConnectHealth}
+            disabled={isConnectingHealth}
+            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isConnectingHealth, busy: isConnectingHealth }}
+            accessibilityLabel="Connect Apple Health, or finish an interrupted import">
+            <View style={styles.rowBetween}>
+              <Text style={[styles.rowTitle, { color: rowTitleColor }]}>
+                {isConnectingHealth ? 'Importing…' : 'Connect Apple Health'}
+              </Text>
+              {!isConnectingHealth && (
+                <Text style={[styles.chevronRight, { color: chevronColor }]}>›</Text>
+              )}
+            </View>
+            <Text style={[styles.rowDescription, { color: rowDescColor }]}>
+              {isConnectingHealth
+                ? 'This can take a while the first time. You can leave this screen.'
+                : 'Also finishes an import that was interrupted'}
             </Text>
           </Pressable>
         </SettingsCard>

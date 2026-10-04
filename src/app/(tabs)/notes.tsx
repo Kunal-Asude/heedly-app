@@ -210,7 +210,7 @@ export default function NotesScreen() {
                 {dateRange}
               </Text>
               <Text style={[styles.checkInsText, { color: checkInsCountColor }]}>
-                {totalCheckInsCount} daily check-ins
+                {totalCheckInsCount === null ? "" : `${totalCheckInsCount} daily check-ins`}
               </Text>
             </View>
           </View>

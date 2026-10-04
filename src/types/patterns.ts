@@ -1,6 +1,8 @@
 import type { SymbolViewProps } from "expo-symbols";
 
-export type DayPatternType = "steady" | "caution" | "rest";
+/** `none` = no reading for that day. Never a health state, and deliberately
+ *  not omitted: without it a dayless day falls through to "rest". */
+export type DayPatternType = "steady" | "caution" | "rest" | "none";
 
 export interface DayPattern {
   day: string;

@@ -15,6 +15,15 @@
 
 This was verified by filesystem search. The Expo README mentions Jest as an option but it is not set up.
 
+**Scope:** this statement covers `heedly-app` only. The Swift core in the sibling
+repository has **609 passing tests** (2026-10-03) — Engine 223, Storage 279,
+Health 35, Ingest 72 — covering the engine, storage, exposure–lag estimation, the
+weekly stability gate and HealthKit ingestion, but nothing in this app's screens.
+
+⚠️ The absence of a runner here is now a blocker rather than a gap: the Patterns
+copy layer (`src/copy/patterns.ts`) is pure TypeScript and was verified only by
+one-off execution on 2026-10-02, not by a committed suite.
+
 ---
 
 ## Type Checking (TypeScript)
@@ -74,6 +83,9 @@ No automated build verification or CI pipeline exists.
 | Navigation flow completeness | No E2E test |
 | Cross-platform (iOS vs Android) parity | No automated test |
 | Dark mode visual correctness | No automated test |
+| Today orb / tank band correctness | Depends on the native engine. Simulator-only; no physical device |
+| Patterns tab correctness | Depends on the native engine. Observed on the iPhone 17 Pro Simulator (iOS 26.5) on 2026-10-02 and 2026-10-03 against the SQLite database and the rendered cards. **No physical device, no TestFlight.** The copy layer itself has no committed test |
+| HealthKit permission-upgrade flow (Exercise Minutes) | **Not verified on a physical device and not verified through TestFlight.** TestFlight is configured; that is not the same as verified |
 
 ---
 

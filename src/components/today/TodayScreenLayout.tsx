@@ -1,4 +1,4 @@
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { DawnBackground, EnergyOrbState } from "@/components/core";
@@ -89,7 +89,12 @@ export function TodayScreenLayout({
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.contentContainer}>
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
           <TodayHeader
             dateText={dateText}
             greeting={greeting}
@@ -142,7 +147,7 @@ export function TodayScreenLayout({
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
             <TodayFooterNote text={footerNote} onPress={onFooterPress} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -207,7 +212,12 @@ export function LearningScreenLayout({
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.contentContainer}>
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
           <TodayHeader
             dateText={dateText}
             greeting={greeting}
@@ -260,7 +270,7 @@ export function LearningScreenLayout({
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
             <TodayFooterNote text={footerNote} onPress={onFooterPress} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -276,8 +286,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  contentContainer: {
+  scrollArea: {
     flex: 1,
+    width: "100%",
+  },
+  contentContainer: {
+    flexGrow: 1,
     paddingHorizontal: Spacing.four,
     paddingBottom: 92,
     alignItems: "center",

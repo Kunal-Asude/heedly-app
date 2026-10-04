@@ -19,7 +19,7 @@ import { CORAL, Fonts, INK } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useTheme } from "@/constants/themes";
 import { useThemeMode } from "@/contexts/ThemeContext";
-import { useCheckInConfig } from "@/hooks/data";
+import { useCheckInConfig, useTagCatalogue } from '@/hooks/data';
 
 // ─── Design tokens (from Aubade Dawn HTML) ─────────────────────────────────────
 
@@ -50,8 +50,15 @@ export default function NotingScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { categories, allTags, periodDays } = useCheckInConfig();
-  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
+  const { periodDays } = useCheckInConfig();
+  const { categories, allTags } = useTagCatalogue();
+  const {
+    currentEntry: activeEntry,
+    updateEntry,
+    isEditing: contextIsEditing,
+    cancelEdit,
+    commitEdit,
+  } = useCheckIn();
   const params = useLocalSearchParams<{
     isEditing?: string;
     openPeriod?: string;
@@ -79,6 +86,7 @@ export default function NotingScreen() {
 
   const handleToggleTag = (tag: string) => {
     const next = new Set(selectedTags);
+    const clearsPeriod = tag === 'period' && next.has(tag);
     if (next.has(tag)) {
       next.delete(tag);
       if (tag === 'period') {
@@ -91,7 +99,11 @@ export default function NotingScreen() {
       }
     }
     setSelectedTags(next);
-    updateEntry({ tags: Array.from(next) });
+    updateEntry(
+      clearsPeriod
+        ? { tags: Array.from(next), periodInfo: null }
+        : { tags: Array.from(next) },
+    );
   };
 
   const handleToggleCategoryDrawer = () => {
@@ -108,6 +120,7 @@ export default function NotingScreen() {
 
   const handleBack = () => {
     if (isEditing) {
+      cancelEdit();
       router.push("/(check-in)/saved");
       return;
     }
@@ -132,14 +145,21 @@ export default function NotingScreen() {
       tags: Array.from(selectedTags),
       periodInfo: periodInfo !== undefined ? periodInfo : activeEntry.periodInfo ?? null,
     });
+    // Every route through here is a deliberate forward move, so it is the
+    // commit boundary. Back is the only discard, and it does not come here.
+    if (isEditing) {
+      commitEdit();
+    }
     router.push("/(check-in)/saved");
   };
 
   const handleSaveButtonPress = () => {
     if (isEditing) {
       navigateToSaved(activeEntry.periodInfo ?? undefined);
-    } else {
+    } else if (selectedTags.has('period')) {
       handleOpenPeriodSheet();
+    } else {
+      navigateToSaved(undefined);
     }
   };
 
@@ -157,7 +177,7 @@ export default function NotingScreen() {
   const baseTags = activeCategory ? activeCategory.tags : allTags;
 
   const filteredTags = baseTags.filter((tag) =>
-    tag.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+    tag.label.toLowerCase().includes(searchQuery.trim().toLowerCase()),
   );
 
   return (
@@ -454,11 +474,11 @@ export default function NotingScreen() {
             showsVerticalScrollIndicator={false}
           >
             {filteredTags.map((tag) => {
-              const isSelected = selectedTags.has(tag);
+              const isSelected = selectedTags.has(tag.id);
               return (
                 <Pressable
-                  key={tag}
-                  onPress={() => handleToggleTag(tag)}
+                  key={tag.id}
+                  onPress={() => handleToggleTag(tag.id)}
                   style={({ pressed }) => [
                     styles.tagChip,
                     {
@@ -490,7 +510,7 @@ export default function NotingScreen() {
                   ]}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: isSelected }}
-                  accessibilityLabel={tag}
+                  accessibilityLabel={tag.label}
                 >
                   {isSelected && (
                     <Text style={[styles.tagCheckIcon, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b0532f" }]}>
@@ -511,7 +531,7 @@ export default function NotingScreen() {
                       },
                     ]}
                   >
-                    {tag}
+                    {tag.label}
                   </Text>
                 </Pressable>
               );

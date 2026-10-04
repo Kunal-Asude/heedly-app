@@ -14,7 +14,13 @@ export default function YesterdayScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
+  const {
+    currentEntry: activeEntry,
+    updateEntry,
+    isEditing: contextIsEditing,
+    cancelEdit,
+    commitEdit,
+  } = useCheckIn();
   const params = useLocalSearchParams<{
     isEditing?: string;
   }>();
@@ -35,8 +41,8 @@ export default function YesterdayScreen() {
   const options: YesterdayOption[] = [
     {
       id: 'lighter',
-      value: 'Lighter than usual',
-      prefix: 'Lighter than ',
+      value: 'Better than usual',
+      prefix: 'Better than ',
       emphasis: 'usual',
       dotColor: isDark && isTrueBlack ? '#6E9678' : '#86C4B4',
       cardBg: isDark
@@ -52,9 +58,9 @@ export default function YesterdayScreen() {
     },
     {
       id: 'usual',
-      value: 'About the same',
-      prefix: 'About ',
-      emphasis: 'the same',
+      value: 'A normal day',
+      prefix: 'A ',
+      emphasis: 'normal day',
       dotColor: isDark ? (isTrueBlack ? '#C29A5F' : '#cdb488') : '#B88A58',
       cardBg: isDark
         ? isTrueBlack
@@ -69,8 +75,8 @@ export default function YesterdayScreen() {
     },
     {
       id: 'heavier',
-      value: 'Heavier than usual',
-      prefix: 'Heavier than ',
+      value: 'Worse than usual',
+      prefix: 'Worse than ',
       emphasis: 'usual',
       dotColor: isDark && isTrueBlack ? '#BE6A5C' : '#E27A6C',
       cardBg: isDark
@@ -97,6 +103,8 @@ export default function YesterdayScreen() {
     });
 
     if (isEditing) {
+      // This screen has no Save button — choosing an answer is the commit.
+      commitEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -107,6 +115,7 @@ export default function YesterdayScreen() {
 
   const handleBack = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -119,6 +128,7 @@ export default function YesterdayScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -170,13 +180,13 @@ export default function YesterdayScreen() {
         <View style={styles.contentArea}>
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How did\n'}</Text>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>yesterday land?</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How was\n'}</Text>
+            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>yesterday?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
           <Text style={[styles.supportingText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' }]}>
-            {'Just a quick look back — it helps the patterns make sense.'}
+            {'This helps heedly learn how accurate its predictions are for you.'}
           </Text>
 
           {/* ── 3 Option Cards (.ci-yp) ────────────────────────────────── */}

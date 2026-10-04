@@ -19,7 +19,13 @@ export default function EnergyScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { recurringEnergyLevels, firstTimeEnergyLevels } = useCheckInConfig();
-  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
+  const {
+    currentEntry: activeEntry,
+    updateEntry,
+    isEditing: contextIsEditing,
+    cancelEdit,
+    commitEdit,
+  } = useCheckIn();
   const params = useLocalSearchParams<{
     isFirstTime?: string;
     isEditing?: string;
@@ -54,11 +60,18 @@ export default function EnergyScreen() {
       isCrash: true,
       isFirstTime,
     });
+    // Flagging a crash is a deliberate answer and always has been recorded
+    // immediately, so it commits rather than sitting in the draft. Behaviour
+    // preserved, not redesigned — the semantics are noted as ambiguous.
+    if (isEditing) {
+      commitEdit();
+    }
     router.push('/(check-in)/saved');
   };
 
   const handleBack = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -66,7 +79,7 @@ export default function EnergyScreen() {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace('/(tabs)?mode=fd-empty' as any);
+        router.replace('/(tabs)' as any);
       }
     } else {
       if (router.canGoBack()) {
@@ -79,6 +92,7 @@ export default function EnergyScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -100,6 +114,7 @@ export default function EnergyScreen() {
     });
 
     if (isEditing) {
+      commitEdit();
       router.push('/(check-in)/saved');
       return;
     }

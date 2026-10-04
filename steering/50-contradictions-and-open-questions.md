@@ -22,9 +22,41 @@
 
 **Code:** Completed check-ins are persisted to **SQLite through the native bridge** (`HeedlyNative.saveCheckIn` / `getCheckIn` / `saveVerdict`), not to AsyncStorage. `appStorage` retains only the in-progress **draft** (`@heedly/checkin_draft`). `@heedly/checkin_history` and `@heedly/last_checkin_date` remain defined in `checkinStorage.ts` but are never written — `persistCheckInToHistory` has no call site (source-verified 2026-09-07). Other data hooks (`useForecast`, `useUserSettings`, `useNotes`, `usePatterns`) continue to initialize from hardcoded constants in `src/data/mock/`.
 
-**Implication:** User answers persist locally in the engine's SQLite store, which is what the engine reads. Drafts remain on AsyncStorage. Forecast status and pattern data remain local mock representations.
+**Updated 2026-10-02 (source-verified).** `usePatterns` now reads `HeedlyNative.getPatterns(startDate)` and its mock import is commented out; `useNotes` likewise returns empty values. `useForecast` and `useUserSettings` **still** initialize from `src/data/mock/`, and both are reachable in production — the Today three-day forecast, the "Why caution/rest today?" modal, the connected-wearable card in Settings, and the planning prediction in `plan-result` are all fabricated.
+
+**Re-verified 2026-10-03, and one hook was missing from the list above.** The fabrications reachable in production come from **three** hooks, not two: `useCheckInConfig` is the third. Most of `MOCK_CHECKIN_CONFIG` is legitimately static option lists, but `defaultPlanningPrediction` is a fabricated `caution` verdict with its own explanation and recommendation, and it is what `plan-result` renders. `src/data/mock/mockPatterns.ts` and `mockNotes.ts` remain in the tree, imported only by commented-out lines.
+
+**Implication:** User answers and the patterns computed from them come from the engine's SQLite store. Drafts remain on AsyncStorage. Forecast status and connected-wearable status remain local mock representations shown to real users.
 
 **Severity:** Medium architectural boundary. Any task wiring check-in data or forecast to a remote cloud API will require network synchronization. Local client persistence is complete.
+
+---
+
+## Helps Has Two Empty Slots, Costs Has Three — and the Engine Returns Three of Each
+
+**UNRESOLVED. Recorded here, deliberately not decided.**
+
+**Code (source-verified 2026-10-03):** `usePatterns.ts` defines `EMPTY_HELP` with
+two placeholder cards (`help-1`, `help-2`) and `EMPTY_COST` with three
+(`cost-1`…`cost-3`). The engine's `LiftConfig.surfacedPerKind` is **3**, applied
+to both kinds alike, so `getPatterns` can return three helps.
+
+**What this does and does not break.** `toCards` appends the real cards first and
+pads only the remainder — `[...cards, ...slots.slice(cards.length)]` — so a third
+qualifying help **does** render. Nothing is dropped. The asymmetry is visible only
+in the empty and partially-filled states: with no helps the section shows two
+placeholders and with one help it shows one, while Costs shows three and two.
+
+**Why it is open.** Two readings are available and the documents do not settle it:
+either the design intends Helps to be a two-slot section, in which case the engine
+should surface two and the third is a silent inconsistency; or the slot array is
+simply short by one and should be three for symmetry. Engine Parameters §7 says
+*"Show top 3"* without distinguishing kinds, which argues for three — but the
+empty-state layout came from the design handoff, which argues the opposite.
+
+**Severity:** Low functionally, medium for design fidelity. Do not change either
+number without a decision — changing `surfacedPerKind` alters what the engine
+reports, and changing `EMPTY_HELP` alters a handoff-sourced layout.
 
 ---
 
@@ -137,7 +169,7 @@ wrong together.
 - `saved.tsx` shows `skipped` with five empty dots for an unanswered level, and `nothing noted` for no tags. Rows stay visible because each is the edit affordance. The three accessibility labels interpolate the same corrected values.
 - `npx tsc --noEmit` and `npx expo lint` both exit 0. **These proved nothing** — they passed cleanly on the broken code at every stage, which is why every claim below rests on runtime evidence instead.
 
-**Verified through the real UI plus read-only SQLite from a separate process:**
+**Verified on the iPhone 17 Pro Simulator, through the real UI plus read-only SQLite from a separate process (no physical device):**
 R1 (unanswered Next → NULL/NULL/0 tags), R2 (real levels and tags persist
 exactly), R3 (Skip path), R4 (toggling a tag off leaves only the remaining one),
 R6 (editing a level preserves Body and both tags; `created_at` held, `edited_at`
@@ -170,5 +202,5 @@ unanswered check-in round-trips through edit without manufacturing values).
 1. **True user lifecycle:** What happens when a user "onboards" in production? Is there an account, an auth token, a server-side user ID? Nothing in the codebase suggests an answer.
 2. **AI insights feature:** `isAiInsights` setting exists. No AI inference code exists anywhere. Where does AI-driven pattern analysis live?
 3. **Weekly recap notification:** `isWeeklyRecap` setting exists. No scheduling or content generation for weekly recaps exists.
-4. **Wearable data integration:** The connect screen and `DeviceId` type suggest Oura, Apple Watch, etc. No SDK calls, OAuth flows, or Health kit integration exists.
+4. ~~**Wearable data integration**~~ — **RESOLVED.** Apple HealthKit ingestion is implemented in the Swift core and is reached from `(onboarding)/connect.tsx` and from Settings. Simulator-verified only; no physical device, no TestFlight.
 5. **Subscription model:** `paywall.tsx` shows annual/monthly plans. No pricing, entitlement checking, or RevenueCat/StoreKit integration exists.

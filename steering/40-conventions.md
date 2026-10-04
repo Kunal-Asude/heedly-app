@@ -57,17 +57,23 @@ const theme = useLegacyTheme();
 color: '#F3E7E1'  // should be theme.ink.display
 ```
 
-### Exception — Allowed Hardcoded Colors
-`paywall.tsx`, `noting.tsx`, and `period.tsx` have module-level `const COLORS = {...}` objects with Dawn-only values. These are recognized technical debt (see [50-contradictions.md](50-contradictions-and-open-questions.md#hardcoded-colors-in-screens)). New screens must use theme tokens. Existing screens should migrate when touched for other reasons.
+### Hardcoded colors
+No screen carries a module-level Dawn-only `COLORS` object any more; `paywall.tsx`,
+`noting.tsx` and `period.tsx` were migrated to full dynamic theming. All screens
+must use theme tokens.
 
 ---
 
 ## Check-In Screen Pattern
 
 Every check-in screen must:
-1. Read all upstream params via `useLocalSearchParams<{ ... }>()` with explicit type annotation.
-2. Pass all params forward by spreading `...params` when navigating to the next screen.
-3. Override specific params as needed (e.g., `yesterdayIndex: yesterdayIdx`).
+1. Read and write answers through `useCheckIn()` (`src/contexts/CheckInContext.tsx`).
+   The context is the single source of truth for an in-progress check-in.
+2. **Never put answer data in route or query parameters.** No `energyIndex`,
+   `bodyIndex`, `yesterdayId`, `tags` or `periodInfo` in the URL — see
+   `20-architecture.md` § URL Parameter Rule.
+3. Pass navigation-only params (`isFirstTime`, `isEditing`, `isCrash`,
+   `openPeriod`) via `useLocalSearchParams<{ ... }>()` with an explicit type.
 4. Handle `isEditing === 'true'` — route back to `/(check-in)/saved` instead of advancing.
 5. Handle `canGoBack()` — fall back to `router.replace('/(tabs)')` if no back stack.
 

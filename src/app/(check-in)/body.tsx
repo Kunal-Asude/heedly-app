@@ -19,7 +19,13 @@ export default function BodyScreen() {
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { bodyLevels } = useCheckInConfig();
-  const { activeEntry, updateEntry, isEditing: contextIsEditing } = useCheckIn();
+  const {
+    currentEntry: activeEntry,
+    updateEntry,
+    isEditing: contextIsEditing,
+    cancelEdit,
+    commitEdit,
+  } = useCheckIn();
   const params = useLocalSearchParams<{
     isFirstTime?: string;
     isEditing?: string;
@@ -49,11 +55,18 @@ export default function BodyScreen() {
     updateEntry({
       isCrash: true,
     });
+    // Flagging a crash is a deliberate answer and always has been recorded
+    // immediately, so it commits rather than sitting in the draft. Behaviour
+    // preserved, not redesigned — the semantics are noted as ambiguous.
+    if (isEditing) {
+      commitEdit();
+    }
     router.push('/(check-in)/saved');
   };
 
   const handleBack = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -66,6 +79,7 @@ export default function BodyScreen() {
 
   const handleSkip = () => {
     if (isEditing) {
+      cancelEdit();
       router.push('/(check-in)/saved');
       return;
     }
@@ -78,6 +92,7 @@ export default function BodyScreen() {
     // recorded (and drafted) a real choice by the time this runs.
 
     if (isEditing) {
+      commitEdit();
       router.push('/(check-in)/saved');
       return;
     }

@@ -11,7 +11,7 @@ import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useFirstName } from '@/contexts/NameContext';
 import { appStorage } from '@/utils/storage';
-import { ONBOARDING_COMPLETE_KEY } from '@/utils/storageKeys';
+import { ONBOARDING_COMPLETE_KEY, START_DATE_KEY } from '@/utils/storageKeys';
 
 export default function ReadyScreen() {
   const router = useRouter();
@@ -29,6 +29,15 @@ export default function ReadyScreen() {
       setFirstName(nameInput);
     }
     await appStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+
+    // Outside the name branch on purpose: skipping the name still means they
+    // started today. Written only if absent, so replaying onboarding cannot
+    // reset someone's start date — an erase removes the key, which is what
+    // lets a genuinely fresh start get a new one.
+    if ((await appStorage.getItem(START_DATE_KEY)) === null) {
+      await appStorage.setItem(START_DATE_KEY, new Date().toISOString());
+    }
+
     router.replace('/(tabs)');
   };
 
