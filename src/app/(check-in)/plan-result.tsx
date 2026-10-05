@@ -1,6 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +8,6 @@ import Svg, { Path } from 'react-native-svg';
 import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
-import { useCheckInConfig } from '@/hooks/data';
 
 // ─── Forecast Card Component (.pl-card with subtle gradient / flat OLED) ─────
 
@@ -67,18 +65,12 @@ export default function PlanResultScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { defaultPlanningPrediction } = useCheckInConfig();
   const params = useLocalSearchParams<{ dayName?: string; activityLabel?: string }>();
 
+  const dayName = params.dayName ?? null;
+  const activityLabel = params.activityLabel ?? null;
 
-  const dayName = params.dayName || 'Saturday';
-  const activityLabel = params.activityLabel || 'Social';
-
-  const explanationText = defaultPlanningPrediction.explanationTemplate.replace(
-    '{dayName}',
-    dayName
-  );
-  const recommendationText = defaultPlanningPrediction.recommendation;
+  const explanationText = "Heedly doesn't project planned days yet.";
 
   const handleDone = () => {
     router.replace('/(tabs)');
@@ -110,7 +102,7 @@ export default function PlanResultScreen() {
 
             <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>LOOKING AHEAD</Text>
             <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>
-              {dayName} · {activityLabel}
+              {[dayName, activityLabel].filter(Boolean).join(' · ')}
             </Text>
           </View>
 
@@ -118,34 +110,7 @@ export default function PlanResultScreen() {
           <ForecastCard isDark={isDark} isTrueBlack={isTrueBlack}>
             {/* Hero Orb (.pl-gauge: 140x140) */}
             <View style={styles.orbContainer}>
-              <EnergyOrb state="caution" size={140} />
-            </View>
-
-            {/* Caution Badge (.pl-pill) */}
-            <View
-              style={[
-                styles.badgeContainer,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? 'rgba(194, 154, 95, 0.14)'
-                      : 'rgba(92, 60, 52, 0.65)'
-                    : 'rgba(217, 152, 67, 0.16)',
-                  borderColor: isDark
-                    ? isTrueBlack
-                      ? 'rgba(255, 255, 255, 0.07)'
-                      : 'rgba(236, 200, 128, 0.35)'
-                    : 'rgba(217, 152, 67, 0.3)',
-                },
-              ]}>
-              <View style={[styles.badgeDot, isDark && isTrueBlack && { backgroundColor: '#C29A5F' }]} />
-              <Text
-                style={[
-                  styles.badgeText,
-                  { color: isDark ? (isTrueBlack ? '#C29A5F' : '#F5DDC4') : '#9a6a2a' },
-                ]}>
-                Caution
-              </Text>
+              <EnergyOrb state="empty" size={140} />
             </View>
 
             {/* Main Explanation Copy (.pl-read) */}
@@ -153,48 +118,6 @@ export default function PlanResultScreen() {
               {explanationText}
             </Text>
           </ForecastCard>
-
-          {/* ── Recommendation Box (.pl-tip) ─────────────────────────────── */}
-          <View
-            style={[
-              styles.recommendationBox,
-              {
-                backgroundColor: isDark
-                  ? isTrueBlack
-                    ? '#16111B'
-                    : 'rgba(32, 54, 46, 0.78)'
-                  : 'rgba(126, 155, 106, 0.14)',
-                borderColor: isDark
-                  ? isTrueBlack
-                    ? 'rgba(255, 255, 255, 0.07)'
-                    : 'rgba(134, 196, 180, 0.35)'
-                  : 'rgba(126, 155, 106, 0.3)',
-              },
-            ]}>
-            <View style={styles.tipIconContainer}>
-              <SymbolView
-                name="waveform.path"
-                size={18}
-                tintColor={isDark ? (isTrueBlack ? '#9FB8A6' : '#86C4B4') : '#5d7a52'}
-              />
-            </View>
-            <Text
-              style={[
-                styles.recommendationText,
-                { color: isDark ? (isTrueBlack ? '#9FB8A6' : '#C8EADB') : '#4f5a45' },
-              ]}>
-              {recommendationText}
-            </Text>
-          </View>
-
-          {/* ── Footer Estimate Notice (.pl-caveat) ───────────────────────── */}
-          <Text
-            style={[
-              styles.estimateNotice,
-              { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.75)') : 'rgba(74, 58, 57, 0.7)' },
-            ]}>
-            Days further out are a rougher estimate.
-          </Text>
 
           {/* Spacer pushing bottom CTA area */}
           <View style={styles.flexSpacer} />
