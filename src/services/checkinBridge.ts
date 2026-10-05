@@ -162,10 +162,9 @@ export function userTagIds(tagIds: string[]): string[] {
  * person answered, not how the app presented it — so they are derived here
  * rather than added to the Swift contract:
  *
- *  - `isFirstTime`: a first check-in skips the yesterday question entirely, so
- *    it is the one with no verdict. (A recurring check-in where the person
- *    skipped that question also has none, and would render as first-time on
- *    review. Cosmetic, and rarer than the bug it replaces.)
+ *  - `isFirstTime`: passed in, because only the caller can know it. It is
+ *    whether this is the person's earliest check-in, which an absent verdict
+ *    does not tell you: skipping the yesterday question also leaves none.
  *  - `energyLabel`/`bodyLabel`: display text for the level, so they come from
  *    the same tables the screens use. A skipped level has no label.
  *  - `completedAt`/`updatedAt`: read by nothing in the app; left undefined.
@@ -173,8 +172,8 @@ export function userTagIds(tagIds: string[]): string[] {
 export function fromNativeCheckIn(
     checkIn: CheckIn,
     verdict: Verdict | null,
+    isFirstTime: boolean,
 ): CheckInEntry {
-    const isFirstTime = verdict === null;
     const energyIndex = toIndex(checkIn.energyLevel);
     const bodyIndex = toIndex(checkIn.bodyLevel);
     const energyLevels = isFirstTime

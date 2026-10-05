@@ -32,12 +32,19 @@ import { useFirstName } from "@/contexts/NameContext";
  * Two records, because the store keeps them apart: the check-in and the verdict
  * for the same day have different edit rules. `null` means no check-in exists —
  * a real answer, not a failure, so it is returned rather than thrown.
+ *
+ * The first check-in is the earliest one on record, which is the only thing
+ * that distinguishes it. An absent verdict does not: a skipped yesterday
+ * question leaves none either.
  */
 async function readCompletedCheckIn(date: string): Promise<CheckInEntry | null> {
   const checkIn = await HeedlyNative.getCheckIn(date);
   if (!checkIn) return null;
-  const verdict = await HeedlyNative.getVerdict(date);
-  return fromNativeCheckIn(checkIn, verdict);
+  const [verdict, firstDay] = await Promise.all([
+    HeedlyNative.getVerdict(date),
+    HeedlyNative.getFirstCheckInDay(),
+  ]);
+  return fromNativeCheckIn(checkIn, verdict, firstDay === date);
 }
 
 // ─── Types & Contract ─────────────────────────────────────────────────────────
