@@ -28,7 +28,7 @@
 - ⚠️ `@heedly/checkin_history` and `@heedly/last_checkin_date` are **not** written. `persistCheckInToHistory` has no call site outside its own file (source-verified), and the AsyncStorage manifest was observed empty after every completed check-in during the 2026-09-07 verification runs on the iPhone 17 Pro Simulator.
 
 #### 4. Review
-- Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review today's check-in"**.
+- Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review your check-in"**.
 - Tapping routes directly to `/(check-in)/saved`, populating the completed record for inspection without restarting the check-in flow.
 
 #### 5. Edit Individual Answers
@@ -142,7 +142,7 @@ real state and renders a green orb beside a red dot. Simulator-verified across
 all five band/direction combinations on 2026-09-28.
 
 The primary CTA is read from the store like its routing already was
-(`isTodayCompleted` → "Review today's check-in"; an unrated previous day →
+(`isTodayCompleted` → "Review your check-in"; an unrated previous day →
 "Check in for yesterday"); it is **not** taken from `statusConfigs`, whose
 `fd-empty` text claims a first check-in whatever the store holds.
 

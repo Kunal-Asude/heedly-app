@@ -199,7 +199,7 @@ export default function TodayScreen() {
   };
 
   const ctaLabel = isTodayCompleted
-    ? "Review today's check-in"
+    ? "Review your check-in"
     : hasEverCheckedIn && unratedDay
       ? "Check in for yesterday"
       : currentConfig.ctaText;

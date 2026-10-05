@@ -197,7 +197,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
    - Entry: Today screen → "Check in for yesterday"
    - Flow: Initialize active entry for target date → update draft on each step → complete on Saved screen → **save to SQLite through the bridge** → clear `@heedly/checkin_draft`.
 2. **EDIT EXISTING CHECK-IN Mode**:
-   - Entry: Today screen → "Review today's check-in"
+   - Entry: Today screen → "Review your check-in"
    - Flow: Load the existing record **from SQLite through the bridge** into active state → user edits a specific answer (e.g., Energy) → returns to Saved screen → saves back to the **same date key** → storage preserves `created_at` and stamps `edited_at` only when content actually changed → **does not create a duplicate entry**.
 
 ### Hydration & Restoration
