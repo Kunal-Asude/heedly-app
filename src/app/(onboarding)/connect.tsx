@@ -21,6 +21,13 @@ import type { DeviceId } from '@/types/user';
 const CARD_GAP = 11;
 const TOTAL_COLUMNS = 3;
 
+const VIA_APPLE_HEALTH: ReadonlySet<DeviceId> = new Set<DeviceId>([
+  'oura',
+  'apple-watch',
+  'garmin',
+  'whoop',
+]);
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ConnectWearableScreen() {
@@ -40,7 +47,7 @@ export default function ConnectWearableScreen() {
 
 
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
-  const deviceName = selectedDeviceObj ? selectedDeviceObj.label : 'Oura';
+  const deviceName = selectedDeviceObj?.label ?? null;
 
   const handleCardPress = (id: DeviceId) => {
     setSelectedDevice((current) => (current === id ? null : id));
@@ -221,7 +228,9 @@ export default function ConnectWearableScreen() {
                         ? 'No data yet'
                         : isSelected
                           ? '✓ Connected'
-                          : 'Connect'}
+                          : VIA_APPLE_HEALTH.has(card.id)
+                            ? 'Via Apple Health'
+                            : 'Connect'}
                   </Text>
                 </Pressable>
               );
@@ -321,7 +330,7 @@ export default function ConnectWearableScreen() {
 
             {/* Subtitle / Body text (.nd-body: 17px, matching description text) */}
             <Text style={[styles.sheetBody, { color: theme.components.supportingText.noteColor }]}>
-              {`heedly reads your ${deviceName} data through `}
+              {deviceName ? `heedly reads your ${deviceName} data through ` : 'heedly reads your data through '}
               <Text style={[styles.sheetBodyBold, { color: theme.ink.display }]}>Apple Health</Text>
               {', and nothing has arrived yet.'}
             </Text>
@@ -369,7 +378,7 @@ export default function ConnectWearableScreen() {
                 </View>
                 <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'Open the '}
-                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{`${deviceName} app`}</Text>
+                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{deviceName ? `${deviceName} app` : 'app for your device'}</Text>
                   {' once so it writes today\'s data across.'}
                 </Text>
               </View>
