@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -146,11 +146,35 @@ function SettingsCard({
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { settings } = useUserSettings();
+  const { settings, connection, isConnectionLoaded, refreshConnection } = useUserSettings();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshConnection();
+    }, [refreshConnection]),
+  );
   const theme = useAppTheme();
 
   // Theme selector & True Black wired to the global ThemeContext
   const { themeMode, setThemeMode, isDark, isTrueBlack, setTrueBlack } = useThemeMode();
+
+  const wearableName = !isConnectionLoaded
+    ? ''
+    : !connection
+      ? 'Wearable status unavailable'
+      : (connection.activeSources[0] ?? 'No wearable connected');
+
+  const wearableStatus = !isConnectionLoaded || !connection
+    ? ''
+    : connection.backfill.status === 'in_progress'
+      ? 'Importing your history.'
+      : connection.activeSources.length === 0
+        ? 'Heedly reads what your devices write to Apple Health.'
+        : connection.connected
+          ? ''
+          : 'No readings yet.';
+
+  const isWearableActive = Boolean(connection?.connected);
 
   // Other local control states
   const [isReduceMotion, setIsReduceMotion] = useState(settings.isReduceMotion);
@@ -192,6 +216,7 @@ export default function SettingsScreen() {
       );
     } finally {
       setIsConnectingHealth(false);
+      await refreshConnection();
     }
   };
 
@@ -459,18 +484,23 @@ export default function SettingsScreen() {
           {/* Connected Wearable */}
           <View style={styles.row}>
             <View style={styles.rowBetween}>
-              <Text style={[styles.rowTitle, { color: rowTitleColor }]}>{settings.connectedWearableName}</Text>
+              <Text style={[styles.rowTitle, { color: rowTitleColor }]}>{wearableName}</Text>
               <Pressable
                 style={({ pressed }) => [styles.changeLink, pressed && styles.pressed]}
                 accessibilityRole="button"
                 accessibilityLabel="Change wearable">
-                <View style={styles.greenDot} />
+                <View
+                  style={[
+                    styles.greenDot,
+                    !isWearableActive && { backgroundColor: 'rgba(140, 120, 130, 0.35)' },
+                  ]}
+                />
                 <Text style={[styles.changeText, { color: coralAccentColor }]}>Change</Text>
                 <Text style={[styles.changeChev, { color: isDark ? 'rgba(232,144,122,0.6)' : 'rgba(176, 83, 52, 0.5)' }]}>›</Text>
               </Pressable>
             </View>
             <Text style={[styles.rowDescription, { color: rowDescColor }]}>
-              {settings.connectedWearableStatus}
+              {wearableStatus}
             </Text>
           </View>
 
