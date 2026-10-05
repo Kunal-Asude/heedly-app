@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import HeedlyNative from "@heedly/native";
 import type { ForecastDay } from "@heedly/native";
 
-import { MOCK_FORECAST_DATA } from "@/data/mock";
+import { TODAY_STATUS_COPY, WHY_MODAL_COPY } from "@/copy/today";
 import { formatDateString } from "@/services/checkinStorage";
 import type { TodayStatusMode } from "@/types/forecast";
 import { appStorage } from "@/utils/storage";
@@ -65,12 +65,12 @@ export function useForecast() {
 
 /**
  * The screen's non-forecast chrome — CTA label, orb size, early-days notes and
- * the why-modal styling. Still provisional mock copy; none of it is forecast.
+ * the why-modal frame. Static copy, not forecast.
  */
 export function useTodayChrome(mode: TodayStatusMode) {
   return {
-    statusConfigs: MOCK_FORECAST_DATA.statusConfigs,
-    currentStatusConfig: MOCK_FORECAST_DATA.statusConfigs[mode],
-    whyModalConfigs: MOCK_FORECAST_DATA.whyModalConfigs,
+    statusConfigs: TODAY_STATUS_COPY,
+    currentStatusConfig: TODAY_STATUS_COPY[mode],
+    whyModalConfigs: WHY_MODAL_COPY,
   };
 }
