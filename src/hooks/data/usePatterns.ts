@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 //   ^ No longer read. Patterns now shows only what can be derived from the
 //     person's own data; the mock stays in the tree for the shapes it
 //     documents, and for when the pattern engine can fill them.
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 import type { PatternsSummary } from "@heedly/native";
 
 import { patternCards } from "@/copy/patterns";

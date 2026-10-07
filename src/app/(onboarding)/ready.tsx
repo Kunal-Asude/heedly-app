@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
+import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useFirstName } from '@/contexts/NameContext';
@@ -47,6 +48,11 @@ export default function ReadyScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea}>
+        {/* ── Back header — fixed; content scrolls out of view below it ── */}
+        <View style={styles.stickyHeader}>
+          <BackButton fallback="/(onboarding)/conditions" />
+        </View>
+
         <KeyboardAvoidingView
           style={styles.fill}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -169,6 +175,11 @@ const styles = StyleSheet.create({
   // .ob.center: justify-content center, align-items center, text-align center
   safeArea: {
     flex: 1,
+  },
+
+  stickyHeader: {
+    paddingHorizontal: 26,
+    paddingTop: 8,
   },
 
   fill: {

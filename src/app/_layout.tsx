@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useRouter } from 'expo-r
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { CheckInProvider } from '@/contexts/CheckInContext';
@@ -10,7 +11,7 @@ import { NameProvider } from '@/contexts/NameContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
 
 // ⚠️ TEMPORARY — bridge spike. Delete once a real screen consumes native data.
-import HeedlyNative from '@heedly/native';
+import HeedlyNative from '@/services/heedlyNative';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -67,6 +68,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // Notification responses only exist on device. On web, expo-notifications
+    // has no getLastNotificationResponse and nothing can ever be tapped.
+    if (Platform.OS === 'web') return;
+
     // A first-ever check-in has no previous day to rate, so it opens at the
     // energy question. This runs above CheckInProvider, so it asks the store.
     const openCheckIn = async () => {

@@ -12,6 +12,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import Svg, { Path } from "react-native-svg";
 
 import { DawnBackground, EnergyOrb } from "@/components/core";
+import { BackButton } from "@/components/ui/back-button";
 import { Fonts } from "@/constants/theme";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 
@@ -127,6 +128,11 @@ export default function PaywallScreen() {
       <DawnBackground />
 
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        {/* ── Back header — fixed; content scrolls out of view below it ── */}
+        <View style={styles.stickyHeader}>
+          <BackButton fallback="/(tabs)" />
+        </View>
+
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -222,7 +228,7 @@ export default function PaywallScreen() {
                       style={[
                         styles.radioOuter,
                         selectedPlan === "annual"
-                          ? [styles.radioOuterSelected, isOled && { backgroundColor: "#B85F47" }]
+                          ? [styles.radioOuterSelected, { backgroundColor: isOled ? "#B85F47" : theme.coral.primary }]
                           : [
                               styles.radioOuterUnselected,
                               {
@@ -300,7 +306,7 @@ export default function PaywallScreen() {
                       style={[
                         styles.radioOuter,
                         selectedPlan === "monthly"
-                          ? [styles.radioOuterSelected, isOled && { backgroundColor: "#B85F47" }]
+                          ? [styles.radioOuterSelected, { backgroundColor: isOled ? "#B85F47" : theme.coral.primary }]
                           : [
                               styles.radioOuterUnselected,
                               {
@@ -410,7 +416,11 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
-    paddingTop: 16,
+  },
+
+  stickyHeader: {
+    paddingHorizontal: 22,
+    paddingTop: 8,
   },
 
   // ── Orb (.pw-orb) ─────────────────────────────────────────────────────────

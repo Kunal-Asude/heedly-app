@@ -1,16 +1,18 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView } from '@/components/ui/symbol';
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTabBarInset } from '@/components/app-tabs';
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
+import { useSessionState } from '@/hooks/useSessionState';
 import { sendTestCautionHeadsUpNotification } from '@/services/notifications';
-import HeedlyNative from '@heedly/native';
+import HeedlyNative from '@/services/heedlyNative';
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
@@ -146,6 +148,7 @@ function SettingsCard({
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tabBarInset = useTabBarInset();
   const { settings, connection, isConnectionLoaded, refreshConnection } = useUserSettings();
 
   useFocusEffect(
@@ -177,14 +180,14 @@ export default function SettingsScreen() {
   const isWearableActive = Boolean(connection?.connected);
 
   // Other local control states
-  const [isReduceMotion, setIsReduceMotion] = useState(settings.isReduceMotion);
+  const [isReduceMotion, setIsReduceMotion] = useSessionState('settings.isReduceMotion', settings.isReduceMotion);
   // const [isAiInsights, setIsAiInsights] = useState(settings.isAiInsights);
   const [isHormonalOptionsOpen, setIsHormonalOptionsOpen] = useState(false);
-  const [selectedHormonalContext, setSelectedHormonalContext] = useState('Cycling regularly');
-  const [isCycleNotTypical, setIsCycleNotTypical] = useState(settings.isCycleNotTypical);
-  const [isDailyReminder, setIsDailyReminder] = useState(settings.isDailyReminder);
-  const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(settings.isHarderDaysReminder);
-  const [isWeeklyRecap, setIsWeeklyRecap] = useState(settings.isWeeklyRecap);
+  const [selectedHormonalContext, setSelectedHormonalContext] = useSessionState('settings.hormonalContext', 'Cycling regularly');
+  const [isCycleNotTypical, setIsCycleNotTypical] = useSessionState('settings.isCycleNotTypical', settings.isCycleNotTypical);
+  const [isDailyReminder, setIsDailyReminder] = useSessionState('settings.isDailyReminder', settings.isDailyReminder);
+  const [isHarderDaysReminder, setIsHarderDaysReminder] = useSessionState('settings.isHarderDaysReminder', settings.isHarderDaysReminder);
+  const [isWeeklyRecap, setIsWeeklyRecap] = useSessionState('settings.isWeeklyRecap', settings.isWeeklyRecap);
   const [isConnectingHealth, setIsConnectingHealth] = useState(false);
 
   // Recovery for an import that was interrupted. Importing years of history
@@ -321,26 +324,26 @@ export default function SettingsScreen() {
       {/* Background — theme-aware atmosphere */}
       <DawnBackground />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 120 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces={true}>
-
-        {/* ── Top Header (.sx-nav) ──────────────────────────────────────── */}
+      {/* ── Top Header (.sx-nav) — fixed; the list scrolls out of view below it,
+           so nothing runs up into the status bar ───────────────────────────── */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top + 8 }]}>
         <View style={styles.topRow}>
           <Pressable
             onPress={handleBack}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back to Today">
+            accessibilityLabel="Go back">
             <Text style={[styles.backChevron, { color: backChevronColor }]}>‹</Text>
           </Pressable>
           <Text style={[styles.versionText, { color: versionColor }]}>V1.0</Text>
         </View>
+      </View>
+
+      <ScrollView
+        style={[styles.scrollView, { marginBottom: tabBarInset }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 }]}
+        showsVerticalScrollIndicator={false}
+        bounces={true}>
 
         {/* .sx-eyebrow */}
         <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>SETTINGS</Text>
@@ -799,6 +802,10 @@ const styles = StyleSheet.create({
   },
 
   // ── Header (.sx-nav) ────────────────────────────────────────────────────
+
+  stickyHeader: {
+    paddingHorizontal: 22,
+  },
 
   topRow: {
     flexDirection: 'row',

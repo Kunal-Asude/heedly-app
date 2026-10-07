@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
 import React, { useState } from "react";
 import {
   Pressable,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useTabBarInset } from '@/components/app-tabs';
 import { DawnBackground, EmptyState } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
@@ -84,6 +85,7 @@ function PatternCard({
 export default function PatternsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tabBarInset = useTabBarInset();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const [isTankTooltipVisible, setIsTankTooltipVisible] = useState(false);
@@ -162,27 +164,29 @@ export default function PatternsScreen() {
       {/* Atmosphere Background */}
       <DawnBackground />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 120 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces={true}
-      >
-        {/* ── Back Chevron (.sx-nav) ──────────────────────────────────── */}
+      {/* ── Back header — fixed; content scrolls out of view below it ── */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top + 8 }]}>
         <View style={styles.topRow}>
           <Pressable
-            onPress={() => router.replace("/(tabs)")}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(tabs)"))}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back to Today"
+            accessibilityLabel="Go back"
           >
             <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
+      </View>
 
+      <ScrollView
+        style={[styles.scrollView, { marginBottom: tabBarInset }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 24 },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
         {/* ── Section Label & Heading (.sx-eyebrow & .sx-title) ────────── */}
         <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PATTERNS</Text>
 
@@ -504,6 +508,10 @@ const styles = StyleSheet.create({
   },
 
   // ── Header (.sx-nav) ────────────────────────────────────────────────────
+
+  stickyHeader: {
+    paddingHorizontal: 22,
+  },
 
   topRow: {
     flexDirection: "row",

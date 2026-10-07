@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useTabBarInset } from "@/components/app-tabs";
 import { DawnBackground, EnergyOrbState } from "@/components/core";
 import { Spacing } from "@/constants/theme";
 
@@ -81,6 +82,7 @@ export function TodayScreenLayout({
   onFooterPress,
 }: TodayScreenLayoutProps) {
   const { height: windowHeight } = useWindowDimensions();
+  const tabBarInset = useTabBarInset();
   const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
   const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
 
@@ -88,9 +90,9 @@ export function TodayScreenLayout({
     <View style={styles.root}>
       <DawnBackground />
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <ScrollView
-          style={styles.scrollArea}
+          style={[styles.scrollArea, { marginBottom: tabBarInset }]}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -203,6 +205,7 @@ export function LearningScreenLayout({
   onFooterPress,
 }: LearningScreenLayoutProps) {
   const { height: windowHeight } = useWindowDimensions();
+  const tabBarInset = useTabBarInset();
   const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
   const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
   const isSmallOrb = orbState === "empty";
@@ -211,9 +214,9 @@ export function LearningScreenLayout({
     <View style={styles.root}>
       <DawnBackground />
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <ScrollView
-          style={styles.scrollArea}
+          style={[styles.scrollArea, { marginBottom: tabBarInset }]}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: Spacing.four,
-    paddingBottom: 92,
+    paddingBottom: 24,
     alignItems: "center",
     justifyContent: "space-between",
   },

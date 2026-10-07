@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
 import React, { useState } from "react";
 import {
   Modal,

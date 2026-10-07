@@ -1,4 +1,4 @@
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 
 import { formatDateString, getRecordedCheckInDate } from "./checkinStorage";
 

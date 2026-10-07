@@ -6,7 +6,7 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView } from '@/components/ui/symbol';
 import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
 
 import { ExternalLink } from './external-link';
@@ -113,3 +113,8 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.three,
   },
 });
+
+/** Web tabs sit at the top, so nothing needs to stop short of a bottom bar. */
+export function useTabBarInset() {
+  return 0;
+}

@@ -1,5 +1,7 @@
 import { Tabs } from "expo-router";
-import { SymbolView, type SymbolViewProps } from "expo-symbols";
+import type { SymbolViewProps } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
+import { type ReactNode, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -37,10 +39,30 @@ const TABS: TabConfig[] = [
   },
 ];
 
+// ─── Tab bar space ────────────────────────────────────────────────────────────
+
+const TAB_BAR_HEIGHT = 70;
+// Gap between the end of scrolled content and the top of the floating bar.
+const TAB_BAR_CONTENT_GAP = 12;
+
+function useTabBarBottom() {
+  const insets = useSafeAreaInsets();
+  return insets.bottom > 0 ? insets.bottom - 2 : 12;
+}
+
+/**
+ * Height a tab screen's scroll area must stop short of, so content ends above
+ * the floating tab bar instead of scrolling behind it. Apply as `marginBottom`
+ * on the ScrollView, not as content padding.
+ */
+export function useTabBarInset() {
+  return useTabBarBottom() + TAB_BAR_HEIGHT + TAB_BAR_CONTENT_GAP;
+}
+
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 
 function HeedlyTabBar({ state, descriptors, navigation }: any) {
-  const insets = useSafeAreaInsets();
+  const tabBarBottom = useTabBarBottom();
   const theme = useTheme();
 
   const currentRoute = state.routes[state.index];
@@ -65,7 +87,7 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
     <View
       style={[
         styles.tabBarOuter,
-        { bottom: insets.bottom > 0 ? insets.bottom - 2 : 12 },
+        { bottom: tabBarBottom },
       ]}
       pointerEvents="box-none"
     >
@@ -153,11 +175,31 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
   );
 }
 
+// ─── Fresh screen on every visit ──────────────────────────────────────────────
+
+/**
+ * Tab screens stay mounted when you leave them, so scroll position, open
+ * modals and half-typed input would still be there on return. Remount the
+ * screen as it loses focus so every visit starts fresh, from the top.
+ * Anything that must survive lives in context or storage, not screen state.
+ */
+function ResetOnBlur({ navigation, children }: { navigation: any; children: ReactNode }) {
+  const [visit, setVisit] = useState(0);
+  useEffect(() => navigation.addListener("blur", () => setVisit((v) => v + 1)), [navigation]);
+  return <View key={visit} style={{ flex: 1 }}>{children}</View>;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AppTabs() {
   return (
     <Tabs
+      // Back returns to the screen the person came from (Your data → Settings),
+      // not to the first tab. Covers router.back() and the Android back button.
+      backBehavior="history"
+      screenLayout={({ navigation, children }: any) => (
+        <ResetOnBlur navigation={navigation}>{children}</ResetOnBlur>
+      )}
       screenOptions={{ headerShown: false }}
       tabBar={(props: any) => <HeedlyTabBar {...props} />}
     >
@@ -197,7 +239,7 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     width: "100%",
     maxWidth: 390,
-    height: 70,
+    height: TAB_BAR_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

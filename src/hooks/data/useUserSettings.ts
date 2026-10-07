@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 import type { ConnectionState } from "@heedly/native";
 
 import { MOCK_USER_CONTEXT_DATA } from "@/data/mock";

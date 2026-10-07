@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 import type { EnergyOrbState } from "@/components/core";
 
 /**

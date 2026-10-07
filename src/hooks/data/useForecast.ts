@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 import type { ForecastDay } from "@heedly/native";
 
 import { TODAY_STATUS_COPY, WHY_MODAL_COPY } from "@/copy/today";

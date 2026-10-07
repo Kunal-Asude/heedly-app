@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 
 import {
   fromNativeCheckIn,

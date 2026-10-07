@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import React from "react";
+import { SymbolView } from "@/components/ui/symbol";
+import React, { useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -77,6 +77,9 @@ function NotesCard({
 export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // The action panel floats over the screen; the scroll area stops at its top edge.
+  const panelBottom = insets.bottom > 0 ? insets.bottom + 8 : 20;
+  const [panelHeight, setPanelHeight] = useState(0);
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { isHydrating, hasEverCheckedIn } = useCheckIn();
@@ -156,16 +159,8 @@ export default function NotesScreen() {
         />
       )}
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 160 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces={true}
-      >
-        {/* ── Back Chevron (.sx-nav) ─────────────────────────────────── */}
+      {/* ── Back header — fixed; content scrolls out of view below it ── */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top + 8 }]}>
         <View style={styles.topRow}>
           <Pressable
             onPress={handleBack}
@@ -176,7 +171,17 @@ export default function NotesScreen() {
             <Text style={[styles.backChevron, { color: isDark ? (isOled ? "#9A8A91" : theme.ink.muted) : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
+      </View>
 
+      <ScrollView
+        style={[styles.scrollView, { marginBottom: panelBottom + panelHeight + 12 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 24 },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
         {/* ── Category Label & Heading (.nt-eyebrow & .nt-title) ─────── */}
         <Text style={[styles.categoryLabel, { color: eyebrowColor }]}>FOR YOUR APPOINTMENT</Text>
 
@@ -304,10 +309,11 @@ export default function NotesScreen() {
 
       {/* ── Sticky Floating Bottom Action Panel (.nt-actions) ────────── */}
       <View
+        onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
         style={[
           styles.bottomPanel,
           {
-            bottom: insets.bottom > 0 ? insets.bottom + 8 : 20,
+            bottom: panelBottom,
             backgroundColor: bottomPanelBg,
             borderColor: bottomPanelBorder,
             shadowOpacity: isOled ? 0 : 0.35,
@@ -416,6 +422,10 @@ const styles = StyleSheet.create({
   },
 
   // ── Top Header (.sx-nav) ─────────────────────────────────────────────────
+
+  stickyHeader: {
+    paddingHorizontal: 22,
+  },
 
   topRow: {
     flexDirection: "row",

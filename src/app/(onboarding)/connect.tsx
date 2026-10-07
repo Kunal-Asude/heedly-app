@@ -1,15 +1,16 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { openURL } from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView } from '@/components/ui/symbol';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import HeedlyNative from '@heedly/native';
+import HeedlyNative from '@/services/heedlyNative';
 
 import { DawnBackground } from '@/components/core';
+import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
@@ -116,18 +117,22 @@ export default function ConnectWearableScreen() {
       <DawnBackground hasOrb={false} />
 
       <SafeAreaView style={styles.safeArea}>
+        {/* ── Back + progress — fixed; content scrolls out of view below it ── */}
+        <View style={styles.stickyHeader}>
+          {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
+          <View style={styles.progressRow}>
+            <BackButton fallback="/(onboarding)" style={styles.backButton} />
+            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+          </View>
+        </View>
+
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}>
-
-          {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
-          <View style={styles.progressRow}>
-            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
-            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-          </View>
 
           {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
@@ -445,9 +450,13 @@ const styles = StyleSheet.create({
   },
 
   // .ob: padding 70px 26px 42px → approx paddingHorizontal 26, top/bottom via safe area
+  stickyHeader: {
+    paddingHorizontal: 26,
+    paddingTop: 8,
+  },
+
   scrollContent: {
     paddingHorizontal: 26,
-    paddingTop: 16,
     paddingBottom: 42,
   },
 
@@ -457,7 +466,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 30,
+    height: 36,
+    marginBottom: 15,
+  },
+
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
   },
 
   // .ob-progress i.on: width 20px, height 6px, radius 3px
