@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 // import { MOCK_PATTERNS_DATA } from "@/data/mock";
 //   ^ No longer read. Patterns now shows only what can be derived from the
@@ -8,6 +8,7 @@ import HeedlyNative from "@heedly/native";
 import type { PatternsSummary } from "@heedly/native";
 
 import { patternCards } from "@/copy/patterns";
+import { energyDot, weekDays } from "@/copy/weekDots";
 import { formatDateString } from "@/services/checkinStorage";
 import type { DayPattern, PatternsData } from "@/types/patterns";
 import { appStorage } from "@/utils/storage";
@@ -18,28 +19,34 @@ import { useTagCatalogue } from "./useTagCatalogue";
 /**
  * Patterns, showing only what can actually be derived.
  *
- * Costs and helps are real. The seven-dot week has no source yet, so it stays
- * empty: an empty card is honest, a plausible one is not.
+ * The week strip is reported check-in energy, read a day at a time. A day with
+ * no check-in stays empty rather than borrowing a neighbour's value.
  */
 
-/** Neutral, and never one of the three state colours. */
-const NO_DATA_DOT = "rgba(140, 120, 130, 0.18)";
+/** Seven empty dots, so the row holds its shape before the reads land. */
+function blankWeek(today: Date): DayPattern[] {
+  return weekDays(today).map(({ date, day }) => ({
+    day,
+    date: formatDateString(date),
+    ...energyDot(null),
+  }));
+}
 
-/** Uniform: size encodes energy on this card ("Bigger dot = more energy"), so
- *  varying it with nothing to vary by would be inventing a reading. */
-const DOT_SIZE = 36;
-
-const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
-
-const EMPTY_WEEK: DayPattern[] = WEEKDAY_LETTERS.map((day) => ({
-  day,
-  type: "none",
-  size: DOT_SIZE,
-  color: NO_DATA_DOT,
-}));
-
-/** Keeps the card's shape; only the claims go. */
-
+/** A read failure is not an absent check-in, but it cannot be drawn either. */
+async function readWeek(today: Date): Promise<DayPattern[]> {
+  return Promise.all(
+    weekDays(today).map(async ({ date, day }) => {
+      const iso = formatDateString(date);
+      let energy: number | null = null;
+      try {
+        energy = (await HeedlyNative.getCheckIn(iso))?.energyLevel ?? null;
+      } catch {
+        energy = null;
+      }
+      return { day, date: iso, ...energyDot(energy) };
+    }),
+  );
+}
 
 /** "SEPTEMBER 19" — the style already on the screen. */
 function formatStartDate(iso: string): string {
@@ -54,46 +61,31 @@ export function usePatterns() {
   const { allTags } = useTagCatalogue();
   const [trackingSince, setTrackingSince] = useState<string>("");
   const [summary, setSummary] = useState<PatternsSummary | null>(null);
-  // Mirrors NameContext: screens can wait rather than show a blank and then the
-  // value a frame later.
+  const [week, setWeek] = useState<DayPattern[]>(() => blankWeek(new Date()));
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const refresh = useCallback(async () => {
+    let stored: string | null = null;
+    try {
+      stored = await appStorage.getItem(START_DATE_KEY);
+    } catch {
+      stored = null;
+    }
 
-    (async () => {
-      let stored: string | null = null;
-      try {
-        stored = await appStorage.getItem(START_DATE_KEY);
-      } catch {
-        stored = null;
-      }
-      if (!isMounted) return;
+    setTrackingSince(stored ? formatStartDate(stored) : "");
 
-      // Absent on an install predating the key. It stays blank: nothing stored
-      // records when someone started, and a first check-in or a HealthKit date
-      // answers a different question.
-      setTrackingSince(stored ? formatStartDate(stored) : "");
+    const startDate = stored ? formatDateString(new Date(stored)) : null;
 
-      // The engine needs the local day, not the stored UTC timestamp.
-      const startDate = stored ? formatDateString(new Date(stored)) : null;
+    try {
+      setSummary(await HeedlyNative.getPatterns(startDate));
+    } catch {
+      setSummary(null);
+    }
 
-      try {
-        const result = await HeedlyNative.getPatterns(startDate);
-        if (isMounted) setSummary(result);
-      } catch {
-        // A failed read is not an empty history. Leave it null rather than
-        // report "no patterns" for a storage error.
-        if (isMounted) setSummary(null);
-      }
-
-      if (isMounted) setIsLoaded(true);
-    })();
-
-    return () => {
-      isMounted = false;
-    };
+    setWeek(await readWeek(new Date()));
+    setIsLoaded(true);
   }, []);
+
 
   const costs = (summary?.patterns ?? []).filter((p) => p.kind === "costs");
   const helps = (summary?.patterns ?? []).filter((p) => p.kind === "helps");
@@ -108,7 +100,7 @@ export function usePatterns() {
     tankTooltipTitle: "HOW IS THE TANK MEASURED?",
     tankTooltipBody:
       "Your tank is measured against your own recent weeks, not a fixed target — so as your baseline shifts, what a 'full tank' means shifts with it.",
-    thisWeekDays: EMPTY_WEEK,
+    thisWeekDays: week,
     helpPatterns: patternCards(helps, tags),
     costPatterns: patternCards(costs, tags),
   };
@@ -116,6 +108,7 @@ export function usePatterns() {
   return {
     patterns: data,
     isLoaded,
+    refresh,
     thisWeekDays: data.thisWeekDays,
     helpPatterns: data.helpPatterns,
     costPatterns: data.costPatterns,

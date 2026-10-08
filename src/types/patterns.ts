@@ -6,7 +6,8 @@ export type DayPatternType = "steady" | "caution" | "rest" | "none";
 
 export interface DayPattern {
   day: string;
-  type: DayPatternType;
+  date?: string;
+  type?: DayPatternType;
   size: number;
   color: string;
 }
