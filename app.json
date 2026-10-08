@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.heedly.app",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "CFBundleDisplayName": "Heedly",
         "NSHealthUpdateUsageDescription": "Heedly only reads your Apple Health data to help you understand your health patterns. It does not add or change health data."
