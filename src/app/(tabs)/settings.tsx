@@ -9,7 +9,16 @@ import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
-import { sendTestCautionHeadsUpNotification } from '@/services/notifications';
+import { TimePickerSheet } from '@/components/TimePickerSheet';
+import {
+  DAILY_REMINDER_DEFAULT,
+  readDailyReminderEnabled,
+  readDailyReminderTime,
+  setDailyReminderEnabled,
+  setDailyReminderTime,
+} from '@/services/dailyReminder';
+import { HEADS_UP_DEFAULT, readHeadsUpPreference, setHeadsUpPreference } from '@/services/headsUp';
+import { DEFAULT_REMINDER_TIME, formatReminderTime } from '@/utils/reminderTime';
 import HeedlyNative from '@heedly/native';
 
 // ─── Options ──────────────────────────────────────────────────────────────────
@@ -182,10 +191,38 @@ export default function SettingsScreen() {
   const [isHormonalOptionsOpen, setIsHormonalOptionsOpen] = useState(false);
   const [selectedHormonalContext, setSelectedHormonalContext] = useState('Cycling regularly');
   const [isCycleNotTypical, setIsCycleNotTypical] = useState(settings.isCycleNotTypical);
-  const [isDailyReminder, setIsDailyReminder] = useState(settings.isDailyReminder);
-  const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(settings.isHarderDaysReminder);
+  const [isDailyReminder, setIsDailyReminder] = useState(DAILY_REMINDER_DEFAULT);
+  const [reminderTime, setReminderTime] = useState(DEFAULT_REMINDER_TIME);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [isHarderDaysReminder, setIsHarderDaysReminder] = useState(HEADS_UP_DEFAULT);
   const [isWeeklyRecap, setIsWeeklyRecap] = useState(settings.isWeeklyRecap);
   const [isConnectingHealth, setIsConnectingHealth] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void readHeadsUpPreference().then((stored) => {
+        if (stored !== null) setIsHarderDaysReminder(stored);
+      });
+      void readDailyReminderEnabled().then(setIsDailyReminder);
+      void readDailyReminderTime().then(setReminderTime);
+    }, []),
+  );
+
+  const handleHarderDaysReminderChange = (enabled: boolean) => {
+    setIsHarderDaysReminder(enabled);
+    void setHeadsUpPreference(enabled);
+  };
+
+  const handleDailyReminderChange = (enabled: boolean) => {
+    setIsDailyReminder(enabled);
+    void setDailyReminderEnabled(enabled);
+  };
+
+  const handleReminderTimeConfirm = (time: string) => {
+    setIsTimePickerOpen(false);
+    setReminderTime(time);
+    void setDailyReminderTime(time);
+  };
 
   // Recovery for an import that was interrupted. Importing years of history
   // takes a while, and closing the app part-way leaves it unfinished — the
@@ -309,7 +346,6 @@ export default function SettingsScreen() {
   const valueTextColor = isDark ? '#F3E7E1' : '#4f3c3a';
 
   // Preview link
-  const previewLinkColor = isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : 'rgba(176, 83, 52, 0.85)';
 
   // Plus badge
   const plusBadgeBg = isDark
@@ -695,7 +731,7 @@ export default function SettingsScreen() {
           <View style={styles.row}>
             <View style={styles.rowBetween}>
               <Text style={[styles.rowTitle, { color: rowTitleColor }]}>Daily check-in reminder</Text>
-              <CustomToggle value={isDailyReminder} onValueChange={setIsDailyReminder} />
+              <CustomToggle value={isDailyReminder} onValueChange={handleDailyReminderChange} />
             </View>
             <Text style={[styles.rowDescription, { color: rowDescColor }]}>
               A gentle nudge to check in — you pick the time.
@@ -708,12 +744,15 @@ export default function SettingsScreen() {
               {/* Reminder time */}
               <Pressable
                 style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+                onPress={() => setIsTimePickerOpen(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Reminder time 9:00 AM">
+                accessibilityLabel={`Reminder time ${formatReminderTime(reminderTime)}`}>
                 <View style={styles.rowBetween}>
                   <Text style={[styles.rowTitle, { color: rowTitleColor }]}>Reminder time</Text>
                   <View style={styles.rightValueRow}>
-                    <Text style={[styles.timeValueText, { color: valueTextColor }]}>9:00 AM</Text>
+                    <Text style={[styles.timeValueText, { color: valueTextColor }]}>
+                      {formatReminderTime(reminderTime)}
+                    </Text>
                     <Text style={[styles.chevronRight, { color: chevronColor }]}>›</Text>
                   </View>
                 </View>
@@ -729,35 +768,12 @@ export default function SettingsScreen() {
               <Text style={[styles.rowTitle, { color: rowTitleColor }]}>Heads-up before harder days</Text>
               <CustomToggle
                 value={isHarderDaysReminder}
-                onValueChange={(val) => {
-                  setIsHarderDaysReminder(val);
-                  if (val) {
-                    sendTestCautionHeadsUpNotification();
-                  }
-                }}
+                onValueChange={handleHarderDaysReminderChange}
               />
             </View>
             <Text style={[styles.rowDescription, { color: rowDescColor }]}>
               heedly lets you know when the next few days look heavier, so you can plan ahead.
             </Text>
-            <Pressable
-              onPress={async () => {
-                const id = await sendTestCautionHeadsUpNotification();
-                if (id) {
-                  Alert.alert(
-                    'Heads-up notification sent',
-                    'A real notification will arrive in 2 seconds. Pull down notification center or lock your device to see it!',
-                    [{ text: 'OK' }]
-                  );
-                } else {
-                  Alert.alert('Permission required', 'Please enable notifications for Heedly in iOS Settings.');
-                }
-              }}
-              style={({ pressed }) => [styles.previewLinkRow, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Send test heads-up notification">
-              <Text style={[styles.previewLinkText, { color: previewLinkColor }]}>Send test heads-up notification ›</Text>
-            </Pressable>
           </View>
 
           <View style={[styles.divider, { backgroundColor: dividerColor }]} />
@@ -775,6 +791,14 @@ export default function SettingsScreen() {
         </SettingsCard>
 
       </ScrollView>
+
+      {isTimePickerOpen && (
+        <TimePickerSheet
+          value={reminderTime}
+          onCancel={() => setIsTimePickerOpen(false)}
+          onConfirm={handleReminderTimeConfirm}
+        />
+      )}
     </View>
   );
 }
@@ -872,7 +896,9 @@ const styles = StyleSheet.create({
 
   // .sx-row: padding 14px 0
   row: {
-    paddingVertical: 14,
+    paddingVertical: 17,
+    minHeight: 58,
+    justifyContent: 'center',
   },
 
   rowBetween: {
@@ -883,18 +909,18 @@ const styles = StyleSheet.create({
 
   // .sx-row-title: 15.5px, 600, letter-spacing -0.01em
   rowTitle: {
-    fontSize: 15.5,
+    fontSize: 14.5,
     fontWeight: '600',
     letterSpacing: -0.15,
-    lineHeight: 21,
+    lineHeight: 19,
   },
 
   // .sx-row-desc: 13.5px, 400, line-height 19.5px
   rowDescription: {
-    fontSize: 13.5,
-    fontWeight: '400',
-    lineHeight: 19.5,
-    marginTop: 6,
+    fontSize: 12.5,
+    fontWeight: '500',
+    lineHeight: 18,
+    marginTop: 5,
   },
 
   divider: {
@@ -1048,7 +1074,7 @@ const styles = StyleSheet.create({
   },
 
   timeValueText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '600',
   },
 
@@ -1071,7 +1097,7 @@ const styles = StyleSheet.create({
   },
 
   toggleTrack: {
-    width: 48,
+    width: 46,
     height: 28,
     borderRadius: 14,
     padding: 3,
