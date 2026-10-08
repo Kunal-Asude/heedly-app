@@ -8,16 +8,15 @@ import Svg, { Path } from 'react-native-svg';
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useCheckIn } from '@/contexts/CheckInContext';
-import { useTheme } from '@/constants/themes';
-import { useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckInConfig } from '@/hooks/data';
+import { SymbolView } from '@/components/ui/symbol';
+import { useCheckInPalette } from '@/constants/checkInPalette';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function BodyScreen() {
   const router = useRouter();
-  const theme = useTheme();
-  const { isDark, isTrueBlack } = useThemeMode();
+  const ci = useCheckInPalette();
   const { bodyLevels } = useCheckInConfig();
   const {
     currentEntry: activeEntry,
@@ -116,14 +115,7 @@ export default function BodyScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text
-              style={[
-                styles.backChevron,
-                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' },
-              ]}
-            >
-              ‹
-            </Text>
+            <SymbolView name="chevron.left" size={21} tintColor={ci.back} />
           </Pressable>
 
           {/* Progress Dots: Question 2 of 3 (.ci-dots) */}
@@ -131,17 +123,11 @@ export default function BodyScreen() {
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: ci.dotOff },
               ]}
             />
             <LinearGradient
-              colors={
-                isDark
-                  ? isTrueBlack
-                    ? ['#C97B60', '#BE6A5C']
-                    : ['#E8907A', '#C86858']
-                  : [theme.coral.mid, theme.coral.terracotta]
-              }
+              colors={ci.dotOn}
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
               style={styles.progressActive}
@@ -149,7 +135,7 @@ export default function BodyScreen() {
             <View
               style={[
                 styles.progressDot,
-                { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' },
+                { backgroundColor: ci.dotOff },
               ]}
             />
           </View>
@@ -164,7 +150,7 @@ export default function BodyScreen() {
             <Text
               style={[
                 styles.skipText,
-                { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                { color: ci.skip },
               ]}
             >
               Skip
@@ -178,7 +164,7 @@ export default function BodyScreen() {
           <Text
             style={[
               styles.questionLabel,
-              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+              { color: ci.skip },
             ]}
           >
             QUESTION 2 OF 3
@@ -186,15 +172,15 @@ export default function BodyScreen() {
 
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How does your\n'}</Text>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>body feel?</Text>
+            <Text style={{ color: ci.heading }}>{'How does your\n'}</Text>
+            <Text style={{ color: ci.accent }}>body feel?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
           <Text
             style={[
               styles.supportingText,
-              { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+              { color: ci.sub },
             ]}
           >
             No need to think hard — go with your gut.
@@ -220,7 +206,7 @@ export default function BodyScreen() {
                         <View
                           style={[
                             styles.selectedRing,
-                            { backgroundColor: isDark && isTrueBlack ? 'rgba(255, 255, 255, 0.12)' : level.glowColor },
+                            { backgroundColor: ci.scaleGlow[idx] },
                           ]}
                         />
                       )}
@@ -228,7 +214,7 @@ export default function BodyScreen() {
                       <View
                         style={[
                           styles.circle,
-                          { backgroundColor: level.color },
+                          { backgroundColor: ci.scale[idx] },
                         ]}
                       />
                     </View>
@@ -242,7 +228,7 @@ export default function BodyScreen() {
               <Text
                 style={[
                   styles.endpointLabel,
-                  { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.74)') : 'rgba(74, 58, 57, 0.55)' },
+                  { color: ci.lab },
                 ]}
               >
                 {bodyLevels[0].label}
@@ -252,30 +238,14 @@ export default function BodyScreen() {
               <View
                 style={[
                   styles.selectedPill,
-                  {
-                    backgroundColor: isDark
-                      ? isTrueBlack
-                        ? 'rgba(190, 106, 92, 0.14)'
-                        : 'rgba(226, 122, 108, 0.16)'
-                      : 'rgba(244, 164, 126, 0.18)',
-                    borderColor: isDark
-                      ? isTrueBlack
-                        ? 'rgba(255, 255, 255, 0.07)'
-                        : 'rgba(255, 255, 255, 0.09)'
-                      : 'rgba(224, 115, 95, 0.28)',
-                  },
+                  { backgroundColor: ci.pillBg, borderColor: ci.pillBorder },
                 ]}
               >
-                <View
-                  style={[
-                    styles.pillDot,
-                    { backgroundColor: isDark && isTrueBlack ? '#C29A5F' : (isDark ? '#D9735A' : selectedLevel.color) },
-                  ]}
-                />
+                <View style={[styles.pillDot, { backgroundColor: ci.pillDot }]} />
                 <Text
                   style={[
                     styles.pillText,
-                    { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' },
+                    { color: ci.pillText },
                   ]}
                 >
                   {selectedLevel.label}
@@ -285,7 +255,7 @@ export default function BodyScreen() {
               <Text
                 style={[
                   styles.endpointLabel,
-                  { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.74)') : 'rgba(74, 58, 57, 0.55)' },
+                  { color: ci.lab },
                 ]}
               >
                 {bodyLevels[4].label}
@@ -303,10 +273,7 @@ export default function BodyScreen() {
             <Text
               style={[
                 styles.crashText,
-                {
-                  color: isDark ? (isTrueBlack ? '#C97B60' : 'rgba(232, 144, 122, 0.98)') : 'rgba(176, 83, 52, 0.98)',
-                  borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(232, 144, 122, 0.46)') : 'rgba(176, 83, 52, 0.4)',
-                },
+                { color: ci.crash, borderColor: ci.crashLine },
               ]}
             >
               {"I'm in a crash"}
@@ -320,36 +287,25 @@ export default function BodyScreen() {
             style={({ pressed }) => [
               styles.nextButtonWrapper,
               pressed && styles.buttonPressed,
-              isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
+              { shadowOpacity: ci.ctaShadowOpacity },
+              ci.ctaShadowOpacity === 0 && { elevation: 0 },
             ]}
             onPress={handleNext}
             accessibilityRole="button"
             accessibilityLabel="Next"
           >
             <LinearGradient
-              colors={
-                isDark
-                  ? isTrueBlack
-                    ? ['#574049', '#241A20']
-                    : ['#634256', '#8A5D7C', '#9E768E']
-                  : [theme.coral.light, theme.coral.mid, theme.coral.primary]
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[
-                styles.nextButtonGradient,
-                isDark && isTrueBlack && {
-                  borderColor: 'rgba(255, 255, 255, 0.06)',
-                  borderWidth: 1,
-                },
-              ]}
+              colors={ci.cta}
+              start={{ x: 0, y: ci.ctaHorizontal ? 0.5 : 0 }}
+              end={{ x: 1, y: ci.ctaHorizontal ? 0.5 : 1 }}
+              style={styles.nextButtonGradient}
             >
-              <Text style={[styles.nextButtonText, isDark && isTrueBlack && { color: '#EADCD4' }]}>{isEditing ? 'Save' : 'Next'}</Text>
+              <Text style={[styles.nextButtonText, { color: ci.ctaText }]}>{isEditing ? 'Save' : 'Next'}</Text>
               <View style={styles.nextArrowContainer}>
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M8 5l7 7-7 7"
-                    stroke={isDark && isTrueBlack ? '#EADCD4' : '#FFF6F1'}
+                    stroke={ci.ctaText}
                     strokeWidth={2.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -362,7 +318,7 @@ export default function BodyScreen() {
           <Text
             style={[
               styles.bottomHelperText,
-              { color: isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.5)' },
+              { color: ci.foot },
             ]}
           >
             You can do this lying down.
@@ -400,21 +356,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    height: 48,
-    marginBottom: 12,
+    height: 30,
+    marginBottom: 26,
   },
 
   navButton: {
-    height: 44,
-    minWidth: 44,
+    height: 30,
+    minWidth: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   backChevron: {
-    fontSize: 28,
-    lineHeight: 28,
-    fontWeight: '300',
+    width: 21,
+    height: 21,
   },
 
   skipText: {
@@ -445,7 +400,6 @@ const styles = StyleSheet.create({
   contentArea: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 8,
     alignItems: 'flex-start',
   },
 
@@ -454,30 +408,29 @@ const styles = StyleSheet.create({
     letterSpacing: 2.2,
     textTransform: 'uppercase',
     fontWeight: '600',
-    marginBottom: 10,
+    marginBottom: 9,
   },
 
   questionHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 30,
+    fontSize: 31,
     lineHeight: 36,
-    letterSpacing: -0.3,
-    marginBottom: 10,
+    letterSpacing: -0.31,
     textAlign: 'left',
   },
 
   supportingText: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 14.5,
+    lineHeight: 22,
     fontWeight: '400',
-    marginBottom: 36,
-    maxWidth: '96%',
+    marginTop: 12,
+    maxWidth: 260,
     textAlign: 'left',
   },
 
   selectorContainer: {
     width: '100%',
-    marginBottom: 28,
+    marginTop: 44,
   },
 
   circlesRow: {
@@ -485,38 +438,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 4,
-    height: 48,
+    height: 44,
   },
 
   circleTouchArea: {
-    padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   circleWrapper: {
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   circle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
 
   selectedRing: {
     position: 'absolute',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
 
   labelsRow: {
@@ -528,7 +475,7 @@ const styles = StyleSheet.create({
   },
 
   endpointLabel: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '500',
     minWidth: 50,
   },
@@ -537,7 +484,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    paddingVertical: 6.5,
+    paddingVertical: 7,
     paddingHorizontal: 15,
     borderRadius: 999,
     borderWidth: 1,
@@ -550,28 +497,29 @@ const styles = StyleSheet.create({
   },
 
   pillText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '600',
   },
 
   crashContainer: {
     alignSelf: 'center',
-    marginTop: 18,
+    marginTop: 30,
     paddingVertical: 4,
     paddingHorizontal: 2,
   },
 
   crashText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '600',
-    borderBottomWidth: 1.2,
-    paddingBottom: 2,
+    letterSpacing: 0.14,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
     textAlign: 'center',
   },
 
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 16,
+    paddingBottom: 6,
     alignItems: 'center',
     gap: 14,
   },
@@ -580,10 +528,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 58,
     borderRadius: 29,
-    shadowColor: '#000000',
+    shadowColor: '#6E5656',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
+    shadowRadius: 10,
     elevation: 5,
   },
 
@@ -594,28 +541,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
 
   nextButtonText: {
-    color: '#FFF6F1',
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.15,
   },
 
   nextArrowContainer: {
     position: 'absolute',
-    right: 22,
+    right: 20,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
   },
 
   bottomHelperText: {
-    fontSize: 13.5,
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 19,
     fontWeight: '400',
     textAlign: 'center',
   },

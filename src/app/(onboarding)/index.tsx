@@ -7,11 +7,13 @@ import Svg, { Path } from 'react-native-svg';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const ci = useCheckInPalette();
   const ctaTokens = theme.components.cta;
 
   return (
@@ -42,12 +44,10 @@ export default function WelcomeScreen() {
           <Text
             style={[
               styles.description,
-              { color: theme.components.supportingText.noteColor },
+              { color: ci.lead },
             ]}
           >
-            Your energy companion for ME/CFS,{'\n'}
-            Long COVID, POTS, Fibromyalgia and{'\n'}
-            related conditions.
+            Your energy companion for ME/CFS, Long COVID, POTS, Fibromyalgia and related conditions.
           </Text>
 
           {/* ── Primary CTA Button (.ob-cta: 17px, 600) ── */}
@@ -84,7 +84,7 @@ export default function WelcomeScreen() {
           </Pressable>
 
           {/* ── Footnote / Privacy Text (.ob-foot: 12.5px, line-height 1.5, rgba(199,180,191,0.68)) ─── */}
-          <Text style={[styles.privacyText, { color: theme.ink.muted }]}>
+          <Text style={[styles.privacyText, { color: ci.foot }]}>
             {"No account needed. Your data is private by default, and we don't sell your data."}
           </Text>
         </View>
@@ -137,28 +137,28 @@ const styles = StyleSheet.create({
 
   // ── Lead description (17px, line-height 25px, max-width 320px) ───────
   description: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 15,
+    lineHeight: 23,
     fontWeight: '400',
     textAlign: 'center',
     marginTop: 18,
-    maxWidth: 320,
+    maxWidth: 260,
   },
 
   // ── Primary CTA Button (.ob-cta: height 60px, radius 30px, gradient, shadow)
   buttonWrapper: {
     width: '100%',
-    height: 60,
-    borderRadius: 30,
+    height: 58,
+    borderRadius: 29,
     marginTop: 30,
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 20,
+    shadowRadius: 10,
     elevation: 5,
   },
 
   buttonGradient: {
     flex: 1,
-    borderRadius: 30,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -172,9 +172,8 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
@@ -189,11 +188,10 @@ const styles = StyleSheet.create({
 
   // ── Footnote (.ob-foot: 12.5px, line-height 19px (1.5), margin-top 14px) ───
   privacyText: {
-    fontSize: 13,
+    fontSize: 12.5,
     lineHeight: 19,
     fontWeight: '400',
     textAlign: 'center',
     marginTop: 14,
-    maxWidth: 340,
   },
 });

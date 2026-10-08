@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { SymbolView } from '@/components/ui/symbol';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -124,41 +125,45 @@ export default function PlanScreen() {
     : theme.ink.display;
   const subtitleColor = isDark
     ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.72)"
+      ? "#A8979E"
+      : "rgba(199, 180, 191, 1)"
     : "rgba(74, 58, 57, 0.78)";
   const groupLabelColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.55)";
+      : "rgba(199, 180, 191, 0.68)"
+    : "rgba(74, 58, 57, 0.5)";
   const optionalLabelColor = isDark
     ? isTrueBlack
-      ? "rgba(154, 138, 145, 0.65)"
-      : "rgba(199, 180, 191, 0.5)"
+      ? "#9A8A91"
+      : "rgba(199, 180, 191, 0.54)"
     : "rgba(74, 58, 57, 0.4)";
 
-  // Selection state colors
-  const activeBg = isDark
+  // .pl-chip / .pl-date / .pl-kind. In the light theme a selected date or kind
+  // is the solid coral gradient; a selected quick chip stays a soft tint.
+  const tintBg = isDark
     ? isTrueBlack
       ? 'rgba(190, 106, 92, 0.14)'
-      : 'rgba(226, 122, 108, 0.18)'
-    : 'rgba(244, 164, 126, 0.2)';
-  const activeBorder = isDark
+      : 'rgba(226, 122, 108, 0.17)'
+    : 'rgba(244, 164, 126, 0.18)';
+  const tintBorder = isDark
     ? isTrueBlack
       ? 'rgba(255, 255, 255, 0.07)'
-      : 'rgba(226, 122, 108, 0.45)'
+      : 'rgba(255, 255, 255, 0.09)'
     : 'rgba(224, 115, 95, 0.42)';
   const inactiveBg = isDark
     ? isTrueBlack
       ? '#16111B'
       : 'rgba(51, 37, 56, 0.72)'
-    : 'rgba(255, 252, 248, 0.76)';
+    : '#fffdfa';
   const inactiveBorder = isDark
     ? isTrueBlack
       ? 'rgba(255, 255, 255, 0.07)'
-      : 'transparent'
-    : 'rgba(255, 255, 255, 0.8)';
+      : 'rgba(199, 180, 191, 0.14)'
+    : 'rgba(120, 90, 80, 0.16)';
+  const chipText = isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a';
+  const solidSelected = !isDark;
+  const solidText = '#fff8f4';
 
   // Hide "This weekend" if no SAT or SUN falls within the 6-day window
   const hasWeekendInWindow = weekendId !== null;
@@ -176,7 +181,7 @@ export default function PlanScreen() {
               style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Go back">
-              <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : 'rgba(74, 58, 57, 0.62)' }]}>‹</Text>
+              <SymbolView name="chevron.left" size={22} tintColor={isDark ? (isTrueBlack ? '#A8979E' : 'rgba(199, 180, 191, 0.84)') : 'rgba(74, 58, 57, 0.62)'} />
             </Pressable>
 
             <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PLAN AHEAD</Text>
@@ -195,8 +200,8 @@ export default function PlanScreen() {
                 style={({ pressed }) => [
                   styles.presetChip,
                   {
-                    backgroundColor: selectedPreset === 'tomorrow' ? activeBg : inactiveBg,
-                    borderColor: selectedPreset === 'tomorrow' ? activeBorder : (isDark ? 'transparent' : inactiveBorder),
+                    backgroundColor: selectedPreset === 'tomorrow' ? tintBg : inactiveBg,
+                    borderColor: selectedPreset === 'tomorrow' ? tintBorder : inactiveBorder,
                   },
                   pressed && styles.pressed,
                 ]}
@@ -207,9 +212,7 @@ export default function PlanScreen() {
                   style={[
                     styles.presetText,
                     {
-                      color: selectedPreset === 'tomorrow'
-                        ? '#FFFFFF'
-                        : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                      color: chipText,
                     },
                   ]}>
                   Tomorrow
@@ -222,8 +225,8 @@ export default function PlanScreen() {
                   style={({ pressed }) => [
                     styles.presetChip,
                     {
-                      backgroundColor: selectedPreset === 'weekend' ? activeBg : inactiveBg,
-                      borderColor: selectedPreset === 'weekend' ? activeBorder : (isDark ? 'transparent' : inactiveBorder),
+                      backgroundColor: selectedPreset === 'weekend' ? tintBg : inactiveBg,
+                      borderColor: selectedPreset === 'weekend' ? tintBorder : inactiveBorder,
                     },
                     pressed && styles.pressed,
                   ]}
@@ -234,9 +237,7 @@ export default function PlanScreen() {
                     style={[
                       styles.presetText,
                       {
-                        color: selectedPreset === 'weekend'
-                          ? '#FFFFFF'
-                          : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                        color: chipText,
                       },
                     ]}>
                     This weekend
@@ -255,21 +256,30 @@ export default function PlanScreen() {
                     style={({ pressed }) => [
                       styles.dateCardWrapper,
                       {
-                        backgroundColor: isSelected ? activeBg : inactiveBg,
-                        borderColor: isSelected ? activeBorder : (isDark ? 'transparent' : inactiveBorder),
+                        backgroundColor: isSelected ? (solidSelected ? 'transparent' : tintBg) : inactiveBg,
+                        borderColor: isSelected ? (solidSelected ? 'transparent' : tintBorder) : inactiveBorder,
                       },
+                      isSelected && solidSelected && styles.solidLift,
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleSelectDay(item.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`${item.abbr} ${item.date}`}>
+                    {isSelected && solidSelected && (
+                      <LinearGradient
+                        colors={['#f4a47e', '#e0735f']}
+                        start={{ x: 0.2, y: 0 }}
+                        end={{ x: 0.8, y: 1 }}
+                        style={[styles.solidFill, { borderRadius: 15 }]}
+                      />
+                    )}
                     <Text
                       style={[
                         styles.dateCardDayLabel,
                         {
-                          color: isSelected
-                            ? '#FFFFFF'
-                            : isDark ? 'rgba(199, 180, 191, 0.6)' : 'rgba(74, 58, 57, 0.55)',
+                          color: isSelected && solidSelected
+                            ? solidText
+                            : isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.62)') : 'rgba(74, 58, 57, 0.46)',
                         },
                       ]}>
                       {item.abbr}
@@ -278,9 +288,7 @@ export default function PlanScreen() {
                       style={[
                         styles.dateCardNumber,
                         {
-                          color: isSelected
-                            ? '#FFFFFF'
-                            : isDark ? '#F3E7E1' : '#4f3c3a',
+                          color: isSelected && solidSelected ? solidText : isDark ? chipText : '#463332',
                         },
                       ]}>
                       {item.date}
@@ -308,21 +316,28 @@ export default function PlanScreen() {
                     style={({ pressed }) => [
                       styles.activityChipWrapper,
                       {
-                        backgroundColor: isSelected ? activeBg : inactiveBg,
-                        borderColor: isSelected ? activeBorder : (isDark ? 'transparent' : inactiveBorder),
+                        backgroundColor: isSelected ? (solidSelected ? 'transparent' : tintBg) : inactiveBg,
+                        borderColor: isSelected ? (solidSelected ? 'transparent' : tintBorder) : inactiveBorder,
                       },
+                      isSelected && solidSelected && styles.solidLift,
                       pressed && styles.pressed,
                     ]}
                     onPress={() => handleToggleActivity(activity)}
                     accessibilityRole="button"
                     accessibilityLabel={activity}>
+                    {isSelected && solidSelected && (
+                      <LinearGradient
+                        colors={['#f4a47e', '#e0735f']}
+                        start={{ x: 0.2, y: 0 }}
+                        end={{ x: 0.8, y: 1 }}
+                        style={[styles.solidFill, { borderRadius: 999 }]}
+                      />
+                    )}
                     <Text
                       style={[
                         styles.activityChipText,
                         {
-                          color: isSelected
-                            ? '#FFFFFF'
-                            : isDark ? 'rgba(199, 180, 191, 0.85)' : '#4f3c3a',
+                          color: isSelected && solidSelected ? solidText : chipText,
                         },
                       ]}>
                       {activity}
@@ -350,7 +365,7 @@ export default function PlanScreen() {
                   ? isTrueBlack
                     ? ['#574049', '#241A20']
                     : ['#634256', '#8A5D7C', '#9E768E']
-                  : ['#f0a07e', '#e88970', '#e0735f']
+                  : ['#f4a47e', '#ea846a', '#e0735f']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -386,31 +401,33 @@ export default function PlanScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   safeArea: { flex: 1 },
-  container: { flex: 1, paddingHorizontal: 22, paddingTop: 8, paddingBottom: 20 },
+  container: { flex: 1, paddingHorizontal: 22, paddingBottom: 20 },
   pressed: { opacity: 0.75 },
   buttonPressed: { transform: [{ scale: 0.985 }], opacity: 0.92 },
   flexSpacer: { flex: 1 },
-  headerBlock: { marginBottom: 18 },
-  backButton: { width: 36, height: 36, marginLeft: -6, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  backChevron: { fontSize: 30, lineHeight: 30 },
-  sectionLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 2.2, textTransform: 'uppercase', marginBottom: 6 },
-  mainHeading: { fontFamily: Fonts.display.regular, fontSize: 32, lineHeight: 38, letterSpacing: -0.3, marginBottom: 6 },
-  subtitleText: { fontSize: 14.5, lineHeight: 21 },
-  sectionBlock: { marginTop: 22 },
-  groupLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 10, paddingLeft: 2 },
+  headerBlock: {},
+  backButton: { width: 30, height: 30, marginLeft: -5, alignItems: 'center', justifyContent: 'center', marginBottom: 13 },
+  // .pl-date.sel / .pl-kind.sel: shadow 0 8px 18px rgba(224,115,95,0.28)
+  solidLift: { shadowColor: '#E0735F', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.28, shadowRadius: 9, elevation: 4 },
+  solidFill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  sectionLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 2.2, textTransform: 'uppercase', marginBottom: 7 },
+  mainHeading: { fontFamily: Fonts.display.medium, fontSize: 30, lineHeight: 34, letterSpacing: -0.3 },
+  subtitleText: { fontSize: 14.5, lineHeight: 22, marginTop: 12, maxWidth: 270 },
+  sectionBlock: { marginTop: 26 },
+  groupLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 1.76, textTransform: 'uppercase', marginBottom: 12 },
   optionalLabel: { fontSize: 11, fontWeight: '500', textTransform: 'none', letterSpacing: 0 },
-  presetsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  presetChip: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 22, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
-  presetText: { fontSize: 15, letterSpacing: -0.15, fontWeight: '500' },
-  dateCardsRow: { flexDirection: 'row', gap: 6, justifyContent: 'space-between' },
-  dateCardWrapper: { flex: 1, height: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center', gap: 3, borderWidth: 1.5 },
-  dateCardDayLabel: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
-  dateCardNumber: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  activityWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  activityChipWrapper: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 22, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
-  activityChipText: { fontSize: 15, letterSpacing: -0.15, fontWeight: '500' },
-  ctaButtonWrapper: { width: '100%', height: 54, borderRadius: 27, shadowColor: '#000000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 18, elevation: 8 },
-  ctaButtonGradient: { flex: 1, borderRadius: 27, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.12)' },
-  ctaButtonText: { color: '#FFF6F1', fontSize: 16, fontWeight: '600' },
-  ctaArrowContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  presetsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  presetChip: { paddingVertical: 10, paddingHorizontal: 17, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
+  presetText: { fontSize: 14, fontWeight: '600' },
+  dateCardsRow: { flexDirection: 'row', gap: 8 },
+  dateCardWrapper: { flex: 1, paddingTop: 11, paddingBottom: 12, borderRadius: 16, alignItems: 'center', justifyContent: 'center', gap: 3, borderWidth: 1.5 },
+  dateCardDayLabel: { fontSize: 9.5, fontWeight: '700', letterSpacing: 0.95, textTransform: 'uppercase' },
+  dateCardNumber: { fontSize: 17, fontWeight: '600' },
+  activityWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  activityChipWrapper: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
+  activityChipText: { fontSize: 13.5, fontWeight: '600' },
+  ctaButtonWrapper: { width: '100%', height: 56, borderRadius: 28, shadowColor: '#6E5656', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.16, shadowRadius: 10, elevation: 8 },
+  ctaButtonGradient: { flex: 1, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  ctaButtonText: { color: '#FFF8F4', fontSize: 16, fontWeight: '600', letterSpacing: -0.16 },
+  ctaArrowContainer: { position: 'absolute', right: 22, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
 });

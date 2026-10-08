@@ -190,7 +190,6 @@ const styles = StyleSheet.create({
 
   stickyHeader: {
     paddingHorizontal: 26,
-    paddingTop: 8,
   },
 
   scrollContent: {
@@ -205,8 +204,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    height: 36,
-    marginBottom: 15,
+    height: 30,
+    marginBottom: 14,
   },
 
   backButton: {
@@ -241,11 +240,11 @@ const styles = StyleSheet.create({
 
   // ── Supporting text (17px, line-height 25px) ──────
   supportingText: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 14.5,
+    lineHeight: 22,
     fontWeight: '400',
     marginTop: 12,
-    maxWidth: 330,
+    maxWidth: 260,
   },
 
   // ── Chip grid (.ob-chips) ────
@@ -266,7 +265,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 10,
     shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
+    shadowRadius: 6,
     elevation: 2,
   },
 
@@ -291,8 +290,8 @@ const styles = StyleSheet.create({
 
   // ── Information text (13px, line-height 19px) ──────────
   infoText: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 11.5,
+    lineHeight: 17,
     textAlign: 'left',
     marginTop: 30,
   },
@@ -300,17 +299,17 @@ const styles = StyleSheet.create({
   // ── Continue CTA (height 62px, radius 31px) ──
   continueWrapper: {
     width: '100%',
-    height: 62,
-    borderRadius: 31,
+    height: 58,
+    borderRadius: 29,
     marginTop: 'auto',
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 20,
+    shadowRadius: 10,
     elevation: 5,
   },
 
   continueGradient: {
     flex: 1,
-    borderRadius: 31,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -324,15 +323,14 @@ const styles = StyleSheet.create({
   },
 
   continueButtonText: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
   continueArrowContainer: {
     position: 'absolute',
-    right: 22,
+    right: 20,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

@@ -19,6 +19,28 @@ import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
 import { ENERGY_LEGEND } from "@/copy/weekDots";
 import { usePatterns } from "@/hooks/data";
 
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+
+const STATE_COLORS = {
+  steady: "#8FB996",
+  caution: "#ECC880",
+  rest: "#E27A6C",
+};
+
+// .sx-badge.sage / .sx-badge.coral: [from, to, icon] for light, Dusk, OLED
+const BADGE = {
+  help: {
+    light: ["#bcd6c2", "#9cc0aa", "#426150"],
+    dusk: ["#4A6B55", "#33503F", "#C6DFCB"],
+    oled: ["#2C4235", "#2C4235", "#9FB8A6"],
+  },
+  cost: {
+    light: ["#f3a784", "#e7805f", "#fff8f4"],
+    dusk: ["#8A4B3C", "#6B3A2E", "#F3D9CD"],
+    oled: ["#5A3128", "#5A3128", "#D8BFB4"],
+  },
+} as const;
+
 // ─── Pattern Card Component (.sx-card with subtle gradient / flat OLED) ───────
 
 function PatternCard({
@@ -50,21 +72,22 @@ function PatternCard({
     );
   }
 
+  // .pt-week / .pt-card3: flat #fffcf8b8 (light), 90deg mauve gradient at 0.7 (Dusk)
   const cardGradientColors: [string, string, string] = isDark
-    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
-    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+    ? ['rgba(46, 39, 56, 0.7)', 'rgba(67, 49, 67, 0.7)', 'rgba(102, 73, 73, 0.7)']
+    : ['rgba(255, 252, 248, 0.72)', 'rgba(255, 252, 248, 0.72)', 'rgba(255, 252, 248, 0.72)'];
 
   return (
     <LinearGradient
       colors={cardGradientColors}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 1, y: 0.7 }}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
       style={[
         styles.card,
         {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(255, 255, 255, 0.85)',
           shadowColor: isDark ? '#000000' : '#BE968C',
-          shadowOpacity: isDark ? 0.24 : 0.08,
+          shadowOpacity: isDark ? 0.29 : 0.16,
         },
         style,
       ]}>
@@ -112,11 +135,12 @@ export default function PatternsScreen() {
       ? "#E9DDD6"
       : "#F3E7E1"
     : theme.ink.display;
+  const badgeTheme = isDark ? (isTrueBlack ? "oled" : "dusk") : "light";
   const subtitleColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
       : "rgba(199, 180, 191, 0.72)"
-    : "rgba(74, 58, 57, 0.75)";
+    : "rgba(74, 58, 57, 0.8)";
   const learningSinceLabelColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
@@ -141,17 +165,17 @@ export default function PatternsScreen() {
     ? isTrueBlack
       ? "#E9DDD6"
       : "#F3E7E1"
-    : "#4F3C3A";
+    : "#463332";
   const subtextColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
       : "rgba(199, 180, 191, 0.68)"
-    : "rgba(74, 58, 57, 0.62)";
+    : "rgba(74, 58, 57, 0.66)";
   const legendTextColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
       : "rgba(199, 180, 191, 0.8)"
-    : "rgba(74, 58, 57, 0.75)";
+    : "rgba(74, 58, 57, 0.7)";
   const footnoteColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
@@ -173,7 +197,7 @@ export default function PatternsScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
+            <SymbolView name="chevron.left" size={22} tintColor={isDark ? (isTrueBlack ? "#A8979E" : "rgba(199, 180, 191, 0.84)") : "rgba(74, 58, 57, 0.62)"} />
           </Pressable>
         </View>
       </View>
@@ -342,7 +366,7 @@ export default function PatternsScreen() {
                       ]}
                     />
                   </View>
-                  <Text style={[styles.dayLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)" }]}>
+                  <Text style={[styles.dayLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.5)" }]}>
                     {dayItem.day}
                   </Text>
                 </View>
@@ -382,26 +406,18 @@ export default function PatternsScreen() {
             isTrueBlack={isTrueBlack}
             style={styles.patternCard}
           >
-            <View
-              style={[
-                styles.helpBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#2C4235"
-                      : "#3E5D47"
-                    : "rgba(126, 155, 106, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
+            <LinearGradient
+              colors={[BADGE.help[badgeTheme][0], BADGE.help[badgeTheme][1]]}
+              start={{ x: 0.2, y: 0 }}
+              end={{ x: 0.9, y: 1 }}
+              style={styles.helpBadge}
             >
               <SymbolView
                 name={pattern.icon}
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
+                size={18}
+                tintColor={BADGE.help[badgeTheme][2]}
               />
-            </View>
+            </LinearGradient>
             <View style={styles.cardTextBlock}>
               <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
                 {pattern.bodyText}
@@ -425,26 +441,18 @@ export default function PatternsScreen() {
             isTrueBlack={isTrueBlack}
             style={styles.patternCard}
           >
-            <View
-              style={[
-                styles.costBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#3D2526"
-                      : "#784436"
-                    : "rgba(224, 115, 95, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
+            <LinearGradient
+              colors={[BADGE.cost[badgeTheme][0], BADGE.cost[badgeTheme][1]]}
+              start={{ x: 0.2, y: 0 }}
+              end={{ x: 0.9, y: 1 }}
+              style={styles.costBadge}
             >
               <SymbolView
                 name={pattern.icon}
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
+                size={18}
+                tintColor={BADGE.cost[badgeTheme][2]}
               />
-            </View>
+            </LinearGradient>
             <View style={styles.cardTextBlock}>
               <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
                 {pattern.bodyText}
@@ -497,14 +505,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    height: 36,
-    marginBottom: 12,
+    height: 30,
+    marginBottom: 13,
   },
 
   backButton: {
-    width: 36,
-    height: 36,
-    marginLeft: -6,
+    width: 30,
+    height: 30,
+    marginLeft: -5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -520,16 +528,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
   // .sx-title: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
+    fontFamily: Fonts.display.medium,
+    fontSize: 30,
+    lineHeight: 34,
     letterSpacing: -0.3,
-    marginBottom: 8,
   },
 
   // .pt-sub: flex, gap 18px, margin-top 12px
@@ -537,34 +544,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 16,
-    marginBottom: 20,
+    gap: 18,
+    marginTop: 12,
   },
 
   subtitleLeft: {
     fontSize: 14.5,
     lineHeight: 21,
     flex: 1,
+    maxWidth: 190,
   },
 
   subtitleRightContainer: {
     alignItems: "flex-end",
-    gap: 2,
+    maxWidth: 118,
     marginTop: 2,
   },
 
   subtitleRightLabel: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: "600",
-    letterSpacing: 1.4,
+    letterSpacing: 1.37,
+    lineHeight: 15,
     textTransform: "uppercase",
+    textAlign: "right",
   },
 
   subtitleRightDate: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
+    fontSize: 10.5,
+    fontWeight: "600",
+    letterSpacing: 1.37,
+    lineHeight: 15,
     textTransform: "uppercase",
+    textAlign: "right",
   },
 
   // ── Cards (.sx-card) ─────────────────────────────────────────────────────
@@ -572,17 +584,19 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 22,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 13,
+    // no Android elevation: it shows through the translucent card
+    elevation: 0,
   },
 
   // ── "This week" Card (.pt-week) ──────────────────────────────────────────
 
   thisWeekCard: {
-    paddingVertical: 18,
+    paddingTop: 16,
     paddingHorizontal: 18,
-    marginBottom: 20,
+    paddingBottom: 17,
+    marginTop: 18,
   },
 
   cardHeaderRow: {
@@ -593,21 +607,22 @@ const styles = StyleSheet.create({
   },
 
   thisWeekTitle: {
-    fontSize: 18.5,
-    fontWeight: "600",
+    fontFamily: Fonts.display.medium,
+    fontSize: 20,
+    lineHeight: 24,
     letterSpacing: -0.2,
   },
 
   thisWeekRightHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 9,
   },
 
   sevenDaysText: {
     fontSize: 10.5,
     fontWeight: "600",
-    letterSpacing: 1.4,
+    letterSpacing: 1.37,
     textTransform: "uppercase",
   },
 
@@ -629,18 +644,18 @@ const styles = StyleSheet.create({
 
   tankTooltipPopover: {
     position: "absolute",
-    top: 48,
-    right: 14,
-    width: 275,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 18,
+    top: 40,
+    right: 10,
+    width: 248,
+    borderRadius: 18,
+    paddingHorizontal: 15,
+    paddingTop: 14,
+    paddingBottom: 15,
     borderWidth: 1,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.42,
-    shadowRadius: 30,
+    shadowColor: "#785A5A",
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.28,
+    shadowRadius: 20,
     elevation: 14,
     zIndex: 100,
   },
@@ -649,13 +664,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    gap: 10,
+    marginBottom: 9,
   },
 
   tankTooltipTitle: {
     fontSize: 10.5,
     fontWeight: "700",
-    letterSpacing: 1.2,
+    letterSpacing: 1.26,
     textTransform: "uppercase",
     flex: 1,
   },
@@ -668,12 +684,13 @@ const styles = StyleSheet.create({
   },
 
   tankTooltipCloseText: {
-    fontSize: 14,
+    fontSize: 18,
+    lineHeight: 20,
   },
 
   tankTooltipBody: {
-    fontSize: 14.5,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 19.5,
     fontWeight: "400",
   },
 
@@ -682,33 +699,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
-    paddingHorizontal: 4,
-    height: 52,
-    marginBottom: 14,
   },
 
   dayColumn: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 8,
-    width: 36,
+    gap: 10,
   },
 
   dayDotContainer: {
-    height: 36,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
   },
 
   dayDot: {
-    shadowColor: "#000000",
+    shadowColor: "#785046",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
-    shadowRadius: 4,
+    shadowRadius: 2.5,
   },
 
   dayLabel: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: "600",
   },
 
@@ -717,12 +731,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.06)",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.06)",
-    marginVertical: 10,
+    marginTop: 18,
   },
 
   legendItem: {
@@ -732,28 +741,29 @@ const styles = StyleSheet.create({
   },
 
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
   },
 
   legendText: {
-    fontSize: 12.5,
-    fontWeight: "500",
+    fontSize: 12,
+    fontWeight: "600",
   },
 
   cardFooterNote: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: "400",
     lineHeight: 19.5,
-    marginTop: 4,
+    marginTop: 11,
+    marginHorizontal: 2,
   },
 
   cardFooterSecondary: {
-    fontSize: 13.5,
-    fontWeight: "400",
-    lineHeight: 19.5,
-    marginTop: 4,
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 17,
+    marginTop: 18,
   },
 
   // ── Pattern Cards (.pt-sec) ──────────────────────────────────────────────
@@ -761,68 +771,67 @@ const styles = StyleSheet.create({
   groupHeaderLabel: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.8,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
-    marginTop: 18,
-    marginBottom: 10,
-    paddingLeft: 4,
+    marginTop: 23,
+    marginBottom: 0,
   },
 
   groupHeaderLabelSpacing: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.8,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
-    marginTop: 22,
-    marginBottom: 10,
-    paddingLeft: 4,
+    marginTop: 23,
+    marginBottom: 0,
   },
 
   patternCard: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 16,
-    gap: 14,
-    marginBottom: 12,
+    gap: 13,
+    marginTop: 9,
   },
 
   helpBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
   },
 
   costBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
   },
 
   cardTextBlock: {
     flex: 1,
-    gap: 6,
+    gap: 7,
   },
 
   cardBodyText: {
-    fontSize: 14.5,
+    fontSize: 14,
     lineHeight: 21,
-    fontWeight: "500",
+    fontWeight: "400",
   },
 
   cardSubtitleText: {
     fontSize: 12.5,
+    lineHeight: 18,
     fontWeight: "400",
   },
 
   bottomExplanatoryText: {
-    fontSize: 12.5,
-    lineHeight: 19,
-    marginTop: 16,
-    paddingHorizontal: 4,
+    fontSize: 13,
+    lineHeight: 19.5,
+    marginTop: 11,
+    marginHorizontal: 2,
   },
 });

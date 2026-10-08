@@ -261,7 +261,7 @@ export function LearningScreenLayout({
               />
             </View>
 
-            <View style={styles.badgeSlot}>
+            <View style={[styles.badgeSlot, styles.learningBadgeSlot]}>
               <TodayBadge
                 isFirstDay={isFirstDay}
                 indicatorText={indicatorText}
@@ -270,7 +270,7 @@ export function LearningScreenLayout({
               />
             </View>
 
-            <View style={styles.supportingSlot}>
+            <View style={[styles.supportingSlot, styles.learningSupportingSlot]}>
               <TodaySupportingText text={supportingText} />
             </View>
 
@@ -343,8 +343,8 @@ const styles = StyleSheet.create({
   },
 
   smallOrbSlot: {
-    marginTop: 88,
-    marginBottom: 18,
+    marginTop: 64,
+    marginBottom: 0,
   },
 
   headlineSlot: {
@@ -356,8 +356,8 @@ const styles = StyleSheet.create({
   },
 
   smallOrbHeadlineSlot: {
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 57,
+    marginBottom: 28,
   },
 
   badgeSlot: {
@@ -383,8 +383,17 @@ const styles = StyleSheet.create({
   },
 
   smallOrbForecastSlot: {
-    marginTop: 22,
-    marginBottom: 6,
+    marginTop: 6,
+    marginBottom: 0,
+  },
+
+  // .fd-status: 11px between the chip and the micro line
+  learningBadgeSlot: {
+    marginBottom: 4,
+  },
+
+  learningSupportingSlot: {
+    marginBottom: 0,
   },
 
   secondaryCenterRegion: {

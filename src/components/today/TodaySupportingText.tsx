@@ -14,7 +14,7 @@ export function TodaySupportingText({ text }: TodaySupportingTextProps) {
         <Text
           style={[
             styles.supportingText,
-            { color: theme.components.supportingText.noteColor },
+            { color: theme.components.supportingText.color },
           ]}
         >
           {text}
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
 
   // .fd-micro: 14.5px, weight 500, line-height 21px, letter-spacing -0.005em
   supportingText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: "500",
     lineHeight: 21,
     textAlign: "center",

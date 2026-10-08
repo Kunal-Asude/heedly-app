@@ -48,9 +48,10 @@ function NotesCard({
     );
   }
 
+  // .nt-card: #fffcf8c4 (light), #2E2738 (Dusk)
   const cardGradientColors: [string, string, string] = isDark
-    ? ["rgba(50, 35, 54, 0.88)", "rgba(62, 43, 65, 0.85)", "rgba(82, 54, 72, 0.82)"]
-    : ["rgba(252, 246, 240, 0.92)", "rgba(255, 250, 245, 0.95)", "rgba(255, 238, 230, 0.95)"];
+    ? ["#2E2738", "#2E2738", "#2E2738"]
+    : ["rgba(255, 252, 248, 0.77)", "rgba(255, 252, 248, 0.77)", "rgba(255, 252, 248, 0.77)"];
 
   return (
     <LinearGradient
@@ -60,9 +61,9 @@ function NotesCard({
       style={[
         styles.card,
         {
-          borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.85)",
+          borderColor: isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(255, 255, 255, 0.85)",
           shadowColor: isDark ? "#000000" : "#BE968C",
-          shadowOpacity: isDark ? 0.24 : 0.08,
+          shadowOpacity: isDark ? 0.29 : 0.16,
         },
         style,
       ]}
@@ -106,44 +107,44 @@ export default function NotesScreen() {
   // ── Theme-aware tokens matching Aubade - True Black (OLED).html ──────────────
   const isOled = isDark && isTrueBlack;
 
-  const eyebrowColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)";
+  const eyebrowColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.68)") : "rgba(74, 58, 57, 0.5)";
   const mainHeadingColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
-  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "rgba(74, 58, 57, 0.75)";
-  const cardHeaderLabelColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.6)") : "rgba(74, 58, 57, 0.5)";
+  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 1)") : "rgba(74, 58, 57, 0.78)";
+  const cardHeaderLabelColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.68)") : "rgba(74, 58, 57, 0.5)";
   const userNameColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
-  const cardHeaderDateColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.85)") : "rgba(74, 58, 57, 0.74)";
-  const checkInsCountColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.6)") : "rgba(74, 58, 57, 0.58)";
+  const cardHeaderDateColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 1)") : "rgba(74, 58, 57, 0.74)";
+  const checkInsCountColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.78)") : "rgba(74, 58, 57, 0.58)";
 
   // Metric tiles (.nt-tile)
   const metricBoxBg = isDark ? (isOled ? "#16111B" : "rgba(112, 72, 94, 0.65)") : "#f8d9bf";
-  const metricBoxBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.6)";
-  const metricLabelColor = isDark ? (isOled ? "#9A8A91" : "#FFFFFF") : "rgba(120, 72, 48, 0.72)";
-  const metricValueColor = isDark ? (isOled ? "#E9DDD6" : "#FFFFFF") : "#463130";
-  const metricSubtextColor = isDark ? (isOled ? "#9A8A91" : "#FFFFFF") : "rgba(74, 58, 57, 0.6)";
+  const metricBoxBorder = "transparent";
+  const metricLabelColor = isDark ? (isOled ? "#9A8A91" : "#F3E7E1") : "rgba(120, 72, 48, 0.72)";
+  const metricValueColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#463130";
+  const metricSubtextColor = isDark ? (isOled ? "#9A8A91" : "#F3E7E1") : "rgba(74, 58, 57, 0.6)";
 
   // Top triggers (.nt-trig)
-  const groupHeaderColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.55)";
+  const groupHeaderColor = isDark ? (isOled ? "#9A8A91" : "rgba(199, 180, 191, 0.68)") : "rgba(74, 58, 57, 0.5)";
   const triggerTitleColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
-  const triggerSubtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.6)";
+  const triggerSubtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.81)") : "rgba(74, 58, 57, 0.6)";
   const impactTextColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#b6634a";
   const dividerColor = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(120, 90, 80, 0.13)";
 
   // Summary (.nt-card--summary)
-  const summaryTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.9)") : "rgba(74, 58, 57, 0.82)";
-  const disclaimerTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.55)") : "rgba(74, 58, 57, 0.6)";
-  const personalNoteColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : theme.coral.terracotta;
+  const summaryTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 1)") : "rgba(74, 58, 57, 0.82)";
+  const disclaimerTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.81)") : "rgba(74, 58, 57, 0.6)";
+  const personalNoteColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#b0532f";
 
   // Floating actions bar (.nt-actions)
-  const bottomPanelBg = isDark ? (isOled ? "#16111B" : "rgba(38, 26, 42, 0.92)") : "rgba(255, 255, 255, 0.75)";
-  const bottomPanelBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.85)";
+  const bottomPanelBg = isDark ? (isOled ? "#16111B" : "rgba(51, 37, 56, 0.72)") : "rgba(255, 255, 255, 0.5)";
+  const bottomPanelBorder = isDark ? (isOled ? "rgba(255, 255, 255, 0.07)" : "rgba(199, 180, 191, 0.14)") : "rgba(255, 255, 255, 0.65)";
   const ctaGradient: [string, string, ...string[]] = isDark
     ? (isOled ? ["#574049", "#241A20"] : ["#634256", "#8A5D7C", "#9E768E"])
-    : ["#f0a07e", "#e88970", "#e0735f"];
-  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
-  const ghostBtnBg = isDark ? (isOled ? "#16111B" : "rgba(72, 48, 62, 0.7)") : "rgba(255, 255, 255, 0.75)";
-  const ghostBtnBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.85)";
-  const ghostBtnTextColor = isDark ? (isOled ? "#A8979E" : "#FFF6F1") : "#4f3c3a";
-  const ghostBtnIconColor = isDark ? (isOled ? "#C97B60" : "#FFF6F1") : "#4f3c3a";
+    : ["#f4a47e", "#ea846a", "#e0735f"];
+  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF8F4";
+  const ghostBtnBg = isDark ? (isOled ? "#16111B" : "rgba(74, 57, 80, 0.85)") : "rgba(255, 255, 255, 0.46)";
+  const ghostBtnBorder = "transparent";
+  const ghostBtnTextColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.97)") : "rgba(74, 58, 57, 0.72)";
+  const ghostBtnIconColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#c0764f";
 
   return (
     <View style={styles.root}>
@@ -168,7 +169,7 @@ export default function NotesScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? (isOled ? "#9A8A91" : theme.ink.muted) : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
+            <SymbolView name="chevron.left" size={22} tintColor={isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.84)") : "rgba(74, 58, 57, 0.62)"} />
           </Pressable>
         </View>
       </View>
@@ -233,6 +234,14 @@ export default function NotesScreen() {
                   },
                 ]}
               >
+                {!isOled && (
+                  <LinearGradient
+                    colors={isDark ? ["#634256", "#8A5D7C", "#9E768E"] : ["#f8d9bf", "#f3c7a6"]}
+                    start={isDark ? { x: 0, y: 0.5 } : { x: 0.35, y: 0 }}
+                    end={isDark ? { x: 1, y: 0.5 } : { x: 0.65, y: 1 }}
+                    style={styles.metricFill}
+                  />
+                )}
                 <Text style={[styles.metricLabel, { color: metricLabelColor }]}>
                   {metric.label}
                 </Text>
@@ -333,7 +342,7 @@ export default function NotesScreen() {
             end={{ x: 1, y: 0.5 }}
             style={styles.appointmentButtonGradient}
           >
-            <SymbolView name="calendar" size={18} tintColor={ctaTextColor} />
+            <SymbolView name="calendar" size={19} tintColor={ctaTextColor} />
             <Text style={[styles.appointmentButtonText, { color: ctaTextColor }]}>Prepare for my appointment</Text>
           </LinearGradient>
         </Pressable>
@@ -354,7 +363,7 @@ export default function NotesScreen() {
           >
             <SymbolView
               name="square.and.arrow.up"
-              size={15}
+              size={17}
               tintColor={ghostBtnIconColor}
             />
             <Text style={[styles.secondaryBtnText, { color: ghostBtnTextColor }]}>
@@ -376,7 +385,7 @@ export default function NotesScreen() {
           >
             <SymbolView
               name="link"
-              size={15}
+              size={17}
               tintColor={ghostBtnIconColor}
             />
             <Text style={[styles.secondaryBtnText, { color: ghostBtnTextColor }]}>
@@ -431,14 +440,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    height: 36,
-    marginBottom: 8,
+    height: 30,
+    marginBottom: 13,
   },
 
   backButton: {
-    width: 36,
-    height: 36,
-    marginLeft: -6,
+    width: 30,
+    height: 30,
+    marginLeft: -5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -454,23 +463,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
   // .nt-title: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
+    fontFamily: Fonts.display.medium,
+    fontSize: 30,
+    lineHeight: 34,
     letterSpacing: -0.3,
-    marginBottom: 6,
   },
 
   // .nt-sub: 14.5px, 1.5
   subtitleText: {
     fontSize: 14.5,
-    lineHeight: 21,
-    marginBottom: 18,
+    lineHeight: 22,
+    marginTop: 12,
+    maxWidth: 260,
   },
 
   // ── Cards (.sx-card) ─────────────────────────────────────────────────────
@@ -478,16 +487,16 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 22,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 13,
+    elevation: 0,
   },
 
   // ── 90-Day Summary Card (.nt-card) ───────────────────────────────────────
 
   summary90Card: {
     padding: 18,
-    marginBottom: 20,
+    marginTop: 22,
   },
 
   cardHeaderRow: {
@@ -498,17 +507,17 @@ const styles = StyleSheet.create({
   },
 
   cardHeaderLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.5,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
   },
 
   userNameText: {
-    fontSize: 19.5,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    marginTop: 4,
+    fontFamily: Fonts.display.medium,
+    fontSize: 19,
+    lineHeight: 23,
+    marginTop: 6,
   },
 
   metaRight: {
@@ -522,7 +531,7 @@ const styles = StyleSheet.create({
   },
 
   checkInsText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: "500",
     lineHeight: 18,
   },
@@ -531,38 +540,46 @@ const styles = StyleSheet.create({
 
   metricsRow: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 18,
+    gap: 10,
+    marginTop: 16,
   },
 
   metricBox: {
     flex: 1,
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    borderRadius: 16,
+    paddingTop: 13,
+    paddingHorizontal: 13,
+    paddingBottom: 14,
     alignItems: "flex-start",
+    overflow: "hidden",
   },
 
+  metricFill: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   metricLabel: {
-    fontSize: 9.5,
-    fontWeight: "700",
-    letterSpacing: 1.2,
+    fontSize: 9,
+    fontWeight: "600",
+    letterSpacing: 1.17,
     textTransform: "uppercase",
     marginBottom: 8,
   },
 
   metricValue: {
-    fontSize: 23,
+    fontSize: 21,
     fontWeight: "700",
-    letterSpacing: -0.4,
-    lineHeight: 26,
+    letterSpacing: -0.32,
+    lineHeight: 23,
   },
 
   metricSubtext: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: "500",
-    marginTop: 6,
+    marginTop: 7,
   },
 
   // ── Top Triggers (.nt-sec--sp & .nt-trig) ─────────────────────────────────
@@ -570,25 +587,23 @@ const styles = StyleSheet.create({
   groupHeaderLabel: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.8,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
-    marginTop: 6,
+    marginTop: 26,
     marginBottom: 6,
-    paddingLeft: 2,
   },
 
   groupHeaderLabelSpacing: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.8,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
-    marginTop: 20,
-    marginBottom: 10,
-    paddingLeft: 2,
+    marginTop: 26,
+    marginBottom: 8,
   },
 
   triggersBlock: {
-    marginBottom: 8,
+    marginBottom: 0,
   },
 
   triggerRow: {
@@ -602,17 +617,16 @@ const styles = StyleSheet.create({
   triggerLeftBlock: {
     flex: 1,
     minWidth: 0,
-    gap: 3,
+    gap: 4,
   },
 
   triggerTitle: {
     fontSize: 15,
     fontWeight: "600",
-    letterSpacing: -0.15,
   },
 
   triggerSubtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: "400",
   },
 
@@ -629,27 +643,28 @@ const styles = StyleSheet.create({
 
   summaryCard: {
     padding: 18,
-    marginBottom: 14,
   },
 
   summaryParagraphText: {
-    fontSize: 14.5,
+    fontSize: 13.5,
     lineHeight: 22,
     fontWeight: "400",
   },
 
   disclaimerText: {
-    fontSize: 12,
-    lineHeight: 18,
-    fontWeight: "400",
-    marginBottom: 18,
-    paddingHorizontal: 2,
+    fontSize: 12.5,
+    lineHeight: 19,
+    fontWeight: "500",
+    marginTop: 20,
   },
 
   personalNoteContainer: {
     alignSelf: "center",
-    paddingVertical: 6,
-    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    padding: 4,
+    marginTop: 26,
   },
 
   personalNoteText: {
@@ -661,59 +676,60 @@ const styles = StyleSheet.create({
 
   bottomPanel: {
     position: "absolute",
-    left: 18,
-    right: 18,
+    left: 16,
+    right: 16,
     zIndex: 20,
-    padding: 10,
-    borderRadius: 24,
+    padding: 12,
+    borderRadius: 26,
     borderWidth: 1,
-    gap: 8,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 12,
+    gap: 10,
+    shadowColor: "#B48282",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 15,
+    // no Android elevation: it shows through the translucent panel
+    elevation: 0,
   },
 
   appointmentButtonWrapper: {
     width: "100%",
     height: 52,
-    borderRadius: 26,
+    borderRadius: 17,
   },
 
   appointmentButtonGradient: {
     flex: 1,
-    borderRadius: 26,
+    borderRadius: 17,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 9,
   },
 
   appointmentButtonText: {
-    color: "#FFF6F1",
+    color: "#FFF8F4",
     fontSize: 15.5,
     fontWeight: "600",
+    letterSpacing: -0.16,
   },
 
   secondaryActionsRow: {
     flexDirection: "row",
-    gap: 8,
+    gap: 10,
   },
 
   secondaryBtn: {
     flex: 1,
     height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
+    borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 7,
   },
 
   secondaryBtnText: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: "600",
   },
 });

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 
@@ -14,10 +15,12 @@ import { useCheckIn } from '@/contexts/CheckInContext';
 import { greetingWithName, useFirstName } from '@/contexts/NameContext';
 import { dayLabel, editableEarlierDate, hasCheckIn } from '@/services/checkinHistory';
 import { getRecordedCheckInDate } from '@/services/checkinStorage';
+import { useTagCatalogue } from '@/hooks/data';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
 function FiveDotRating({ value, isDark, isTrueBlack = false }: { value: number; isDark: boolean; isTrueBlack?: boolean }) {
+  const ci = useCheckInPalette();
   return (
     <View style={styles.dotRatingRow}>
       {[1, 2, 3, 4, 5].map((idx) => (
@@ -25,20 +28,7 @@ function FiveDotRating({ value, isDark, isTrueBlack = false }: { value: number; 
           key={idx}
           style={[
             styles.ratingDot,
-            {
-              backgroundColor:
-                idx <= value
-                  ? isDark
-                    ? isTrueBlack
-                      ? '#C97B60'
-                      : '#E8907A'
-                    : '#ec7d5e'
-                  : isDark
-                  ? isTrueBlack
-                    ? 'rgba(255, 255, 255, 0.18)'
-                    : 'rgba(199, 180, 191, 0.24)'
-                  : 'rgba(120, 90, 90, 0.18)',
-            },
+            { backgroundColor: idx <= value ? ci.summaryDotOn : ci.summaryDotOff },
           ]}
         />
       ))}
@@ -49,10 +39,12 @@ function FiveDotRating({ value, isDark, isTrueBlack = false }: { value: number; 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CheckInSavedScreen() {
+  const ci = useCheckInPalette();
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
   const { activeEntry, saveCheckIn, beginEdit, editingDate, loadExistingCheckIn } = useCheckIn();
+  const { allTags } = useTagCatalogue();
   const { firstName } = useFirstName();
 
   const isEarlierDay = editingDate !== null && editingDate !== getRecordedCheckInDate();
@@ -93,7 +85,10 @@ export default function CheckInSavedScreen() {
       : 0;
   const tagsText =
     activeEntry.tags && activeEntry.tags.length > 0
-      ? activeEntry.tags.join(' · ')
+      ? activeEntry.tags
+          // Entries store tag ids; show the catalogue's words, falling back to the id.
+          .map((id) => allTags.find((tag) => tag.id === id)?.label ?? id)
+          .join(' · ')
       : 'nothing noted';
   const periodInfo = activeEntry.periodInfo;
 
@@ -143,64 +138,43 @@ export default function CheckInSavedScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentArea}>
           <View style={styles.iconContainer}>
-            {isCrash ? (
-              <View
-                style={[
-                  styles.iconBadge,
-                  {
-                    backgroundColor: isDark ? '#723E3A' : '#FCE4E6',
-                    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                  },
-                ]}
-              >
-                <SymbolView
-                  name="moon"
-                  size={23}
-                  tintColor={isDark ? '#F5D5C8' : '#DC6B76'}
-                />
-              </View>
-            ) : (
-              <View
-                style={[
-                  styles.iconBadge,
-                  {
-                    backgroundColor: isDark ? '#466650' : '#c1dac8',
-                    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#a0c4ab',
-                  },
-                ]}
-              >
-                <SymbolView
-                  name="checkmark"
-                  size={23}
-                  tintColor={isDark ? '#D2E8DA' : '#4f7359'}
-                />
-              </View>
-            )}
+            <LinearGradient
+              colors={isCrash ? ci.doneMoon : ci.doneCheck}
+              start={{ x: 0.2, y: 0 }}
+              end={{ x: 0.9, y: 1 }}
+              style={styles.iconBadge}
+            >
+              <SymbolView
+                name={isCrash ? "moon" : "checkmark"}
+                size={27}
+                tintColor={isCrash ? ci.doneMoonIcon : ci.doneCheckIcon}
+              />
+            </LinearGradient>
           </View>
 
           {isEarlierDay ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Your check-in for\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{`${earlierDayLabel}.`}</Text>
+              <Text style={{ color: ci.heading }}>{'Your check-in for\n'}</Text>
+              <Text style={{ color: ci.accent }}>{`${earlierDayLabel}.`}</Text>
             </Text>
           ) : isCrash ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Logged.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest now', firstName)}</Text>
+              <Text style={{ color: ci.heading }}>{'Logged.\n'}</Text>
+              <Text style={{ color: ci.accent }}>{greetingWithName('Rest now', firstName)}</Text>
             </Text>
           ) : isFirstTime ? (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>
+              <Text style={{ color: ci.heading }}>
                 {firstName ? 'Thank you, ' : 'Thank you.'}
               </Text>
               {firstName ? (
-                <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{`${firstName}.`}</Text>
+                <Text style={{ color: ci.accent }}>{`${firstName}.`}</Text>
               ) : null}
             </Text>
           ) : (
             <Text style={styles.heading}>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Saved.\n'}</Text>
-              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest well', firstName)}</Text>
+              <Text style={{ color: ci.heading }}>{'Saved.\n'}</Text>
+              <Text style={{ color: ci.accent }}>{greetingWithName('Rest well', firstName)}</Text>
             </Text>
           )}
 
@@ -208,7 +182,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+                { color: ci.lead },
               ]}
             >
               {"Change anything that wasn't right."}
@@ -217,7 +191,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+                { color: ci.lead },
               ]}
             >
               {"We've noted this as a crash day. No more questions."}
@@ -226,7 +200,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+                { color: ci.lead },
               ]}
             >
               {"That's your first piece of the picture.\nEach check-in teaches heedly a little\nmore about you."}
@@ -235,7 +209,7 @@ export default function CheckInSavedScreen() {
             <Text
               style={[
                 styles.description,
-                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+                { color: ci.lead },
               ]}
             >
               {"We'll quietly watch for patterns and only\nping you if something matters."}
@@ -247,10 +221,7 @@ export default function CheckInSavedScreen() {
               <View
                 style={[
                   styles.summaryCard,
-                  {
-                    backgroundColor: isDark ? (isTrueBlack ? '#16111B' : 'rgba(51, 37, 56, 0.72)') : 'rgba(255, 252, 248, 0.72)',
-                    borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(255, 255, 255, 0.09)') : 'rgba(255, 255, 255, 0.8)',
-                  },
+                  { backgroundColor: ci.summaryBg, borderColor: ci.summaryBorder },
                   isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
                 ]}
               >
@@ -263,13 +234,13 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabel,
-                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                      { color: ci.summaryKey },
                     ]}
                   >
                     {isFirstTime ? 'FEELING' : 'ENERGY'}
                   </Text>
                   <View style={styles.rowValueBlock}>
-                    <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
+                    <Text style={[styles.rowValueText, { color: ci.summaryValue }]}>
                       {energyLabel}
                     </Text>
                     <FiveDotRating value={energyRating} isDark={isDark} isTrueBlack={isTrueBlack} />
@@ -279,7 +250,7 @@ export default function CheckInSavedScreen() {
                 <View
                   style={[
                     styles.divider,
-                    { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
+                    { backgroundColor: ci.summaryDivider },
                   ]}
                 />
 
@@ -292,13 +263,13 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabel,
-                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                      { color: ci.summaryKey },
                     ]}
                   >
                     BODY
                   </Text>
                   <View style={styles.rowValueBlock}>
-                    <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
+                    <Text style={[styles.rowValueText, { color: ci.summaryValue }]}>
                       {bodyLabel}
                     </Text>
                     <FiveDotRating value={bodyRating} isDark={isDark} isTrueBlack={isTrueBlack} />
@@ -308,7 +279,7 @@ export default function CheckInSavedScreen() {
                 <View
                   style={[
                     styles.divider,
-                    { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
+                    { backgroundColor: ci.summaryDivider },
                   ]}
                 />
 
@@ -321,12 +292,12 @@ export default function CheckInSavedScreen() {
                   <Text
                     style={[
                       styles.rowLabelTop,
-                      { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                      { color: ci.summaryKey },
                     ]}
                   >
                     NOTABLE
                   </Text>
-                  <Text style={[styles.rowValueTextNotable, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#5a4644' }]}>
+                  <Text style={[styles.rowValueTextNotable, { color: ci.summaryValue }]}>
                     {tagsText}
                   </Text>
                 </Pressable>
@@ -336,7 +307,7 @@ export default function CheckInSavedScreen() {
                     <View
                       style={[
                         styles.divider,
-                        { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
+                        { backgroundColor: ci.summaryDivider },
                       ]}
                     />
                     <Pressable
@@ -348,12 +319,12 @@ export default function CheckInSavedScreen() {
                       <Text
                         style={[
                           styles.rowLabel,
-                          { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                          { color: ci.summaryKey },
                         ]}
                       >
                         YESTERDAY
                       </Text>
-                      <Text style={[styles.rowValueText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#4f3c3a' }]}>
+                      <Text style={[styles.rowValueText, { color: ci.summaryValue }]}>
                         {yesterdayLabel}
                       </Text>
                     </Pressable>
@@ -365,7 +336,7 @@ export default function CheckInSavedScreen() {
                     <View
                       style={[
                         styles.divider,
-                        { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.12)') : 'rgba(120, 90, 90, 0.1)' },
+                        { backgroundColor: ci.summaryDivider },
                       ]}
                     />
                     <Pressable
@@ -377,12 +348,12 @@ export default function CheckInSavedScreen() {
                       <Text
                         style={[
                           styles.rowLabelTop,
-                          { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                          { color: ci.summaryKey },
                         ]}
                       >
                         CYCLE
                       </Text>
-                      <Text style={[styles.rowValueTextNotable, { color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : '#5a4644' }]}>
+                      <Text style={[styles.rowValueTextNotable, { color: ci.summaryValue }]}>
                         {periodInfo}
                       </Text>
                     </Pressable>
@@ -393,7 +364,7 @@ export default function CheckInSavedScreen() {
               <Text
                 style={[
                   styles.helperText,
-                  { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' },
+                  { color: ci.summaryKey },
                 ]}
               >
                 Tap any line to edit before you go.
@@ -412,13 +383,13 @@ export default function CheckInSavedScreen() {
               </Text>
             </Pressable>
           )}
-        </View>
 
-        <View style={styles.bottomSection}>
+          <View style={styles.bottomSection}>
           <Pressable
             style={({ pressed }) => [
               styles.buttonWrapper,
               pressed && styles.buttonPressed,
+              { shadowOpacity: isDark ? 0.22 : 0.12, shadowColor: isDark ? '#000000' : '#BE968C' },
               isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
             ]}
             onPress={handleBackToToday}
@@ -426,40 +397,22 @@ export default function CheckInSavedScreen() {
             accessibilityLabel="Back to today"
           >
             <LinearGradient
-              colors={
-                isDark
-                  ? isTrueBlack
-                    ? ['#574049', '#241A20']
-                    : ['#634256', '#8A5D7C', '#9E768E']
-                  : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 252, 248, 0.85)']
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[
-                styles.buttonGradient,
-                isDark && isTrueBlack
-                  ? {
-                      borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.06)',
-                    }
-                  : !isDark
-                  ? {
-                      borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.85)',
-                    }
-                  : undefined,
-              ]}
+              colors={ci.secondary}
+              start={{ x: 0, y: ci.secondaryHorizontal ? 0.5 : 0 }}
+              end={{ x: 1, y: ci.secondaryHorizontal ? 0.5 : 1 }}
+              style={[styles.buttonGradient, { borderColor: ci.secondaryBorder }]}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  { color: isDark ? (isTrueBlack ? '#EADCD4' : '#FFF6F1') : '#463332' },
+                  { color: ci.secondaryText },
                 ]}
               >
                 Back to today
               </Text>
             </LinearGradient>
           </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     </View>
@@ -483,63 +436,60 @@ const styles = StyleSheet.create({
 
   contentArea: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
     justifyContent: 'center',
-    paddingBottom: 8,
+    alignItems: 'center',
   },
 
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 24,
   },
 
   iconBadge: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    elevation: 2,
   },
 
   heading: {
     fontFamily: Fonts.display.regular,
     fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: -0.3,
+    lineHeight: 37,
+    letterSpacing: -0.32,
     textAlign: 'center',
-    marginBottom: 12,
   },
 
   description: {
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
-    marginBottom: 26,
-    paddingHorizontal: 12,
+    marginTop: 16,
+    maxWidth: 270,
   },
 
   summaryCard: {
+    alignSelf: 'stretch',
+    marginTop: 28,
     borderRadius: 20,
     borderWidth: 1,
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 18,
-    shadowColor: '#000000',
+    shadowColor: '#BE968C',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 9,
+    // no Android elevation: it shows through the translucent card
+    elevation: 0,
   },
 
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     paddingVertical: 14,
   },
 
@@ -547,6 +497,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
+    gap: 12,
     paddingVertical: 14,
   },
 
@@ -579,10 +530,9 @@ const styles = StyleSheet.create({
   rowValueTextNotable: {
     flex: 1,
     textAlign: 'right',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    lineHeight: 18,
-    marginLeft: 16,
+    lineHeight: 19,
   },
 
   divider: {
@@ -592,7 +542,7 @@ const styles = StyleSheet.create({
   dotRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
 
   ratingDot: {
@@ -602,10 +552,10 @@ const styles = StyleSheet.create({
   },
 
   helperText: {
-    fontSize: 12.5,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 17,
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: 16,
   },
 
   earlierLink: {
@@ -620,19 +570,16 @@ const styles = StyleSheet.create({
   },
 
   bottomSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    alignItems: 'center',
+    alignSelf: 'stretch',
+    marginTop: 26,
   },
 
   buttonWrapper: {
     width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowColor: '#000000',
+    height: 54,
+    borderRadius: 27,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
+    shadowRadius: 8,
     elevation: 4,
   },
 
@@ -643,14 +590,14 @@ const styles = StyleSheet.create({
 
   buttonGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 27,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   buttonText: {
-    fontSize: 16.5,
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: -0.15,
   },
 });
