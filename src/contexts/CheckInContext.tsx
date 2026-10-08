@@ -22,6 +22,7 @@ import {
   loadDraft,
   saveDraft,
 } from "@/services/checkinStorage";
+import { cancelDailyReminder } from "@/services/dailyReminder";
 import type { CheckInEntry } from "@/types/checkin";
 import { clearErasableStorage } from "@/utils/storageKeys";
 import { useFirstName } from "@/contexts/NameContext";
@@ -369,6 +370,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     // Then everything the app keeps locally — the draft, the check-in mirror,
     // the first name. Theme preferences are not the person's data and stay.
     await clearErasableStorage();
+    // iOS holds the schedule, so erasing the preference alone leaves it arriving.
+    await cancelDailyReminder();
     clearFirstName();
     // Every check-in and verdict is gone, so the person is new again and
     // yesterday is unrated once more.
