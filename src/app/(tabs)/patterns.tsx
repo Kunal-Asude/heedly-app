@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -15,15 +15,8 @@ import { DawnBackground, EmptyState } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
+import { ENERGY_LEGEND } from "@/copy/weekDots";
 import { usePatterns } from "@/hooks/data";
-
-// ─── Design Tokens ────────────────────────────────────────────────────────────
-
-const STATE_COLORS = {
-  steady: "#8FB996",
-  caution: "#ECC880",
-  rest: "#E27A6C",
-};
 
 // ─── Pattern Card Component (.sx-card with subtle gradient / flat OLED) ───────
 
@@ -97,7 +90,14 @@ export default function PatternsScreen() {
     tankTooltipTitle,
     tankTooltipBody,
     learningSinceText,
+    refresh: refreshPatterns,
   } = usePatterns();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshPatterns();
+    }, [refreshPatterns]),
+  );
 
   // Dynamic Theme Colors (Dawn vs Dusk vs True Black / OLED)
   const eyebrowColor = isDark
@@ -321,25 +321,10 @@ export default function PatternsScreen() {
           {/* 7-Day Circles Row (.pt-chart) */}
           <View style={styles.daysRow}>
             {thisWeekDays.map((dayItem, index) => {
-              // `none` first. Without it a day with no reading falls through
-              // to the rest colour and claims a crash that never happened.
-              const dotColor =
-                dayItem.type === "none"
-                  ? dayItem.color
-                  : dayItem.type === "steady"
-                  ? isDark && isTrueBlack
-                    ? "#6E9678"
-                    : STATE_COLORS.steady
-                  : dayItem.type === "caution"
-                  ? isDark && isTrueBlack
-                    ? "#C29A5F"
-                    : STATE_COLORS.caution
-                  : isDark && isTrueBlack
-                  ? "#BE6A5C"
-                  : STATE_COLORS.rest;
+              const dotColor = dayItem.color;
 
               return (
-                <View key={index} style={styles.dayColumn}>
+                <View key={dayItem.date ?? index} style={styles.dayColumn}>
                   <View style={styles.dayDotContainer}>
                     <View
                       style={[
@@ -363,23 +348,18 @@ export default function PatternsScreen() {
 
           {/* Legend Row (.pt-legend) */}
           <View style={styles.legendRow}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#6E9678" : STATE_COLORS.steady }]} />
-              <Text style={[styles.legendText, { color: legendTextColor }]}>Steady</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#C29A5F" : STATE_COLORS.caution }]} />
-              <Text style={[styles.legendText, { color: legendTextColor }]}>Caution</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: isDark && isTrueBlack ? "#BE6A5C" : STATE_COLORS.rest }]} />
-              <Text style={[styles.legendText, { color: legendTextColor }]}>Rest day</Text>
-            </View>
+            {ENERGY_LEGEND.map((item) => (
+              <View key={item.label} style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                <Text style={[styles.legendText, { color: legendTextColor }]}>{item.label}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Card Footer Note */}
           <Text style={[styles.cardFooterNote, { color: subtextColor }]}>
-            Bigger dot = more energy.
+            The energy you reported. Bigger dot = more energy.{"\n"}Days without a
+            check-in stay empty.
           </Text>
           <Text style={[styles.cardFooterSecondary, { color: subtextColor }]}>
             Your tank reflects your recent weeks, not a fixed ceiling.
