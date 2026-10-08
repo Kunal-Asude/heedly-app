@@ -51,6 +51,26 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   return finalStatus === "granted";
 }
 
+export async function hasNotificationPermission(): Promise<boolean> {
+  if (Platform.OS === "web") {
+    return false;
+  }
+
+  try {
+    const permissions = await Notifications.getPermissionsAsync();
+    const ios = permissions.ios?.status;
+    if (ios !== undefined) {
+      return (
+        ios === Notifications.IosAuthorizationStatus.AUTHORIZED ||
+        ios === Notifications.IosAuthorizationStatus.PROVISIONAL
+      );
+    }
+    return permissions.status === "granted";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Resolves the themed orb image URI for use as a notification attachment.
  * Reads the user's persisted theme (dawn | dusk | oled) without React context.

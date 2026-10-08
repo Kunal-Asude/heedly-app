@@ -15,7 +15,9 @@
 
 #### 2. During Check-In
 - Moving between screens (`yesterday` → `energy` → `body` → `noting` → `saved`) auto-persists updates to draft storage.
-- The period question is a bottom sheet on `noting`, not a screen of its own. It opens when the `period` tag is selected, and from the CYCLE row on `saved` (`openPeriod=true`). Without the `period` tag, Save goes straight to `saved`.
+- The period question is a bottom sheet on `noting`, not a screen of its own. It opens when the `period` tag is selected, and from the CYCLE row on `saved` (`openPeriod=true`).
+- Opened from the tag, every exit from the sheet returns to the tags with `period` still selected, so more tags can be chosen: Save keeps the chosen day, while Skip, the backdrop and a swipe close it without one. Only the main Save on `noting` finishes the check-in, and it goes straight to `saved` — it never opens the sheet.
+- Opened from the CYCLE row, the cycle day is the only thing being changed, so Save and Skip return to `saved` as before.
 - `period.tsx` exists in the route directory but **no route reaches it**; the sheet in `noting.tsx` is what collects the answer.
 - An unexpected app reload, background kill, or device restart restores the in-progress draft without loss of user selections.
 - First-time users (`fd-empty`) skip `yesterday` and begin directly at `energy`.
