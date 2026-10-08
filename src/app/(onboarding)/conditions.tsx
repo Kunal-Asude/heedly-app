@@ -31,7 +31,7 @@ export default function ConditionsScreen() {
   };
 
   const handleContinue = () => {
-    router.push('/(onboarding)/ready');
+    router.push('/(onboarding)/notifications');
   };
 
   return (
