@@ -1,7 +1,7 @@
+import { SymbolView } from "@/components/ui/symbol";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { SymbolView } from "@/components/ui/symbol";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -16,8 +16,8 @@ import Svg, { Path } from "react-native-svg";
 
 import { DawnBackground } from "@/components/core";
 import { CORAL, Fonts, INK } from "@/constants/theme";
-import { useCheckIn } from "@/contexts/CheckInContext";
 import { useTheme } from "@/constants/themes";
+import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useCheckInConfig, useTagCatalogue } from '@/hooks/data';
 
@@ -74,7 +74,8 @@ export default function NotingScreen() {
   const initialTags = new Set(activeEntry.tags ?? []);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTags);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState<boolean>(false);
+  // Open by default so categories show without a tap; the filter button hides them.
+  const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState<boolean>(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   // Period bottom sheet modal state
@@ -379,7 +380,7 @@ export default function NotingScreen() {
           </View>
 
           {/* ── Browse by Category Drawer (.ci-browse) ────────────────── */}
-          {isCategoryDrawerOpen && (
+          {isCategoryDrawerOpen && categories.length > 0 && (
             <View
               style={[
                 styles.categoryDrawer,
