@@ -8,6 +8,9 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { CheckInProvider } from '@/contexts/CheckInContext';
 import { NameProvider } from '@/contexts/NameContext';
 import { AppThemeProvider, useThemeMode } from '@/contexts/ThemeContext';
+import { reconcileDailyReminder } from '@/services/dailyReminder';
+import { syncHeadsUpPreference } from '@/services/headsUp';
+import { syncTrackingStartDate } from '@/services/trackingStart';
 
 // ⚠️ TEMPORARY — bridge spike. Delete once a real screen consumes native data.
 import HeedlyNative from '@heedly/native';
@@ -64,6 +67,13 @@ export default function RootLayout() {
     } catch (e) {
       console.log('[BRIDGE] FAILED:', e);
     }
+  }, []);
+
+  // Carries installs that predate the native copy over on their next launch.
+  useEffect(() => {
+    void syncTrackingStartDate();
+    void syncHeadsUpPreference();
+    void reconcileDailyReminder();
   }, []);
 
   useEffect(() => {
