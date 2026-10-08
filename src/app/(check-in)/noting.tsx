@@ -84,6 +84,9 @@ export default function NotingScreen() {
   const [isPeriodModalVisible, setIsPeriodModalVisible] = useState<boolean>(openPeriod);
   const [selectedPeriodDay, setSelectedPeriodDay] = useState<number | null>(initialPeriodDay);
 
+  // Selecting `period` asks for the cycle day in a sheet over the tags. Every
+  // way out of that sheet returns here, so the rest of the tags can still be
+  // chosen; only the main Save finishes the check-in.
   const handleToggleTag = (tag: string) => {
     const next = new Set(selectedTags);
     const clearsPeriod = tag === 'period' && next.has(tag);
@@ -135,10 +138,6 @@ export default function NotingScreen() {
     navigateToSaved(undefined);
   };
 
-  const handleOpenPeriodSheet = () => {
-    setIsPeriodModalVisible(true);
-  };
-
   const navigateToSaved = (periodInfo?: string) => {
     setIsPeriodModalVisible(false);
     updateEntry({
@@ -154,22 +153,30 @@ export default function NotingScreen() {
   };
 
   const handleSaveButtonPress = () => {
-    if (isEditing) {
-      navigateToSaved(activeEntry.periodInfo ?? undefined);
-    } else if (selectedTags.has('period')) {
-      handleOpenPeriodSheet();
-    } else {
-      navigateToSaved(undefined);
-    }
+    navigateToSaved(undefined);
   };
 
+  // Arriving from the CYCLE row on `saved` (`openPeriod`) means the cycle day
+  // is the only thing being changed, so the sheet goes straight back there.
+  // Opened from the tag, it returns to the tags instead.
   const handlePeriodSave = () => {
     const periodInfo = selectedPeriodDay ? `Day ${selectedPeriodDay}` : undefined;
-    navigateToSaved(periodInfo);
+    if (openPeriod) {
+      navigateToSaved(periodInfo);
+      return;
+    }
+    if (periodInfo !== undefined) {
+      updateEntry({ periodInfo });
+    }
+    setIsPeriodModalVisible(false);
   };
 
   const handlePeriodSkip = () => {
-    navigateToSaved(undefined);
+    if (openPeriod) {
+      navigateToSaved(undefined);
+      return;
+    }
+    setIsPeriodModalVisible(false);
   };
 
   // Filter tags by search query and category
