@@ -15,7 +15,9 @@
 
 #### 2. During Check-In
 - Moving between screens (`yesterday` → `energy` → `body` → `noting` → `saved`) auto-persists updates to draft storage.
-- The period question is a bottom sheet on `noting`, not a screen of its own. It opens when the `period` tag is selected, and from the CYCLE row on `saved` (`openPeriod=true`). Without the `period` tag, Save goes straight to `saved`.
+- The period question is a bottom sheet on `noting`, not a screen of its own. It opens when the `period` tag is selected, and from the CYCLE row on `saved` (`openPeriod=true`).
+- Opened from the tag, every exit from the sheet returns to the tags with `period` still selected, so more tags can be chosen: Save keeps the chosen day, while Skip, the backdrop and a swipe close it without one. Only the main Save on `noting` finishes the check-in, and it goes straight to `saved` — it never opens the sheet.
+- Opened from the CYCLE row, the cycle day is the only thing being changed, so Save and Skip return to `saved` as before.
 - `period.tsx` exists in the route directory but **no route reaches it**; the sheet in `noting.tsx` is what collects the answer.
 - An unexpected app reload, background kill, or device restart restores the in-progress draft without loss of user selections.
 - First-time users (`fd-empty`) skip `yesterday` and begin directly at `energy`.
@@ -28,7 +30,7 @@
 - ⚠️ `@heedly/checkin_history` and `@heedly/last_checkin_date` are **not** written. `persistCheckInToHistory` has no call site outside its own file (source-verified), and the AsyncStorage manifest was observed empty after every completed check-in during the 2026-09-07 verification runs on the iPhone 17 Pro Simulator.
 
 #### 4. Review
-- Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review today's check-in"**.
+- Once the day's check-in is completed, the Today screen adapts its primary CTA to **"Review your check-in"**.
 - Tapping routes directly to `/(check-in)/saved`, populating the completed record for inspection without restarting the check-in flow.
 
 #### 5. Edit Individual Answers
@@ -127,34 +129,37 @@ Based on `statusMode`:
 - `fd-empty` | `fd-wearable` → renders `LearningScreenLayout`
 - `steady` | `caution` | `rest` → renders `TodayScreenLayout`
 
-`useForecast(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only).
+`useTodayChrome(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only). It was `useForecast(statusMode)` until 2026-10-04, when `useForecast()` became the engine-backed hook and the mock chrome was renamed out of its way.
 
-⚠️ **The orb and the status indicator are engine-driven; the rest is not.** Both
-read `useTankState`, refreshed by the `onTankUpdated` event — the orb follows the
-tank band, and the indicator names the tank direction (`building` /
-`holding steady` / `draining`). With no band the orb is `"empty"`, and with no
-direction the indicator falls back to `statusConfigs`.
-
-The indicator's **dot colour follows the direction, not the band** — the orb
-answers "where are the reserves now", the badge answers "where are they
-heading". The two are allowed to disagree: `good_reserves` + `draining` is a
-real state and renders a green orb beside a red dot. Simulator-verified across
-all five band/direction combinations on 2026-09-28.
+⚠️ **The orb is engine-driven; the status indicator follows the forecast.** The
+orb reads `useTankState`, refreshed by the `onTankUpdated` event, and follows the
+tank band; with no band it is `"empty"`. The indicator names today's forecast
+state from `statusConfigs` — "holding steady" / "caution today" / "resting
+today", with the state's dot colour — as the design does. Changed on 2026-10-08
+to match the Aubade Today design; it used to name the tank direction.
 
 The primary CTA is read from the store like its routing already was
-(`isTodayCompleted` → "Review today's check-in"; an unrated previous day →
+(`isTodayCompleted` → "Review your check-in"; an unrated previous day →
 "Check in for yesterday"); it is **not** taken from `statusConfigs`, whose
 `fd-empty` text claims a first check-in whatever the store holds.
 
-The headline text and the three-day forecast row still come from
-`statusConfigs`, which is provisional mock UI with no engine behind it — **they
-can contradict the orb.** Do not treat them as engine output, and do not build
-logic on them.
+**The headline and the three-day forecast row are engine-driven since 2026-10-04**
+(Heedly ADR-0038). Both read `useForecast()` → `HeedlyNative.getForecast(startDate)`;
+the copy layer is `src/copy/forecast.ts`, and the headline is rendered for
+horizon 0 only. `BAND_MODE` — which made the tank band pick the headline, so the
+two could never disagree — was deleted.
+
+**They can still contradict the orb, and that is now correct rather than a
+defect.** The orb answers "where are the reserves now" and the forecast answers
+"how likely is a heavier stretch coming" (§6.1); a healthy orb above a Caution
+headline is a reachable state. The one combination that cannot occur is
+`nearly_empty` + `steady`. What remains mock on this screen is the surrounding
+chrome from `statusConfigs` — see § Data Layer in `20-architecture.md`.
 
 The bridge sends only the qualitative band. The internal 0–100 reserve never
 crosses into JavaScript, so it is not available to this app by design.
 
-**"Why" modal** opens when user presses the secondary link on caution/rest. It is a slide-up `Modal` (React Native), rendered inline in the screen. Data comes from `whyModalConfigs[whyModalType]`.
+**"Why" modal** opens when user presses the secondary link on caution/rest. It is a slide-up `Modal` (React Native), rendered inline in the screen. Its body — badge label, heading, subtitle, reassurance — comes from `whyModalConfigs[whyModalType]` and is mock. Its **reason row is engine-driven** since 2026-10-04: one reason, from the forecast's `reasonKey` plus `n` via `src/copy/forecast.ts`. One reason and not a drill-down, per `specs/bridge.ts` — v1 shows the reason and `n`, underlying days are v2.
 
 **Footer press** for "Planning something this week?" → `router.push('/(check-in)/plan')`.
 

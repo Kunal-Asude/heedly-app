@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import React from 'react';
+import { SymbolView } from '@/components/ui/symbol';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,8 @@ import { useThemeMode } from '@/contexts/ThemeContext';
 
 import { useCheckIn } from '@/contexts/CheckInContext';
 import { greetingWithName, useFirstName } from '@/contexts/NameContext';
+import { dayLabel, editableEarlierDate, hasCheckIn } from '@/services/checkinHistory';
+import { getRecordedCheckInDate } from '@/services/checkinStorage';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
 
@@ -50,11 +52,27 @@ export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, saveCheckIn, beginEdit } = useCheckIn();
+  const { activeEntry, saveCheckIn, beginEdit, editingDate, loadExistingCheckIn } = useCheckIn();
   const { firstName } = useFirstName();
 
+  const isEarlierDay = editingDate !== null && editingDate !== getRecordedCheckInDate();
+  const earlierDayLabel = isEarlierDay ? dayLabel(editingDate) : null;
+
+  const earlierDate = useMemo(() => editableEarlierDate(), []);
+  const [canEditEarlier, setCanEditEarlier] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    hasCheckIn(earlierDate).then((exists) => {
+      if (isMounted) setCanEditEarlier(exists);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [earlierDate]);
+
   const isCrash = Boolean(activeEntry.isCrash);
-  const isFirstTime = Boolean(activeEntry.isFirstTime);
+  const isFirstTime = Boolean(activeEntry.isFirstTime) && !isEarlierDay;
 
   // An unanswered question is shown as unanswered. These previously substituted
   // a plausible middle answer — a label, three filled dots, three tag names —
@@ -109,6 +127,15 @@ export default function CheckInSavedScreen() {
     router.replace('/(tabs)' as any);
   };
 
+  const handleEditEarlier = async () => {
+    try {
+      await saveCheckIn();
+    } catch {
+      return;
+    }
+    await loadExistingCheckIn(earlierDate);
+  };
+
   return (
     <View style={styles.root}>
       <DawnBackground />
@@ -151,7 +178,12 @@ export default function CheckInSavedScreen() {
             )}
           </View>
 
-          {isCrash ? (
+          {isEarlierDay ? (
+            <Text style={styles.heading}>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Your check-in for\n'}</Text>
+              <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{`${earlierDayLabel}.`}</Text>
+            </Text>
+          ) : isCrash ? (
             <Text style={styles.heading}>
               <Text style={{ color: isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display }}>{'Logged.\n'}</Text>
               <Text style={{ color: isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : theme.coral.terracottaDeep }}>{greetingWithName('Rest now', firstName)}</Text>
@@ -172,7 +204,16 @@ export default function CheckInSavedScreen() {
             </Text>
           )}
 
-          {isCrash ? (
+          {isEarlierDay ? (
+            <Text
+              style={[
+                styles.description,
+                { color: isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' },
+              ]}
+            >
+              {"Change anything that wasn't right."}
+            </Text>
+          ) : isCrash ? (
             <Text
               style={[
                 styles.description,
@@ -358,6 +399,18 @@ export default function CheckInSavedScreen() {
                 Tap any line to edit before you go.
               </Text>
             </>
+          )}
+
+          {!isEarlierDay && canEditEarlier && (
+            <Pressable
+              onPress={handleEditEarlier}
+              style={({ pressed }) => [styles.earlierLink, pressed && { opacity: 0.7 }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Update your check-in for ${dayLabel(earlierDate)}`}>
+              <Text style={[styles.earlierLinkText, { color: theme.coral.terracotta }]}>
+                {`Update your check-in for ${dayLabel(earlierDate)}`}
+              </Text>
+            </Pressable>
           )}
         </View>
 
@@ -553,6 +606,17 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'center',
     marginTop: 14,
+  },
+
+  earlierLink: {
+    alignSelf: 'center',
+    marginTop: 18,
+    paddingVertical: 6,
+  },
+  earlierLinkText: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 
   bottomSection: {

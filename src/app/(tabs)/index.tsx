@@ -1,42 +1,35 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
 import { useCallback, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type { TankBand, TankDirection } from "@heedly/native";
+import type { ForecastState } from "@heedly/native";
 
 import type { EnergyOrbState } from "@/components/core";
 import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
 import { Fonts } from "@/constants/theme";
-import { useTheme } from "@/constants/themes";
+import { STATE_DOT, useTheme } from "@/constants/themes";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { greetingWithName, useFirstName } from "@/contexts/NameContext";
-import { COLORS } from "@/data/mock/mockForecast";
+import { forecastRow, headline, reasonItem, whyText } from "@/copy/forecast";
 import { formatHeaderDate } from "@/services/checkinStorage";
-import { useForecast, useTankState } from "@/hooks/data";
-import type { TodayStatusMode } from "@/types/forecast";
+import { useForecast, useTankState, useTodayChrome } from "@/hooks/data";
+import type { TodayStatusMode, WhyModalItem } from "@/types/forecast";
 
-/** The headline is the band. Direction never changes it. */
-const BAND_MODE: Record<TankBand, TodayStatusMode> = {
-  good_reserves: "steady",
-  half_tank: "caution",
-  nearly_empty: "rest",
+/** The forecast owns the headline. The band owns the orb, and only the orb. */
+const FORECAST_MODE: Record<ForecastState, TodayStatusMode> = {
+  steady: "steady",
+  slowing: "caution",
+  rest_day: "rest",
 };
 
-/** The badge is the direction; the orb is the band. They may differ. */
-const DIRECTION_DOT: Record<TankDirection, string> = {
-  building: COLORS.greenDot,
-  holding: COLORS.cautionDot,
-  draining: COLORS.restDot,
-};
-
-const DIRECTION_TEXT: Record<TankDirection, string> = {
-  building: "building",
-  holding: "holding steady",
-  draining: "draining",
+const ROW_DOT: Record<ForecastState, string> = {
+  steady: STATE_DOT.greenDot,
+  slowing: STATE_DOT.cautionDot,
+  rest_day: STATE_DOT.restDot,
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -68,8 +61,11 @@ export default function TodayScreen() {
     setCustomMode(null);
   }
 
-  const { orbState: tankOrbState, band, direction, refresh: refreshTank } =
-    useTankState();
+  const {
+    orbState: tankOrbState,
+    isLoaded: isTankLoaded,
+    refresh: refreshTank,
+  } = useTankState();
 
   useFocusEffect(
     useCallback(() => {
@@ -77,19 +73,52 @@ export default function TodayScreen() {
     }, [refreshTank]),
   );
 
+  const {
+    days: forecastDays,
+    today: todayForecast,
+    isLoaded: isForecastLoaded,
+    refresh: refreshForecast,
+  } = useForecast();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshForecast();
+    }, [refreshForecast]),
+  );
+
   const showEmptyState = !isHydrating && !hasEverCheckedIn;
-  const bandMode = band ? BAND_MODE[band] : null;
+
+  const isTodayReady = isTankLoaded && isForecastLoaded;
+  const forecastMode =
+    isTodayReady && todayForecast?.state ? FORECAST_MODE[todayForecast.state] : null;
+
   const statusMode = showEmptyState
     ? "fd-empty"
-    : customMode ?? bandMode ?? validParamMode ?? "fd-empty";
+    : customMode ?? forecastMode ?? validParamMode ?? "fd-empty";
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
     "caution",
   );
 
-  const { statusConfigs, whyModalConfigs } = useForecast(statusMode);
+  const { statusConfigs, whyModalConfigs } = useTodayChrome(statusMode);
   const currentConfig = statusConfigs[statusMode];
   const activeWhyData = whyModalConfigs[whyModalType];
+
+  const forecastHeadline = todayForecast ? headline(todayForecast) : null;
+  const forecastWhyText = todayForecast ? whyText(todayForecast) : null;
+  const forecastItem = todayForecast ? reasonItem(todayForecast) : null;
+  const whyItems: WhyModalItem[] = forecastItem ? [forecastItem] : [];
+
+  const forecastRowItems = forecastDays.flatMap((day) =>
+    day.state
+      ? [
+          {
+            ...forecastRow([day])[0],
+            dotColor: ROW_DOT[day.state],
+          },
+        ]
+      : [],
+  );
 
   // ⚠️ Provisional. The orb and the headline are the tank (brief §7), so both
   // follow the real band computed natively. The three-day forecast has no
@@ -105,16 +134,10 @@ export default function TodayScreen() {
   // a false reassurance (§2), and the orb is the one thing people read.
   const orbState: EnergyOrbState = tankOrbState ?? "empty";
 
-  // The engine already decides this; the screen only names it. Until a
-  // direction exists — no band, or a first recompute with no predecessor — the
-  // existing forecast copy stands rather than inventing a trend.
-  const indicatorText = direction
-    ? DIRECTION_TEXT[direction]
-    : currentConfig.indicatorText;
-
-  const indicatorDotColor = direction
-    ? DIRECTION_DOT[direction]
-    : currentConfig.indicatorDotColor;
+  // The status line names today's state, as the design does: "holding
+  // steady" / "caution today" / "resting today". The orb shows the tank.
+  const indicatorText = currentConfig.indicatorText;
+  const indicatorDotColor = currentConfig.indicatorDotColor;
 
   const cycleStatusMode = () => {
     if (showEmptyState) return;
@@ -156,17 +179,13 @@ export default function TodayScreen() {
   };
 
   const ctaLabel = isTodayCompleted
-    ? "Review today's check-in"
+    ? "Review your check-in"
     : hasEverCheckedIn && unratedDay
       ? "Check in for yesterday"
       : currentConfig.ctaText;
 
   const handleOpenWhyModal = () => {
-    if (statusMode === "rest") {
-      setWhyModalType("rest");
-    } else {
-      setWhyModalType("caution");
-    }
+    setWhyModalType(todayForecast?.state === "rest_day" ? "rest" : "caution");
     setIsWhyModalOpen(true);
   };
 
@@ -336,18 +355,18 @@ export default function TodayScreen() {
           onSettingsPress={() => router.push("/(tabs)/settings" as any)}
           orbState={orbState}
           orbSize={TODAY_ORB_SIZE}
-          headline1={currentConfig.headline1}
-          headline2={currentConfig.headline2}
+          headline1={forecastHeadline?.headline1 ?? currentConfig.headline1}
+          headline2={forecastHeadline?.headline2 ?? currentConfig.headline2}
           isHeadlineAccent={true}
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={indicatorText}
           indicatorDotColor={indicatorDotColor}
           onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
-          forecast={currentConfig.forecast}
+          forecast={forecastRowItems.length > 0 ? forecastRowItems : undefined}
           learningNote={undefined}
-          secondaryText={currentConfig.whyText}
-          isSecondaryLink={Boolean(currentConfig.whyText)}
+          secondaryText={forecastWhyText ?? undefined}
+          isSecondaryLink={Boolean(forecastWhyText)}
           onSecondaryPress={handleOpenWhyModal}
           ctaLabel={ctaLabel}
           onCtaPress={handleCtaPress}
@@ -437,7 +456,7 @@ export default function TodayScreen() {
             </Text>
 
             <View style={styles.modalItemsList}>
-              {activeWhyData.items.map((item) => (
+              {whyItems.map((item) => (
                 <View key={item.id} style={styles.modalItemRow}>
                   <View
                     style={[

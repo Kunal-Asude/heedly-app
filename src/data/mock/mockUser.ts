@@ -30,7 +30,8 @@ export const MOCK_USER_SETTINGS: UserSettings = {
   isReduceMotion: false,
   isAiInsights: true,
   isCycleNotTypical: false,
-  isDailyReminder: true,
+  // Off until the person opts in; onboarding has no reminder step yet.
+  isDailyReminder: false,
   reminderTime: "9:00 AM",
   isHarderDaysReminder: true,
   isWeeklyRecap: false,

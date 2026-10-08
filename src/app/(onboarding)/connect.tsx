@@ -1,15 +1,16 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { openURL } from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView } from '@/components/ui/symbol';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import HeedlyNative from '@heedly/native';
+import HeedlyNative from '@/services/heedlyNative';
 
 import { DawnBackground } from '@/components/core';
+import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
@@ -20,6 +21,13 @@ import type { DeviceId } from '@/types/user';
 
 const CARD_GAP = 11;
 const TOTAL_COLUMNS = 3;
+
+const VIA_APPLE_HEALTH: ReadonlySet<DeviceId> = new Set<DeviceId>([
+  'oura',
+  'apple-watch',
+  'garmin',
+  'whoop',
+]);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -40,7 +48,7 @@ export default function ConnectWearableScreen() {
 
 
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
-  const deviceName = selectedDeviceObj ? selectedDeviceObj.label : 'Oura';
+  const deviceName = selectedDeviceObj?.label ?? null;
 
   const handleCardPress = (id: DeviceId) => {
     setSelectedDevice((current) => (current === id ? null : id));
@@ -109,18 +117,22 @@ export default function ConnectWearableScreen() {
       <DawnBackground hasOrb={false} />
 
       <SafeAreaView style={styles.safeArea}>
+        {/* ── Back + progress — fixed; content scrolls out of view below it ── */}
+        <View style={styles.stickyHeader}>
+          {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
+          <View style={styles.progressRow}>
+            <BackButton fallback="/(onboarding)" style={styles.backButton} />
+            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+          </View>
+        </View>
+
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}>
-
-          {/* ── Progress indicator (.ob-progress) ───────────────────────── */}
-          <View style={styles.progressRow}>
-            <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
-            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
-          </View>
 
           {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
@@ -221,7 +233,9 @@ export default function ConnectWearableScreen() {
                         ? 'No data yet'
                         : isSelected
                           ? '✓ Connected'
-                          : 'Connect'}
+                          : VIA_APPLE_HEALTH.has(card.id)
+                            ? 'Via Apple Health'
+                            : 'Connect'}
                   </Text>
                 </Pressable>
               );
@@ -321,7 +335,7 @@ export default function ConnectWearableScreen() {
 
             {/* Subtitle / Body text (.nd-body: 17px, matching description text) */}
             <Text style={[styles.sheetBody, { color: theme.components.supportingText.noteColor }]}>
-              {`heedly reads your ${deviceName} data through `}
+              {deviceName ? `heedly reads your ${deviceName} data through ` : 'heedly reads your data through '}
               <Text style={[styles.sheetBodyBold, { color: theme.ink.display }]}>Apple Health</Text>
               {', and nothing has arrived yet.'}
             </Text>
@@ -369,7 +383,7 @@ export default function ConnectWearableScreen() {
                 </View>
                 <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'Open the '}
-                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{`${deviceName} app`}</Text>
+                  <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{deviceName ? `${deviceName} app` : 'app for your device'}</Text>
                   {' once so it writes today\'s data across.'}
                 </Text>
               </View>
@@ -436,9 +450,13 @@ const styles = StyleSheet.create({
   },
 
   // .ob: padding 70px 26px 42px → approx paddingHorizontal 26, top/bottom via safe area
+  stickyHeader: {
+    paddingHorizontal: 26,
+    paddingTop: 8,
+  },
+
   scrollContent: {
     paddingHorizontal: 26,
-    paddingTop: 16,
     paddingBottom: 42,
   },
 
@@ -448,7 +466,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 30,
+    height: 36,
+    marginBottom: 15,
+  },
+
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
   },
 
   // .ob-progress i.on: width 20px, height 6px, radius 3px

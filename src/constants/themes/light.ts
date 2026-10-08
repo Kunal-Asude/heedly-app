@@ -145,7 +145,8 @@ export const lightTheme: DesignTokens = {
       settingsShadowColor: "#BE8C8C",
     },
     cta: {
-      gradient: ["#F0A07E", "#E8907A", "#E0735F"],
+      // --grad-cta: 135deg, #f4a47e 0%, #ea846a 52%, #e0735f 100%
+      gradient: ["#F4A47E", "#EA846A", "#E0735F"],
       textColor: "#FFF8F4",
       borderColor: "rgba(255, 255, 255, 0.40)",
       shadowColor: "#6E5656",
@@ -158,7 +159,8 @@ export const lightTheme: DesignTokens = {
         dot: "#7e9b6a",
         text: "#5d7a52",
       },
-      statusText: "rgba(74, 58, 57, 0.72)",
+      // .state .label .trend
+      statusText: "rgba(74, 58, 57, 0.60)",
     },
     supportingText: {
       color: "rgba(74, 58, 57, 0.70)",
@@ -168,8 +170,9 @@ export const lightTheme: DesignTokens = {
       background: "#ffefe8ff",
       border: "rgba(255, 255, 255, 0.95)",
       selectedPill: "#FFFFFF",
-      selectedText: "#AC4E30",
-      unselectedText: "rgba(95, 68, 58, 0.65)",
+      // .tab.active / .tab
+      selectedText: "#C9603F",
+      unselectedText: "rgba(74, 58, 57, 0.45)",
       shadowColor: "#9C7668",
     },
     forecastCard: {

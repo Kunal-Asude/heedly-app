@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.heedly.app",
-      "buildNumber": "2",
+      "buildNumber": "4",
       "infoPlist": {
         "CFBundleDisplayName": "Heedly",
         "NSHealthUpdateUsageDescription": "Heedly only reads your Apple Health data to help you understand your health patterns. It does not add or change health data."
@@ -23,7 +23,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.heedly.app"
     },
     "web": {
       "output": "static",

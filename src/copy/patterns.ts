@@ -89,3 +89,45 @@ export function patternCopy(
     subtitleText: subtitle(pattern.n),
   };
 }
+
+export interface PatternCard {
+  id: string;
+  icon: SymbolName;
+  badgeColor: string;
+  bodyText: string;
+  subtitleText: string;
+}
+
+export interface TagInfo {
+  label: string;
+  category: string;
+}
+
+const KIND_BADGE: Record<Pattern["kind"], string> = {
+  helps: "rgba(126, 155, 106, 0.18)",
+  costs: "rgba(224, 115, 95, 0.18)",
+};
+
+/** Real patterns only — 0 to 3 of them. Nothing is padded or invented. */
+export function patternCards(
+  patterns: Pattern[],
+  tags: Map<string, TagInfo>,
+): PatternCard[] {
+  const cards = patterns.flatMap((pattern) => {
+    const tag = tags.get(pattern.tagId);
+    const copy = patternCopy(pattern, tag?.label);
+    if (!copy) return [];
+
+    return [
+      {
+        id: `${pattern.kind}-${pattern.tagId}-${pattern.lag}`,
+        icon: categoryIcon(tag?.category),
+        badgeColor: KIND_BADGE[pattern.kind],
+        bodyText: copy.bodyText,
+        subtitleText: copy.subtitleText,
+      },
+    ];
+  });
+
+  return cards;
+}

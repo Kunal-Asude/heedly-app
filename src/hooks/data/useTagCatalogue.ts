@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 import type { Tag } from "@heedly/native";
 import type { CheckInCategory, TagOption } from "@/types/checkin";
 

@@ -33,11 +33,10 @@ that way is what makes it testable the moment a runner exists.
 - `src/copy/` must not import from `src/hooks/`, `src/app/` or `src/components/`.
 - Screens (`src/app/`) must not import directly from `src/data/mock/` — they must go through `src/hooks/data/`.
 
-⚠️ **That last rule has one live violation**, source-verified 2026-10-03:
-`src/app/(tabs)/index.tsx` imports `COLORS` from `@/data/mock/mockForecast`. What
-it imports is a palette, not data, so nothing fabricated reaches the screen by
-that path — but the import is still a screen reaching into `src/data/mock/`, and
-the colours belong in `src/constants/themes/`. Recorded, not fixed.
+**That violation is fixed**, source-verified 2026-10-05. `src/app/(tabs)/index.tsx`
+imported `COLORS` from `@/data/mock/mockForecast` until 2026-10-04; it now imports
+`STATE_DOT` from `@/constants/themes`, with the same three values. No screen
+imports from `src/data/mock/` any more.
 
 ---
 
@@ -102,29 +101,34 @@ For non-React execution contexts (such as background services and notification s
 
 ## Data Layer
 
-### Mixed: Engine-Backed and Mock (source-verified 2026-10-03)
+### Mixed: Engine-Backed and Mock (source-verified 2026-10-05)
 The data layer is **no longer uniformly mock**, and the distinction matters because
 the mock half renders to real users. There is still no real API, no network call
 and no cache.
 
 **Engine-backed, through the native bridge:** check-ins and verdicts (see
 § Check-In State below), the Today orb's tank band (`useTankState`), the tag
-vocabulary (`useTagCatalogue`), and the Patterns tab (`usePatterns` →
-`HeedlyNative.getPatterns(startDate)`).
+vocabulary (`useTagCatalogue`), the Patterns tab (`usePatterns` →
+`HeedlyNative.getPatterns(startDate)`), and — since 2026-10-04 — the three-day
+forecast (`useForecast` → `HeedlyNative.getForecast(startDate)`).
 
 **Still mock, and reachable in production.** Three hooks initialize `useState`
 from constants in `src/data/mock/`:
 
 | Hook | Mock constant | What a real user sees from it |
 |---|---|---|
-| `useForecast(mode)` | `MOCK_FORECAST_DATA` | The Today status headline and the "Why caution/rest today?" modal body |
+| `useTodayChrome(mode)` | `MOCK_FORECAST_DATA` | The Today screen's chrome around the forecast — CTA label, orb size, micro-text, footer note — and the "Why caution/rest today?" modal body apart from its reason row |
 | `useUserSettings()` | `MOCK_USER_CONTEXT_DATA` | The Settings wearable card — the literal strings `"Oura Ring"` and `"Connected · syncing in the background"`, regardless of what is actually connected |
 | `useCheckInConfig()` | `MOCK_CHECKIN_CONFIG` | Mostly option lists, which are legitimately static — **except `defaultPlanningPrediction`**, a fabricated `caution` verdict with its own explanation and recommendation, rendered in `plan-result` |
 
+⚠️ **`useForecast.ts` holds both halves.** `useForecast()` reads the bridge;
+`useTodayChrome(mode)` in the same file returns `MOCK_FORECAST_DATA` wholesale.
+One file, two sources — the mock half is easy to miss because the hook reads like
+the real one.
+
 **Mock imports now commented out, not deleted:** `useNotes` returns empty values
 and `usePatterns` reads the bridge. Both keep the commented import because the
-mock still documents the shape. `src/app/(tabs)/index.tsx` imports `COLORS` from
-`mockForecast.ts` — a palette constant, not fabricated data.
+mock still documents the shape.
 
 ### State Ownership
 - `useForecast`, `useNotes`, `usePatterns`, `useCheckInConfig`: state is **read-only** to callers. No mutation is exposed.
@@ -193,7 +197,7 @@ In Heedly, daily check-ins are retrospective ("Check in for yesterday"):
    - Entry: Today screen → "Check in for yesterday"
    - Flow: Initialize active entry for target date → update draft on each step → complete on Saved screen → **save to SQLite through the bridge** → clear `@heedly/checkin_draft`.
 2. **EDIT EXISTING CHECK-IN Mode**:
-   - Entry: Today screen → "Review today's check-in"
+   - Entry: Today screen → "Review your check-in"
    - Flow: Load the existing record **from SQLite through the bridge** into active state → user edits a specific answer (e.g., Energy) → returns to Saved screen → saves back to the **same date key** → storage preserves `created_at` and stamps `edited_at` only when content actually changed → **does not create a duplicate entry**.
 
 ### Hydration & Restoration

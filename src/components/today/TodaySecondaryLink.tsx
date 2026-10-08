@@ -30,13 +30,13 @@ export function TodaySecondaryLink({
             <View
               style={[
                 styles.linkUnderlineWrapper,
-                { borderBottomColor: `${theme.coral.terracotta}90` },
+                { borderBottomColor: `${theme.coral.terracotta}52` },
               ]}
             >
               <Text
                 style={[
                   styles.linkText,
-                  { color: theme.coral.terracotta },
+                  { color: `${theme.coral.terracotta}C7` },
                 ]}
               >
                 {text}
@@ -70,17 +70,17 @@ const styles = StyleSheet.create({
   },
 
   linkUnderlineWrapper: {
-    borderBottomWidth: 1.2,
-    paddingBottom: 0,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
     alignSelf: "center",
   },
 
-  // Secondary action link (15.5px, lowered underline)
+  // .qlink: 13px, 500, letter-spacing 0.01em
   linkText: {
-    fontSize: 15.5,
+    fontSize: 13,
     fontWeight: "500",
-    lineHeight: 22,
-    letterSpacing: 0,
+    lineHeight: 16,
+    letterSpacing: 0.13,
     textAlign: "center",
     textDecorationLine: "none",
   },

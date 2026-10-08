@@ -6,23 +6,33 @@
 
 ## Automated Tests
 
-**No automated tests exist in this repository.**
+**No test runner exists in this repository.**
 
 - No Jest config (`jest.config.js`, `jest.config.ts`)
 - No Vitest config
-- No test files (`*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`)
 - No testing library dependencies in `package.json`
 
-This was verified by filesystem search. The Expo README mentions Jest as an option but it is not set up.
+The Expo README mentions Jest as an option but it is not set up.
 
-**Scope:** this statement covers `heedly-app` only. The Swift core in the sibling
-repository has **609 passing tests** (2026-10-03) — Engine 223, Storage 279,
-Health 35, Ingest 72 — covering the engine, storage, exposure–lag estimation, the
-weekly stability gate and HealthKit ingestion, but nothing in this app's screens.
+**One exception, added 2026-10-04: the copy layer has a committed suite.**
+`npm run copy:check` compiles `src/copy/forecast.ts`, `forecast.spec.ts`,
+`patterns.ts` and `patterns.spec.ts` with `tsc` and runs them under plain `node`
+— no runner, no dependency. Last run 2026-10-05: **37/37 forecast copy checks
+and 13/13 pattern card checks passed.** It covers the pure copy functions only;
+nothing renders a component. `tsconfig.json` excludes the specs from the app
+typecheck so they do not ship.
 
-⚠️ The absence of a runner here is now a blocker rather than a gap: the Patterns
-copy layer (`src/copy/patterns.ts`) is pure TypeScript and was verified only by
-one-off execution on 2026-10-02, not by a committed suite.
+**Scope:** the statement above covers `heedly-app` only. The Swift core in the
+sibling repository has **749 passing tests** (2026-10-05) — Engine 310, Storage
+332, Health 35, Ingest 72 — covering the engine, storage, exposure–lag
+estimation, the weekly stability gate, the forecast and HealthKit ingestion, but
+nothing in this app's screens.
+
+⚠️ **Those 749 pass locally only.** On that repository's CI (`macos-latest`)
+`test (HeedlyEngine)` does not compile — a `#expect` type-check timeout at
+`TankTests.swift:301` — and `swift format lint` reports 87 violations. Both are
+red on its `dev` branch and predate the forecast work. Do not cite the Swift
+count as a CI-enforced gate.
 
 ---
 
@@ -84,7 +94,8 @@ No automated build verification or CI pipeline exists.
 | Cross-platform (iOS vs Android) parity | No automated test |
 | Dark mode visual correctness | No automated test |
 | Today orb / tank band correctness | Depends on the native engine. Simulator-only; no physical device |
-| Patterns tab correctness | Depends on the native engine. Observed on the iPhone 17 Pro Simulator (iOS 26.5) on 2026-10-02 and 2026-10-03 against the SQLite database and the rendered cards. **No physical device, no TestFlight.** The copy layer itself has no committed test |
+| Patterns tab correctness | Depends on the native engine. Observed on the iPhone 17 Pro Simulator (iOS 26.5) on 2026-10-02 and 2026-10-03 against the SQLite database and the rendered cards, and the 0–3 card rule on 2026-10-04 from the screen only. **No physical device, no TestFlight.** The copy layer is covered by `npm run copy:check` since 2026-10-04 |
+| Today headline / three-day forecast row correctness | Depends on the native engine. Observed on the iPhone 17 Pro Simulator (iOS 26.5) on 2026-10-04 — thin-data, Caution and the crash override's two Rest days — from the screen, not read back from the database. **No physical device, no TestFlight.** Still unexercised: the hedged low-confidence wording, `wearable_data_stale`, and every path needing wearable data |
 | HealthKit permission-upgrade flow (Exercise Minutes) | **Not verified on a physical device and not verified through TestFlight.** TestFlight is configured; that is not the same as verified |
 
 ---
@@ -105,7 +116,7 @@ These are the only automated guardrails. Everything else requires human review o
 
 > (inferred priorities — not Steering fact, but useful context for planning)
 
-1. Unit tests for `useCheckInConfig`, `useForecast`, `useUserSettings` — verify mock data shape matches types.
+1. Unit tests for `useCheckInConfig`, `useTodayChrome`, `useUserSettings` — verify mock data shape matches types. (`useForecast` is engine-backed since 2026-10-04; its copy layer is covered by `npm run copy:check`.)
 2. Integration tests for check-in flow navigation — verify param passing across all screens.
 3. Snapshot tests for `EnergyOrb` per state (steady/caution/rest/empty/wearableRead) in both light and dark themes.
 4. Type-checking CI step (`tsc --noEmit`) on every PR.

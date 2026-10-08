@@ -48,16 +48,13 @@ export function TodayCtaButton({ label, onPress }: TodayCtaButtonProps) {
 
 const styles = StyleSheet.create({
   ctaSlot: {
-    height: 66,
-    justifyContent: "center",
     alignSelf: "stretch",
-    marginBottom: 8,
   },
 
   buttonWrapper: {
     width: "100%",
-    height: 62,
-    borderRadius: 33,
+    height: 60,
+    borderRadius: 30,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 20,
     elevation: 5,
@@ -65,7 +62,7 @@ const styles = StyleSheet.create({
 
   buttonGradient: {
     flex: 1,
-    borderRadius: 33,
+    borderRadius: 30,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -78,10 +75,11 @@ const styles = StyleSheet.create({
     opacity: 0.94,
   },
 
+  // .cta: 17px, 600, letter-spacing -0.01em
   buttonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    letterSpacing: -0.2,
+    letterSpacing: -0.17,
     textAlign: "center",
   },
 

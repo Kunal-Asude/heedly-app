@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 
-import HeedlyNative from "@heedly/native";
+import HeedlyNative from "@/services/heedlyNative";
 
 import {
   fromNativeCheckIn,
@@ -22,6 +22,7 @@ import {
   loadDraft,
   saveDraft,
 } from "@/services/checkinStorage";
+import { cancelDailyReminder } from "@/services/dailyReminder";
 import type { CheckInEntry } from "@/types/checkin";
 import { clearErasableStorage } from "@/utils/storageKeys";
 import { useFirstName } from "@/contexts/NameContext";
@@ -32,12 +33,19 @@ import { useFirstName } from "@/contexts/NameContext";
  * Two records, because the store keeps them apart: the check-in and the verdict
  * for the same day have different edit rules. `null` means no check-in exists —
  * a real answer, not a failure, so it is returned rather than thrown.
+ *
+ * The first check-in is the earliest one on record, which is the only thing
+ * that distinguishes it. An absent verdict does not: a skipped yesterday
+ * question leaves none either.
  */
 async function readCompletedCheckIn(date: string): Promise<CheckInEntry | null> {
   const checkIn = await HeedlyNative.getCheckIn(date);
   if (!checkIn) return null;
-  const verdict = await HeedlyNative.getVerdict(date);
-  return fromNativeCheckIn(checkIn, verdict);
+  const [verdict, firstDay] = await Promise.all([
+    HeedlyNative.getVerdict(date),
+    HeedlyNative.getFirstCheckInDay(),
+  ]);
+  return fromNativeCheckIn(checkIn, verdict, firstDay === date);
 }
 
 // ─── Types & Contract ─────────────────────────────────────────────────────────
@@ -362,6 +370,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     // Then everything the app keeps locally — the draft, the check-in mirror,
     // the first name. Theme preferences are not the person's data and stay.
     await clearErasableStorage();
+    // iOS holds the schedule, so erasing the preference alone leaves it arriving.
+    await cancelDailyReminder();
     clearFirstName();
     // Every check-in and verdict is gone, so the person is new again and
     // yesterday is unrated once more.

@@ -76,8 +76,7 @@ export function TodayBadge({
             style={[
               styles.statusDotHalo,
               {
-                backgroundColor: `${resolvedDotColor}2E`,
-                borderColor: `${resolvedDotColor}38`,
+                backgroundColor: `${resolvedDotColor}29`,
               },
             ]}
           >
@@ -147,12 +146,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  // .state .dot outer translucent halo ring: 16x16, radius 8
+  // .state .dot glow: 7px dot + 4px ring each side, rgba(dot, 0.16)
   statusDotHalo: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -164,10 +162,10 @@ const styles = StyleSheet.create({
     borderRadius: 3.5,
   },
 
-  // .state .label: 15px, 600
+  // .state .label .trend: 13px, 500, letter-spacing 0.02em
   standardBadgeText: {
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 0.15,
+    fontSize: 13,
+    fontWeight: "500",
+    letterSpacing: 0.26,
   },
 });

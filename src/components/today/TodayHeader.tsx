@@ -1,20 +1,25 @@
+import { Fonts } from "@/constants/theme";
 import { useTheme } from "@/constants/themes";
-import { SymbolView } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodayHeaderProps {
   dateText?: string;
   greeting?: string;
+  /** Sets the name after "Hello," in Comfortaa, as on the forecast screens (.hello em). */
+  accentName?: boolean;
   onSettingsPress?: () => void;
 }
 
 export function TodayHeader({
   dateText,
   greeting = "Hello.",
+  accentName = false,
   onSettingsPress,
 }: TodayHeaderProps) {
   const theme = useTheme();
   const headerTokens = theme.components.header;
+  const commaIndex = accentName ? greeting.indexOf(",") : -1;
 
   return (
     <View style={styles.headerRow}>
@@ -23,7 +28,14 @@ export function TodayHeader({
           {dateText}
         </Text>
         <Text style={[styles.greeting, { color: headerTokens.greetingColor }]}>
-          {greeting}
+          {commaIndex === -1 ? (
+            greeting
+          ) : (
+            <>
+              {greeting.slice(0, commaIndex + 1)}
+              <Text style={styles.greetingName}>{greeting.slice(commaIndex + 1)}</Text>
+            </>
+          )}
         </Text>
       </View>
 
@@ -83,6 +95,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: -0.25,
     lineHeight: 30,
+  },
+
+  // .hello em: Comfortaa 500
+  greetingName: {
+    fontFamily: Fonts.display.medium,
+    fontWeight: "normal",
   },
 
   // .settings: 40x40, radius 20

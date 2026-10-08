@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import { SymbolView } from "@/components/ui/symbol";
 import React, { useState } from "react";
 import {
   Modal,
@@ -154,27 +154,29 @@ export default function YourDataScreen() {
       {/* Atmosphere Background */}
       <DawnBackground />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 48 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces={true}
-      >
-        {/* ── Top Header Navigation (.sx-nav) ──────────────────────────── */}
+      {/* ── Back header — fixed; content scrolls out of view below it ── */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top + 8 }]}>
         <View style={styles.topRow}>
           <Pressable
             onPress={handleBack}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="Go back to Settings"
+            accessibilityLabel="Go back"
           >
             <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
           </Pressable>
         </View>
+      </View>
 
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 48 },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
         {/* ── Screen Title Header ──────────────────────────────────────── */}
         <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PRIVACY</Text>
         <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>Your data</Text>
@@ -620,6 +622,10 @@ const styles = StyleSheet.create({
   },
 
   // ── Header Navigation (.sx-nav) ──────────────────────────────────────────
+
+  stickyHeader: {
+    paddingHorizontal: 22,
+  },
 
   topRow: {
     flexDirection: "row",

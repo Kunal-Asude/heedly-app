@@ -15,6 +15,9 @@ export const STORAGE_KEY_POLICY = {
   "@heedly/first_name": "erase",
   "@heedly/onboarding_complete": "erase",
   "@heedly/start_date": "erase",
+  "@heedly/heads_up_enabled": "erase",
+  "@heedly/daily_reminder_enabled": "erase",
+  "@heedly/daily_reminder_time": "erase",
   "@heedly/theme_mode": "preserve",
   "@heedly/is_true_black": "preserve",
 } as const satisfies Record<`@heedly/${string}`, ErasurePolicy>;
@@ -34,6 +37,15 @@ export const ONBOARDING_COMPLETE_KEY: StorageKey = "@heedly/onboarding_complete"
  * install from before this key existed has no recoverable date and shows none.
  */
 export const START_DATE_KEY: StorageKey = "@heedly/start_date";
+
+/** Whether the person wants a heads-up before harder days. Absent = never asked. */
+export const HEADS_UP_KEY: StorageKey = "@heedly/heads_up_enabled";
+
+/** Whether the person wants a daily check-in reminder. Absent = off. */
+export const DAILY_REMINDER_KEY: StorageKey = "@heedly/daily_reminder_enabled";
+
+/** Local wall-clock "HH:mm" the reminder fires at. Absent = 09:00. */
+export const DAILY_REMINDER_TIME_KEY: StorageKey = "@heedly/daily_reminder_time";
 
 const ERASABLE_KEYS = (Object.keys(STORAGE_KEY_POLICY) as StorageKey[]).filter(
   (key) => STORAGE_KEY_POLICY[key] === "erase",

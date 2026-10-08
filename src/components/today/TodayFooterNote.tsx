@@ -24,13 +24,13 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
               <View
                 style={[
                   styles.linkUnderlineWrapper,
-                  { borderBottomColor: `${theme.coral.terracotta}90` },
+                  { borderBottomColor: `${theme.coral.terracotta}52` },
                 ]}
               >
                 <Text
                   style={[
                     styles.planningText,
-                    { color: theme.coral.terracotta },
+                    { color: `${theme.coral.terracotta}C7` },
                   ]}
                 >
                   {text}
@@ -63,13 +63,13 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
 }
 
 const styles = StyleSheet.create({
+  // .qlink.below: 14px under the CTA, 4px padding around the text
   footerSlot: {
-    height: 32,
+    height: 26,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
-    marginTop: 2,
-    marginBottom: 4,
+    marginTop: 14,
   },
 
   linkContainer: {
@@ -77,19 +77,19 @@ const styles = StyleSheet.create({
   },
 
   linkUnderlineWrapper: {
-    borderBottomWidth: 1.2,
-    paddingBottom: 0,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
     alignSelf: "center",
   },
 
-  // Planning link text (15.5px, lowered underline)
+  // .qlink: 13px, 500, letter-spacing 0.01em
   planningText: {
-    fontSize: 15.5,
+    fontSize: 13,
     fontWeight: "500",
-    lineHeight: 22,
+    lineHeight: 16,
     textAlign: "center",
     textDecorationLine: "none",
-    letterSpacing: 0,
+    letterSpacing: 0.13,
   },
 
   // Neutral footer note (15.5px)
