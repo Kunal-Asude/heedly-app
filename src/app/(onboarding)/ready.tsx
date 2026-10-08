@@ -10,6 +10,7 @@ import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useTheme } from '@/constants/themes';
 import { useFirstName } from '@/contexts/NameContext';
+import { syncTrackingStartDate } from '@/services/trackingStart';
 import { appStorage } from '@/utils/storage';
 import { ONBOARDING_COMPLETE_KEY, START_DATE_KEY } from '@/utils/storageKeys';
 
@@ -37,6 +38,7 @@ export default function ReadyScreen() {
     if ((await appStorage.getItem(START_DATE_KEY)) === null) {
       await appStorage.setItem(START_DATE_KEY, new Date().toISOString());
     }
+    await syncTrackingStartDate();
 
     router.replace('/(tabs)');
   };
