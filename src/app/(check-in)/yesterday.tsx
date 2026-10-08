@@ -5,15 +5,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
 import { Fonts } from '@/constants/theme';
+import { useCheckInPalette } from '@/constants/checkInPalette';
+import { SymbolView } from '@/components/ui/symbol';
 import { useCheckIn } from '@/contexts/CheckInContext';
-import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import type { YesterdayOption } from '@/types/checkin';
 
+// .ci-ypill tone per option
+const YP_TONE: Record<string, "sage" | "oat" | "coral"> = {
+  lighter: "sage",
+  usual: "oat",
+  heavier: "coral",
+};
+
 export default function YesterdayScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  const ci = useCheckInPalette();
   const {
     currentEntry: activeEntry,
     updateEntry,
@@ -151,16 +159,14 @@ export default function YesterdayScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.81)') : 'rgba(74, 58, 57, 0.6)' }]}>
-              ‹
-            </Text>
+            <SymbolView name="chevron.left" size={21} tintColor={ci.back} />
           </Pressable>
 
           {/* 3 Inactive Progress Dots (.ci-dots) */}
           <View style={styles.progressRow}>
-            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
-            <View style={[styles.progressDot, { backgroundColor: isDark ? (isTrueBlack ? "rgba(255, 255, 255, 0.18)" : 'rgba(199, 180, 191, 0.24)') : 'rgba(74, 58, 57, 0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: ci.dotOff }]} />
+            <View style={[styles.progressDot, { backgroundColor: ci.dotOff }]} />
+            <View style={[styles.progressDot, { backgroundColor: ci.dotOff }]} />
           </View>
 
           {/* Skip Link (.ci-skip) */}
@@ -170,7 +176,7 @@ export default function YesterdayScreen() {
             accessibilityRole="button"
             accessibilityLabel="Skip"
           >
-            <Text style={[styles.skipText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)' }]}>
+            <Text style={[styles.skipText, { color: ci.skip }]}>
               Skip
             </Text>
           </Pressable>
@@ -180,12 +186,12 @@ export default function YesterdayScreen() {
         <View style={styles.contentArea}>
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : theme.ink.display }}>{'How was\n'}</Text>
-            <Text style={{ color: isDark ? (isTrueBlack ? "#C97B60" : '#E8907A') : theme.coral.terracottaDeep }}>yesterday?</Text>
+            <Text style={{ color: ci.heading }}>{'How was\n'}</Text>
+            <Text style={{ color: ci.accent }}>yesterday?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
-          <Text style={[styles.supportingText, { color: isDark ? (isTrueBlack ? "#9A8A91" : 'rgba(199, 180, 191, 0.95)') : 'rgba(74, 58, 57, 0.72)' }]}>
+          <Text style={[styles.supportingText, { color: ci.sub }]}>
             {'This helps heedly learn how accurate its predictions are for you.'}
           </Text>
 
@@ -200,21 +206,18 @@ export default function YesterdayScreen() {
                   style={({ pressed }) => [
                     styles.optionCard,
                     {
-                      backgroundColor: option.cardBg,
-                      borderColor: option.cardBorder,
+                      backgroundColor: ci.ypTones[YP_TONE[option.id] ?? "oat"][0],
+                      borderColor: ci.ypTones[YP_TONE[option.id] ?? "oat"][1],
                     },
-                    isSelected && {
-                      borderColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.25)') : 'rgba(74, 58, 57, 0.35)',
-                      shadowOpacity: isDark ? (isTrueBlack ? 0 : 0.35) : 0.15,
-                    },
+                    isSelected && [styles.optionCardSelected, { borderColor: ci.ypRing }],
                     isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
-                    (pressed || isSelected) && styles.cardPressed,
+                    pressed && styles.cardPressed,
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel={option.value}
                 >
-                  <View style={[styles.dot, { backgroundColor: option.dotColor }]} />
-                  <Text style={[styles.cardText, { color: isDark ? (isTrueBlack ? "#E9DDD6" : '#F3E7E1') : '#4f3c3a' }]}>
+                  <View style={[styles.dot, { backgroundColor: ci.ypTones[YP_TONE[option.id] ?? "oat"][2] }]} />
+                  <Text style={[styles.cardText, { color: ci.ypText }]}>
                     <Text style={styles.cardTextRegular}>{option.prefix}</Text>
                     <Text style={styles.cardTextBold}>{option.emphasis}</Text>
                   </Text>
@@ -233,20 +236,15 @@ export default function YesterdayScreen() {
             <Text
               style={[
                 styles.secondarySkipText,
-                {
-                  color: isDark ? '#E8907A' : '#b05334',
-                  borderColor: isDark ? 'rgba(232, 144, 122, 0.46)' : 'rgba(176, 83, 52, 0.4)',
-                },
+                { color: ci.ypSkip, borderColor: ci.ypSkipLine },
               ]}
             >
               Skip — not sure yet.
             </Text>
           </Pressable>
-        </View>
 
-        {/* ── Bottom Section: Footnote (.ob-foot) ──────────────────────── */}
-        <View style={styles.bottomSection}>
-          <Text style={[styles.bottomHelperText, { color: isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.5)' }]}>
+          {/* ── Footnote (.ob-foot): directly under the skip link ─────── */}
+          <Text style={[styles.bottomHelperText, { color: ci.foot }]}>
             You can do this lying down.
           </Text>
         </View>
@@ -281,21 +279,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    height: 48,
-    marginBottom: 12,
+    height: 30,
+    marginBottom: 26,
   },
 
   navButton: {
-    height: 44,
-    minWidth: 44,
+    height: 30,
+    minWidth: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   backChevron: {
-    fontSize: 28,
-    lineHeight: 28,
-    fontWeight: '300',
+    width: 21,
+    height: 21,
   },
 
   progressRow: {
@@ -320,47 +317,52 @@ const styles = StyleSheet.create({
   contentArea: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 8,
     alignItems: 'flex-start',
   },
 
   questionHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 30,
+    fontSize: 31,
     lineHeight: 36,
-    letterSpacing: -0.3,
-    marginBottom: 10,
+    letterSpacing: -0.31,
     textAlign: 'left',
   },
 
   supportingText: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 14.5,
+    lineHeight: 22,
     fontWeight: '400',
-    marginBottom: 26,
-    maxWidth: '96%',
+    marginTop: 12,
+    maxWidth: 260,
     textAlign: 'left',
   },
 
   optionsList: {
     width: '100%',
     gap: 12,
-    marginBottom: 20,
+    marginTop: 30,
   },
 
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 13,
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 18,
     borderWidth: 1,
-    shadowColor: '#000000',
+    shadowColor: '#BE968C',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.14,
-    shadowRadius: 9,
+    shadowOpacity: 0.08,
+    shadowRadius: 4.5,
     elevation: 2,
+  },
+
+  // .ci-ypill.sel: 2px ring
+  optionCardSelected: {
+    borderWidth: 2,
+    paddingVertical: 17,
+    paddingHorizontal: 19,
   },
 
   dot: {
@@ -372,6 +374,7 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 16,
     lineHeight: 21,
+    fontWeight: '600',
   },
 
   cardTextRegular: {
@@ -386,27 +389,24 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingVertical: 4,
     paddingHorizontal: 2,
-    marginTop: 8,
+    marginTop: 22,
   },
 
   secondarySkipText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '500',
-    borderBottomWidth: 1.2,
-    paddingBottom: 2,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
     textAlign: 'center',
   },
 
-  bottomSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
 
   bottomHelperText: {
-    fontSize: 13.5,
-    lineHeight: 18,
+    alignSelf: 'center',
+    fontSize: 12.5,
+    lineHeight: 19,
     fontWeight: '400',
+    marginTop: 14,
     textAlign: 'center',
   },
 });

@@ -4,6 +4,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+import { SymbolView } from '@/components/ui/symbol';
 
 import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
@@ -38,20 +39,20 @@ function ForecastCard({
   }
 
   const cardGradientColors: [string, string, string] = isDark
-    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
-    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+    ? ['rgba(46, 39, 56, 0.7)', 'rgba(67, 49, 67, 0.7)', 'rgba(102, 73, 73, 0.7)']
+    : ['#faf4ec', '#faf4ec', '#faf4ec'];
 
   return (
     <LinearGradient
       colors={cardGradientColors}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 1, y: 0.7 }}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
       style={[
         styles.forecastCard,
         {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(255, 255, 255, 0.7)',
           shadowColor: isDark ? '#000000' : '#BE968C',
-          shadowOpacity: isDark ? 0.24 : 0.08,
+          shadowOpacity: isDark ? 0.25 : 0.14,
         },
       ]}>
       {children}
@@ -77,10 +78,12 @@ export default function PlanResultScreen() {
   };
 
   // Theme-aware tokens
-  const eyebrowColor = isDark ? 'rgba(199, 180, 191, 0.65)' : 'rgba(74, 58, 57, 0.55)';
-  const mainHeadingColor = isDark ? '#F3E7E1' : theme.ink.display;
-  const explanationColor = isDark ? '#F3E7E1' : 'rgba(74, 58, 57, 0.82)';
+  const eyebrowColor = isDark ? (isTrueBlack ? '#9A8A91' : 'rgba(199, 180, 191, 0.68)') : 'rgba(74, 58, 57, 0.5)';
+  const mainHeadingColor = isDark ? (isTrueBlack ? '#E9DDD6' : '#F3E7E1') : theme.ink.display;
+  const explanationColor = isDark ? (isTrueBlack ? '#A8979E' : 'rgba(199, 180, 191, 1)') : 'rgba(74, 58, 57, 0.82)';
   const reminderLinkColor = isDark ? (isTrueBlack ? '#C97B60' : '#E8907A') : 'rgba(176, 83, 52, 0.85)';
+  // .pl-relink: underline rgba(…, 0.34) / 0.39
+  const reminderLineColor = isDark ? (isTrueBlack ? 'rgba(201, 123, 96, 0.39)' : 'rgba(232, 144, 122, 0.39)') : 'rgba(176, 83, 52, 0.34)';
 
   return (
     <View style={styles.root}>
@@ -97,7 +100,7 @@ export default function PlanResultScreen() {
               style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel="Go back to Planning">
-              <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : 'rgba(74, 58, 57, 0.62)' }]}>‹</Text>
+              <SymbolView name="chevron.left" size={22} tintColor={isDark ? (isTrueBlack ? '#A8979E' : 'rgba(199, 180, 191, 0.84)') : 'rgba(74, 58, 57, 0.62)'} />
             </Pressable>
 
             <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>LOOKING AHEAD</Text>
@@ -110,7 +113,7 @@ export default function PlanResultScreen() {
           <ForecastCard isDark={isDark} isTrueBlack={isTrueBlack}>
             {/* Hero Orb (.pl-gauge: 140x140) */}
             <View style={styles.orbContainer}>
-              <EnergyOrb state="empty" size={140} />
+              <EnergyOrb state="empty" size={138} />
             </View>
 
             {/* Main Explanation Copy (.pl-read) */}
@@ -139,7 +142,7 @@ export default function PlanResultScreen() {
                     ? isTrueBlack
                       ? ['#574049', '#241A20']
                       : ['#634256', '#8A5D7C', '#9E768E']
-                    : ['#f0a07e', '#e88970', '#e0735f']
+                    : ['#f4a47e', '#ea846a', '#e0735f']
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -174,7 +177,7 @@ export default function PlanResultScreen() {
               <View
                 style={[
                   styles.linkUnderlineWrapper,
-                  { borderBottomColor: `${reminderLinkColor}90` },
+                  { borderBottomColor: reminderLineColor },
                 ]}>
                 <Text style={[styles.reminderText, { color: reminderLinkColor }]}>
                   Remind me to ease up before
@@ -203,7 +206,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 22,
-    paddingTop: 8,
     paddingBottom: 20,
   },
 
@@ -223,21 +225,21 @@ const styles = StyleSheet.create({
   // ── Header ──────────────────────────────────────────────────────────────
 
   headerBlock: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
 
   backButton: {
-    width: 36,
-    height: 36,
-    marginLeft: -6,
+    width: 30,
+    height: 30,
+    marginLeft: -5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 13,
   },
 
   backChevron: {
-    fontSize: 30,
-    lineHeight: 30,
+    width: 22,
+    height: 22,
   },
 
   // .pl-eyebrow: 11px, 600, 0.2em, uppercase
@@ -246,34 +248,35 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 2.2,
     textTransform: 'uppercase',
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
   // .pl-rtitle: Comfortaa 400, 32px, lineHeight 38px
   mainHeading: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: -0.3,
+    fontFamily: Fonts.display.medium,
+    fontSize: 27,
+    lineHeight: 31,
+    letterSpacing: -0.27,
   },
 
   // ── Main Forecast Card (.pl-card) ────────────────────────────────────────
 
   forecastCard: {
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1,
-    paddingVertical: 22,
-    paddingHorizontal: 20,
+    paddingTop: 26,
+    paddingHorizontal: 22,
+    paddingBottom: 22,
     alignItems: 'center',
-    marginBottom: 14,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
+    marginTop: 18,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 15,
     elevation: 3,
   },
 
   orbContainer: {
-    width: 140,
-    height: 140,
+    width: 138,
+    height: 138,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -305,10 +308,12 @@ const styles = StyleSheet.create({
 
   // .pl-read: 15px, 1.55
   explanationText: {
-    fontSize: 15,
+    fontSize: 14.5,
     lineHeight: 22,
     fontWeight: '400',
     textAlign: 'center',
+    marginTop: 16,
+    maxWidth: 260,
   },
 
   // ── Recommendation Box (.pl-tip) ────────────────────────────────────────
@@ -350,36 +355,34 @@ const styles = StyleSheet.create({
   bottomArea: {
     width: '100%',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
 
   doneButtonWrapper: {
     width: '100%',
-    height: 54,
-    borderRadius: 27,
-    shadowColor: '#000000',
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#6E5656',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 18,
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
     elevation: 8,
   },
 
   doneButtonGradient: {
     flex: 1,
-    borderRadius: 27,
+    borderRadius: 28,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
 
   doneButtonText: {
-    color: '#FFF6F1',
+    color: '#FFF8F4',
     fontSize: 16,
     fontWeight: '600',
-    letterSpacing: -0.15,
+    letterSpacing: -0.16,
   },
 
   checkmarkIconContainer: {
@@ -397,17 +400,15 @@ const styles = StyleSheet.create({
   },
 
   linkUnderlineWrapper: {
-    borderBottomWidth: 1.2,
-    paddingBottom: 0,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
     alignSelf: 'center',
   },
 
   reminderText: {
-    fontSize: 15.5,
+    fontSize: 13.5,
     fontWeight: '500',
-    lineHeight: 22,
+    lineHeight: 19,
     textAlign: 'center',
-    textDecorationLine: 'none',
-    letterSpacing: 0,
   },
 });

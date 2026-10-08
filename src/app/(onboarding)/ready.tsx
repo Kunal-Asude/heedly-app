@@ -9,6 +9,7 @@ import Svg, { Path } from 'react-native-svg';
 import { DawnBackground, EnergyOrb } from '@/components/core';
 import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
+import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
 import { useFirstName } from '@/contexts/NameContext';
 import { appStorage } from '@/utils/storage';
@@ -17,6 +18,7 @@ import { ONBOARDING_COMPLETE_KEY, START_DATE_KEY } from '@/utils/storageKeys';
 export default function ReadyScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const ci = useCheckInPalette();
   const ctaTokens = theme.components.cta;
   const { setFirstName } = useFirstName();
   const [nameInput, setNameInput] = useState('');
@@ -80,7 +82,7 @@ export default function ReadyScreen() {
           </View>
 
           {/* ── Lead description (17px, noteColor) ──────────────── */}
-          <Text style={[styles.description, { color: theme.components.supportingText.noteColor }]}>
+          <Text style={[styles.description, { color: ci.lead }]}>
             The more days you check in, the clearer your patterns become.
             {" We'll do the rest quietly."}
           </Text>
@@ -179,7 +181,6 @@ const styles = StyleSheet.create({
 
   stickyHeader: {
     paddingHorizontal: 26,
-    paddingTop: 8,
   },
 
   fill: {
@@ -214,8 +215,8 @@ const styles = StyleSheet.create({
   },
 
   nameLabel: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 15,
+    lineHeight: 23,
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -226,13 +227,13 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     borderWidth: 1,
     paddingHorizontal: 22,
-    fontSize: 17,
+    fontSize: 16,
     textAlign: 'center',
   },
 
   nameHint: {
-    fontSize: 14.5,
-    lineHeight: 21,
+    fontSize: 12.5,
+    lineHeight: 19,
     textAlign: 'center',
     marginTop: 10,
   },
@@ -275,27 +276,27 @@ const styles = StyleSheet.create({
 
   // ── Lead description (17px, line-height 25px, max-width 320px) ──
   description: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 15,
+    lineHeight: 23,
     textAlign: 'center',
     marginTop: 18,
-    maxWidth: 320,
+    maxWidth: 260,
   },
 
   // ── Primary CTA (height 62px, radius 31px) ──
   buttonWrapper: {
     width: '100%',
-    height: 62,
-    borderRadius: 31,
+    height: 58,
+    borderRadius: 29,
     marginTop: 30,
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 20,
+    shadowRadius: 10,
     elevation: 5,
   },
 
   buttonGradient: {
     flex: 1,
-    borderRadius: 31,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -309,15 +310,14 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
   buttonArrowContainer: {
     position: 'absolute',
-    right: 22,
+    right: 20,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

@@ -40,7 +40,7 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
               <Text
                 style={[
                   styles.neutralText,
-                  { color: theme.ink.muted },
+                  { color: theme.components.supportingText.noteColor },
                 ]}
               >
                 {text}
@@ -51,7 +51,7 @@ export function TodayFooterNote({ text, onPress }: TodayFooterNoteProps) {
           <Text
             style={[
               styles.neutralText,
-              { color: theme.ink.muted },
+              { color: theme.components.supportingText.noteColor },
             ]}
           >
             {text}
@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
 
   // Neutral footer note (15.5px)
   neutralText: {
-    fontSize: 15.5,
-    fontWeight: "400",
+    fontSize: 14,
+    fontWeight: "500",
     lineHeight: 22,
     letterSpacing: 0,
     textAlign: "center",

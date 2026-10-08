@@ -35,18 +35,19 @@ function FeatureRow({
         style={[
           styles.checkBadge,
           {
+            // .pw-check: sage tint (light), sage radial #4A6B55 → #33503F (Dusk), #2C4235 (OLED)
             backgroundColor: isOled
               ? "#2C4235"
               : isDark
-                ? "rgba(100, 180, 140, 0.2)"
-                : "#529668",
+                ? "#405E4A"
+                : "rgba(126, 155, 106, 0.18)",
           },
         ]}
       >
         <Text
           style={[
             styles.checkBadgeIcon,
-            { color: isOled ? "#9FB8A6" : "#FFFFFF" },
+            { color: isOled ? "#9FB8A6" : isDark ? "#C6DFCB" : "#5d7a52" },
           ]}
         >
           ✓
@@ -83,44 +84,46 @@ export default function PaywallScreen() {
   // ─── Theme-Aware Colors (Aubade - True Black (OLED).html:1116-1163) ──────────
 
   const titleMainColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : theme.ink.display;
-  const titleAccentColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#D9735A";
-  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "rgba(74, 58, 57, 0.75)";
+  const titleAccentColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#463332";
+  const subtitleColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 1)") : "rgba(74, 58, 57, 0.74)";
 
-  const cardBg = isDark ? (isOled ? "#16111B" : "rgba(46, 33, 50, 0.95)") : "rgba(252, 246, 240, 0.96)";
-  const cardBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(220, 200, 192, 0.3)";
+  const cardBg = isDark ? (isOled ? "#16111B" : "rgba(67, 49, 67, 0.7)") : "#f8f1e7";
+  const cardBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(255, 255, 255, 0.7)";
 
-  const featureTextColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
+  const featureTextColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#4a3a39";
 
   const planSelectedBg = isDark
-    ? (isOled ? "rgba(201, 123, 96, 0.25)" : "rgba(226, 122, 108, 0.14)")
-    : "rgba(255, 243, 237, 0.7)";
+    ? (isOled ? "rgba(190, 106, 92, 0.08)" : "rgba(226, 122, 108, 0.12)")
+    : "rgba(250, 225, 211, 0.62)";
   const planSelectedBorder = isDark
-    ? (isOled ? "rgba(255, 255, 255, 0.08)" : "rgba(226, 122, 108, 0.6)")
-    : "#D9735A";
+    ? (isOled ? "rgba(255, 255, 255, 0.07)" : "rgba(226, 122, 108, 0.34)")
+    : "#e58a6c";
 
-  const planUnselectedBg = isDark ? (isOled ? "#16111B" : "rgba(38, 26, 42, 0.65)") : "#FFFFFF";
-  const planUnselectedBorder = isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(210, 195, 188, 0.55)";
+  const planUnselectedBg = isDark ? (isOled ? "#16111B" : "rgba(25, 19, 32, 0.55)") : "#fffdfa";
+  const planUnselectedBorder = isDark ? (isOled ? "rgba(255, 255, 255, 0.07)" : "rgba(199, 180, 191, 0.14)") : "rgba(120, 90, 80, 0.14)";
 
-  const planNameColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
-  const planPriceColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#3A2420";
-  const planSubColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.72)") : "#6E5044";
+  const planNameColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#463332";
+  const planPriceColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#463332";
+  const planSubColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.81)") : "rgba(74, 58, 57, 0.6)";
 
   // BEST VALUE badge (.pw-tag)
-  const bestValueBorder = isDark ? (isOled ? "#6E9678" : "rgba(120, 190, 150, 0.5)") : "transparent";
-  const bestValueBg = isDark ? (isOled ? "transparent" : "rgba(100, 180, 140, 0.08)") : "#D9735A";
-  const bestValueTextColor = isDark ? (isOled ? "#6E9678" : "#8FB996") : "#FFFFFF";
+  const bestValueBorder = isDark ? (isOled ? "#6E9678" : "#86C4B4") : "transparent";
+  const bestValueBg = isDark ? "transparent" : "#e7806a";
+  const bestValueTextColor = isDark ? (isOled ? "#6E9678" : "#86C4B4") : "#fff8f4";
 
   // CTA Button (.pw-cta)
   const ctaGradient: [string, string, ...string[]] = isDark
     ? (isOled ? ["#574049", "#241A20"] : ["#634256", "#8A5D7C", "#9E768E"])
-    : ["#f0a07e", "#e88970", "#e0735f"];
-  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
-  const ctaArrowColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF6F1";
+    : ["#f4a47e", "#ea846a", "#e0735f"];
+  const ctaTextColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF8F4";
+  const ctaArrowColor = isDark ? (isOled ? "#EADCD4" : "#FFF6F1") : "#FFF8F4";
 
   // Footer & Disclosure (.pw-disclosure & .pw-links)
-  const disclaimerColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.65)") : "#6E5044";
-  const linkColor = isDark ? (isOled ? "#C97B60" : "#E8907A") : "#9B6E5C";
-  const linkDotColor = isDark ? (isOled ? "rgba(168,151,158,0.55)" : "rgba(199, 180, 191, 0.45)") : "#907A72";
+  const disclaimerColor = isDark ? (isOled ? "#A8979E" : "rgba(199, 180, 191, 0.89)") : "rgba(74, 58, 57, 0.66)";
+  const linkColor = isDark ? (isOled ? "rgba(201, 123, 96, 0.92)" : "rgba(232, 144, 122, 0.92)") : "rgba(176, 83, 52, 0.8)";
+  // .pw-link: underline at 0.34 (light) / 0.39 (dark)
+  const linkLineColor = isDark ? (isOled ? "rgba(201, 123, 96, 0.39)" : "rgba(232, 144, 122, 0.39)") : "rgba(176, 83, 52, 0.34)";
+  const linkDotColor = isDark ? (isOled ? "rgba(168, 151, 158, 0.55)" : "rgba(199, 180, 191, 0.41)") : "rgba(74, 58, 57, 0.3)";
 
   return (
     <View style={styles.root}>
@@ -228,7 +231,7 @@ export default function PaywallScreen() {
                       style={[
                         styles.radioOuter,
                         selectedPlan === "annual"
-                          ? [styles.radioOuterSelected, { backgroundColor: isOled ? "#B85F47" : theme.coral.primary }]
+                          ? [styles.radioOuterSelected, { backgroundColor: isDark ? (isOled ? "#B85F47" : "#DD7A60") : "#e7806a" }]
                           : [
                               styles.radioOuterUnselected,
                               {
@@ -306,7 +309,7 @@ export default function PaywallScreen() {
                       style={[
                         styles.radioOuter,
                         selectedPlan === "monthly"
-                          ? [styles.radioOuterSelected, { backgroundColor: isOled ? "#B85F47" : theme.coral.primary }]
+                          ? [styles.radioOuterSelected, { backgroundColor: isDark ? (isOled ? "#B85F47" : "#DD7A60") : "#e7806a" }]
                           : [
                               styles.radioOuterUnselected,
                               {
@@ -374,19 +377,19 @@ export default function PaywallScreen() {
               {/* ── Footer Links (.pw-links) ─────────────────────────────── */}
               <View style={styles.linksRow}>
                 <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: linkLineColor }]}>
                     <Text style={[styles.link, { color: linkColor }]}>Restore purchases</Text>
                   </View>
                 </Pressable>
                 <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
                 <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: linkLineColor }]}>
                     <Text style={[styles.link, { color: linkColor }]}>Terms</Text>
                   </View>
                 </Pressable>
                 <Text style={[styles.linkDot, { color: linkDotColor }]}>·</Text>
                 <Pressable hitSlop={8} style={({ pressed }) => pressed && styles.linkPressed}>
-                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: `${linkColor}80` }]}>
+                  <View style={[styles.linkUnderlineWrapper, { borderBottomColor: linkLineColor }]}>
                     <Text style={[styles.link, { color: linkColor }]}>Privacy</Text>
                   </View>
                 </Pressable>
@@ -437,13 +440,12 @@ const styles = StyleSheet.create({
   // ── Typography (.pw-headline & .pw-sub) ───────────────────────────────────
 
   mainTitle: {
-    fontFamily: Fonts.display.regular,
+    fontFamily: Fonts.display.medium,
     fontSize: 30,
     lineHeight: 34,
     letterSpacing: -0.3,
     textAlign: "center",
     marginHorizontal: 20,
-    marginBottom: 0,
   },
 
   subtitleText: {
@@ -518,7 +520,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: 17,
-    borderWidth: 1,
+    borderWidth: 1.5,
     paddingVertical: 13,
     paddingHorizontal: 15,
   },
@@ -607,11 +609,10 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 54,
     borderRadius: 27,
-    marginBottom: 12,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowColor: "#6E5656",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
     elevation: 6,
   },
 
@@ -621,9 +622,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.12)",
   },
 
   ctaPressed: {
@@ -634,7 +632,8 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#FFF6F1",
+    letterSpacing: -0.16,
+    color: "#FFF8F4",
   },
 
   ctaArrowContainer: {
@@ -651,17 +650,16 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 18,
     textAlign: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     marginTop: 12,
-    marginBottom: 12,
   },
 
   linksRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    marginTop: 12,
+    gap: 9,
+    marginTop: 13,
   },
 
   linkPressed: {
@@ -670,7 +668,7 @@ const styles = StyleSheet.create({
 
   linkUnderlineWrapper: {
     borderBottomWidth: 1,
-    paddingBottom: 2,
+    paddingBottom: 1,
     alignSelf: "center",
   },
 

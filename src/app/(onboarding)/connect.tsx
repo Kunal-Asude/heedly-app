@@ -12,6 +12,7 @@ import HeedlyNative from '@/services/heedlyNative';
 import { DawnBackground } from '@/components/core';
 import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
+import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useUserSettings } from '@/hooks/data';
@@ -35,6 +36,7 @@ export default function ConnectWearableScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const ci = useCheckInPalette();
   const { isDark, isTrueBlack } = useThemeMode();
   const ctaTokens = theme.components.cta;
   const { wearables } = useUserSettings();
@@ -249,7 +251,7 @@ export default function ConnectWearableScreen() {
             accessibilityRole="button"
             accessibilityLabel="Skip for now, you can connect later">
             <View style={styles.skipRow}>
-              <Text style={[styles.skipText, { color: theme.ink.muted }]}>
+              <Text style={[styles.skipText, { color: ci.foot }]}>
                 Skip for now —{' '}
               </Text>
               <View
@@ -421,7 +423,7 @@ export default function ConnectWearableScreen() {
               onPress={handleProceedToConditions}
               accessibilityRole="button"
               accessibilityLabel="Continue without Apple Health">
-              <Text style={[styles.sheetSkipText, { color: theme.ink.muted }]}>
+              <Text style={[styles.sheetSkipText, { color: ci.foot }]}>
                 Continue without Apple Health
               </Text>
             </Pressable>
@@ -452,7 +454,6 @@ const styles = StyleSheet.create({
   // .ob: padding 70px 26px 42px → approx paddingHorizontal 26, top/bottom via safe area
   stickyHeader: {
     paddingHorizontal: 26,
-    paddingTop: 8,
   },
 
   scrollContent: {
@@ -466,8 +467,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    height: 36,
-    marginBottom: 15,
+    height: 30,
+    marginBottom: 14,
   },
 
   backButton: {
@@ -504,12 +505,11 @@ const styles = StyleSheet.create({
 
   // ── Supporting text (17px, line-height 25px, margin 12px 0 0)
   supportingText: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 14.5,
+    lineHeight: 22,
     fontWeight: '400',
     marginTop: 12,
-    marginBottom: 0,
-    maxWidth: 330,
+    maxWidth: 260,
   },
 
   // ── Card grid (.ob-grid: gap 11px, margin-top 26px) ───────────────────
@@ -518,7 +518,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: CARD_GAP,
     marginTop: 26,
-    marginBottom: 26,
   },
 
   // .ob-card: fixed height 150px, radius 20px, shadow
@@ -549,7 +548,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   // .ob-card .nm: 13px, 600, line-height 1.1
@@ -559,7 +558,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 14,
     height: 14,
-    marginBottom: 6,
+    marginTop: 2,
+    marginBottom: 8,
   },
 
   // .ob-card .meta: 25px reserved slot
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     height: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   // .ob-card .meta: 9.5px, line-height 1.3
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   // ── Skip (.ob-foot: 14.5px, line-height 21px, margin-top: 26px) ───────────
   skipContainer: {
     alignSelf: 'center',
-    marginTop: 8,
+    marginTop: 26,
     marginBottom: 20,
   },
 
@@ -602,36 +602,36 @@ const styles = StyleSheet.create({
   },
 
   skipText: {
-    fontSize: 14.5,
-    lineHeight: 21,
+    fontSize: 12.5,
+    lineHeight: 19,
     textAlign: 'center',
   },
 
   linkUnderlineWrapper: {
-    borderBottomWidth: 1.2,
-    paddingBottom: 0,
+    borderBottomWidth: 1,
+    paddingBottom: 1,
   },
 
   // .ob-link: 14.5px, 500
   skipLink: {
-    fontSize: 14.5,
-    lineHeight: 21,
-    fontWeight: '500',
+    fontSize: 12.5,
+    lineHeight: 19,
+    fontWeight: '400',
   },
 
   // ── Continue CTA (height 62px, radius 31px) ──
   continueWrapper: {
     width: '100%',
-    height: 62,
-    borderRadius: 31,
+    height: 58,
+    borderRadius: 29,
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 20,
+    shadowRadius: 10,
     elevation: 5,
   },
 
   continueGradient: {
     flex: 1,
-    borderRadius: 31,
+    borderRadius: 29,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -649,9 +649,8 @@ const styles = StyleSheet.create({
   },
 
   continueButtonText: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
@@ -688,7 +687,7 @@ const styles = StyleSheet.create({
     shadowColor: '#785A5A',
     shadowOffset: { width: 0, height: -12 },
     shadowOpacity: 0.22,
-    shadowRadius: 34,
+    shadowRadius: 17,
     elevation: 16,
   },
 
@@ -697,26 +696,24 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
   sheetTitle: {
     fontFamily: Fonts.display.regular,
-    fontSize: 27,
-    lineHeight: 32,
-    letterSpacing: -0.3,
-    marginBottom: 0,
+    fontSize: 25,
+    lineHeight: 30,
+    letterSpacing: -0.25,
   },
 
   sheetTitleDark: {},
   sheetTitleAccent: {},
 
   sheetBody: {
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 14.5,
+    lineHeight: 22,
     fontWeight: '400',
-    marginTop: 14,
-    marginBottom: 22,
+    marginTop: 12,
   },
 
   sheetBodyBold: {
@@ -724,8 +721,8 @@ const styles = StyleSheet.create({
   },
 
   stepsContainer: {
-    gap: 16,
-    marginBottom: 26,
+    gap: 12,
+    marginTop: 20,
   },
 
   stepRow: {
@@ -735,24 +732,24 @@ const styles = StyleSheet.create({
   },
 
   stepBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 23,
+    height: 23,
+    borderRadius: 11.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 1,
   },
 
   stepBadgeText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
 
   stepText: {
     flex: 1,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 13.5,
+    lineHeight: 20,
     fontWeight: '400',
+    marginTop: 2,
   },
 
   stepTextBold: {
@@ -761,10 +758,11 @@ const styles = StyleSheet.create({
 
   sheetCtaWrapper: {
     width: '100%',
-    height: 60,
-    borderRadius: 30,
+    height: 58,
+    borderRadius: 29,
+    marginTop: 24,
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 20,
+    shadowRadius: 10,
     elevation: 5,
   },
 
@@ -775,7 +773,7 @@ const styles = StyleSheet.create({
 
   sheetCtaGradient: {
     flex: 1,
-    borderRadius: 30,
+    borderRadius: 29,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
@@ -783,16 +781,15 @@ const styles = StyleSheet.create({
   },
 
   sheetCtaText: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '600',
-    letterSpacing: -0.17,
     textAlign: 'center',
   },
 
   sheetSkipButton: {
     alignSelf: 'center',
-    marginTop: 16,
-    paddingVertical: 6,
+    marginTop: 14,
+    paddingVertical: 4,
     paddingHorizontal: 12,
   },
 
@@ -801,14 +798,14 @@ const styles = StyleSheet.create({
   },
 
   sheetSkipText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },
 
   continueArrowContainer: {
     position: 'absolute',
-    right: 22,
+    right: 20,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

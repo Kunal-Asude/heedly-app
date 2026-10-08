@@ -15,58 +15,223 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DawnBackground } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
-import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
+import { useThemeMode } from "@/contexts/ThemeContext";
 
-// ─── Data Card Component (.sx-card with subtle gradient / flat OLED) ─────
+// ─── Palette (.sx-data, .sx-badge, .ci-sheet, .sx-sheet-* in Aubade - Today /
+//     Dusk Dark Mode / OLED) ──────────────────────────────────────────────────
 
-function DataCard({
-  children,
-  isDark,
-  isTrueBlack = false,
-  style,
-}: {
-  children: React.ReactNode;
-  isDark: boolean;
-  isTrueBlack?: boolean;
-  style?: any;
-}) {
-  if (isDark && isTrueBlack) {
-    return (
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: '#16111B',
-            borderColor: 'rgba(255, 255, 255, 0.07)',
-            shadowOpacity: 0,
-            elevation: 0,
-          },
-          style,
-        ]}>
-        {children}
-      </View>
-    );
-  }
+type Gradient = [string, string, ...string[]];
 
-  const cardGradientColors: [string, string, string] = isDark
-    ? ['rgba(50, 35, 54, 0.88)', 'rgba(62, 43, 65, 0.85)', 'rgba(82, 54, 72, 0.82)']
-    : ['rgba(252, 246, 240, 0.92)', 'rgba(255, 250, 245, 0.95)', 'rgba(255, 238, 230, 0.95)'];
+type DataPalette = {
+  back: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  section: string;
+  cardBg: string;
+  cardBorder: string;
+  cardShadow: string;
+  cardShadowOpacity: number;
+  /** .sx-live background, where it differs from the card */
+  liveBg: Gradient | null;
+  divider: string;
+  rowTitle: string;
+  rowDesc: string;
+  coralBadge: Gradient;
+  coralIcon: string;
+  sageBadge: Gradient;
+  sageIcon: string;
+  action: string;
+  danger: string;
+  chev: string;
+  foot: string;
+  scrim: string;
+  sheetBg: string;
+  sheetBorder: string | null;
+  sheetShadow: string;
+  sheetShadowOpacity: number;
+  grip: string;
+  sheetTitle: string;
+  sheetBody: string;
+  sheetNote: string;
+  dangerBtnBg: string;
+  dangerBtnBorder: string;
+  keepBtn: Gradient;
+  keepBtnDiagonal: boolean;
+  keepBtnText: string;
+};
 
+const DATA: Record<"light" | "dusk" | "oled", DataPalette> = {
+  light: {
+    back: "rgba(74, 58, 57, 0.62)",
+    eyebrow: "rgba(74, 58, 57, 0.5)",
+    title: "#463332",
+    intro: "rgba(74, 58, 57, 0.82)",
+    section: "rgba(74, 58, 57, 0.5)",
+    cardBg: "rgba(255, 252, 248, 0.72)",
+    cardBorder: "rgba(255, 255, 255, 0.9)",
+    cardShadow: "#BE968C",
+    cardShadowOpacity: 0.16,
+    liveBg: null,
+    divider: "rgba(120, 90, 90, 0.12)",
+    rowTitle: "#4f3c3a",
+    rowDesc: "rgba(74, 58, 57, 0.82)",
+    coralBadge: ["#f3a784", "#e7805f"],
+    coralIcon: "#fff8f4",
+    sageBadge: ["#bcd6c2", "#9cc0aa"],
+    sageIcon: "#426150",
+    action: "#4f3c3a",
+    danger: "#c0492c",
+    chev: "rgba(74, 58, 57, 0.34)",
+    foot: "rgba(74, 58, 57, 0.62)",
+    scrim: "rgba(74, 58, 57, 0.34)",
+    sheetBg: "#fbf3ec",
+    sheetBorder: null,
+    sheetShadow: "#785A5A",
+    sheetShadowOpacity: 0.22,
+    grip: "rgba(120, 90, 90, 0.2)",
+    sheetTitle: "#463332",
+    sheetBody: "rgba(74, 58, 57, 0.72)",
+    sheetNote: "rgba(74, 58, 57, 0.64)",
+    dangerBtnBg: "rgba(255, 255, 255, 0.86)",
+    dangerBtnBorder: "rgba(192, 73, 44, 0.5)",
+    keepBtn: ["#f4a47e", "#ea846a", "#e0735f"],
+    keepBtnDiagonal: true,
+    keepBtnText: "#fff8f4",
+  },
+  dusk: {
+    back: "rgba(199, 180, 191, 0.84)",
+    eyebrow: "rgba(199, 180, 191, 0.68)",
+    title: "#F3E7E1",
+    intro: "rgba(199, 180, 191, 1)",
+    section: "rgba(199, 180, 191, 0.68)",
+    cardBg: "#3E2F44",
+    cardBorder: "rgba(255, 255, 255, 0.09)",
+    cardShadow: "#000000",
+    cardShadowOpacity: 0.29,
+    liveBg: ["rgba(46, 39, 56, 0.7)", "rgba(67, 49, 67, 0.7)", "rgba(102, 73, 73, 0.7)"],
+    divider: "rgba(85, 68, 91, 0.36)",
+    rowTitle: "#F3E7E1",
+    rowDesc: "rgba(199, 180, 191, 1)",
+    coralBadge: ["#8A4B3C", "#7A4234", "#6B3A2E"],
+    coralIcon: "#F3D9CD",
+    sageBadge: ["#4A6B55", "#33503F"],
+    sageIcon: "#C6DFCB",
+    action: "#F3E7E1",
+    danger: "#F08A75",
+    chev: "rgba(199, 180, 191, 0.46)",
+    foot: "rgba(199, 180, 191, 0.84)",
+    scrim: "rgba(18, 10, 20, 0.55)",
+    sheetBg: "rgba(51, 37, 56, 0.72)",
+    sheetBorder: null,
+    sheetShadow: "#000000",
+    sheetShadowOpacity: 0.4,
+    grip: "rgba(199, 180, 191, 0.28)",
+    sheetTitle: "#F3E7E1",
+    sheetBody: "rgba(199, 180, 191, 0.97)",
+    sheetNote: "rgba(199, 180, 191, 0.86)",
+    dangerBtnBg: "#3E2F44",
+    dangerBtnBorder: "rgba(240, 138, 117, 0.5)",
+    keepBtn: ["#634256", "#8A5D7C", "#9E768E"],
+    keepBtnDiagonal: false,
+    keepBtnText: "#FFF6F1",
+  },
+  oled: {
+    back: "#A8979E",
+    eyebrow: "#9A8A91",
+    title: "#E9DDD6",
+    intro: "#A8979E",
+    section: "#9A8A91",
+    cardBg: "#16111B",
+    cardBorder: "rgba(255, 255, 255, 0.07)",
+    cardShadow: "#000000",
+    cardShadowOpacity: 0.29,
+    liveBg: null,
+    divider: "rgba(255, 255, 255, 0.07)",
+    rowTitle: "#E9DDD6",
+    rowDesc: "#A8979E",
+    coralBadge: ["#5A3128", "#5A3128"],
+    coralIcon: "#D8BFB4",
+    sageBadge: ["#2C4235", "#2C4235"],
+    sageIcon: "#9FB8A6",
+    action: "#E9DDD6",
+    danger: "#C46A55",
+    chev: "rgba(168, 151, 158, 0.55)",
+    foot: "#A8979E",
+    scrim: "rgba(18, 10, 20, 0.55)",
+    sheetBg: "#16111B",
+    sheetBorder: "rgba(255, 255, 255, 0.07)",
+    sheetShadow: "#000000",
+    sheetShadowOpacity: 0.4,
+    grip: "rgba(255, 255, 255, 0.07)",
+    sheetTitle: "#E9DDD6",
+    sheetBody: "#A8979E",
+    sheetNote: "#A8979E",
+    dangerBtnBg: "#16111B",
+    dangerBtnBorder: "rgba(196, 106, 85, 0.5)",
+    keepBtn: ["#574049", "#241A20"],
+    keepBtnDiagonal: true,
+    keepBtnText: "#EADCD4",
+  },
+};
+
+const KEEPS = [
+  { icon: "waveform.path.ecg", title: "Wearable data", desc: "Heart rate, HRV, sleep and activity from your connected device." },
+  { icon: "list.clipboard", title: "Daily check-ins", desc: "Your energy, body and the things you note each day." },
+  { icon: "heart", title: "Conditions", desc: "What you're living with, to shape your patterns." },
+  { icon: "moon", title: "Period days", desc: "The cycle days you've logged, if you've added any." },
+] as const;
+
+const LIVES = [
+  { icon: "iphone", title: "On your device", desc: "Patterns are detected here, on your phone." },
+  {
+    icon: "lock",
+    title: "Encrypted backup",
+    desc: "Kept on this phone. If you back up your iPhone, it's included — so it can come back when you restore to a new one.",
+  },
+] as const;
+
+function useDataPalette() {
+  const { isDark, isTrueBlack } = useThemeMode();
+  return DATA[isDark ? (isTrueBlack ? "oled" : "dusk") : "light"];
+}
+
+// ─── Pieces ───────────────────────────────────────────────────────────────────
+
+// .sx-data .sx-card
+function DataCard({ children, style }: { children: React.ReactNode; style?: object }) {
+  const c = useDataPalette();
   return (
-    <LinearGradient
-      colors={cardGradientColors}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 1, y: 0.7 }}
+    <View
       style={[
         styles.card,
         {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
-          shadowColor: isDark ? '#000000' : '#BE968C',
-          shadowOpacity: isDark ? 0.24 : 0.08,
+          backgroundColor: c.cardBg,
+          borderColor: c.cardBorder,
+          shadowColor: c.cardShadow,
+          shadowOpacity: c.cardShadowOpacity,
         },
         style,
       ]}>
       {children}
+    </View>
+  );
+}
+
+// .sx-badge: 34px circle, 18px icon
+function Badge({ icon, tone }: { icon: string; tone: "coral" | "sage" }) {
+  const c = useDataPalette();
+  return (
+    <LinearGradient
+      colors={tone === "coral" ? c.coralBadge : c.sageBadge}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.badge}>
+      <SymbolView
+        name={icon as any}
+        size={18}
+        tintColor={tone === "coral" ? c.coralIcon : c.sageIcon}
+      />
     </LinearGradient>
   );
 }
@@ -76,8 +241,7 @@ function DataCard({
 export default function YourDataScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const theme = useAppTheme();
-  const { isDark, isTrueBlack } = useThemeMode();
+  const c = useDataPalette();
   const { resetAllData } = useCheckIn();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
@@ -96,66 +260,17 @@ export default function YourDataScreen() {
     router.replace("/(tabs)" as any);
   };
 
-  // Theme-aware tokens (Dawn vs Dusk vs True Black / OLED)
-  const eyebrowColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.55)";
-  const mainHeadingColor = isDark
-    ? isTrueBlack
-      ? "#E9DDD6"
-      : "#F3E7E1"
-    : theme.ink.display;
-  const subtitleColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.72)"
-    : "rgba(74, 58, 57, 0.7)";
-  const groupHeaderColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.55)";
-  const itemTitleColor = isDark
-    ? isTrueBlack
-      ? "#E9DDD6"
-      : "#F3E7E1"
-    : "#4f3c3a";
-  const itemDescColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.72)"
-    : "rgba(74, 58, 57, 0.62)";
-  const dividerColor = isDark
-    ? isTrueBlack
-      ? "rgba(255, 255, 255, 0.07)"
-      : "rgba(255, 255, 255, 0.06)"
-    : "rgba(120, 90, 90, 0.1)";
-  const chevronColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.45)"
-    : "rgba(74, 58, 57, 0.34)";
-  const actionDeleteColor = isDark
-    ? isTrueBlack
-      ? "#BE6A5C"
-      : "#E8907A"
-    : "#c0533c";
-  const footnoteColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.55)"
-    : "rgba(74, 58, 57, 0.55)";
-
+  const divider = (inset: object) => (
+    <View style={[styles.divider, inset, { backgroundColor: c.divider }]} />
+  );
 
   return (
     <View style={styles.root}>
       {/* Atmosphere Background */}
       <DawnBackground />
 
-      {/* ── Back header — fixed; content scrolls out of view below it ── */}
-      <View style={[styles.stickyHeader, { paddingTop: insets.top + 8 }]}>
+      {/* ── Back header (.sx-nav) — fixed; content scrolls out of view below it ── */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top }]}>
         <View style={styles.topRow}>
           <Pressable
             onPress={handleBack}
@@ -163,7 +278,7 @@ export default function YourDataScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={[styles.backChevron, { color: isDark ? theme.ink.muted : "rgba(74, 58, 57, 0.62)" }]}>‹</Text>
+            <SymbolView name="chevron.left" size={22} tintColor={c.back} />
           </Pressable>
         </View>
       </View>
@@ -178,216 +293,69 @@ export default function YourDataScreen() {
         bounces={true}
       >
         {/* ── Screen Title Header ──────────────────────────────────────── */}
-        <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PRIVACY</Text>
-        <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>Your data</Text>
-        <Text style={[styles.supportingSubtitle, { color: subtitleColor }]}>
+        <Text style={[styles.eyebrow, { color: c.eyebrow }]}>PRIVACY</Text>
+        <Text style={[styles.mainHeading, { color: c.title }]}>Your data</Text>
+        <Text style={[styles.intro, { color: c.intro }]}>
           {"Here's everything heedly keeps, in plain English."}
         </Text>
 
         {/* ── 1. WHAT HEEDLY KEEPS (.sx-sec) ─────────────────────────── */}
-        <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>WHAT HEEDLY KEEPS</Text>
+        <Text style={[styles.section, { color: c.section }]}>WHAT HEEDLY KEEPS</Text>
 
-        <DataCard isDark={isDark} isTrueBlack={isTrueBlack}>
-          {/* Wearable data */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#3D2526"
-                      : "#784436"
-                    : "rgba(224, 115, 95, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="waveform.path.ecg"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Wearable data</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                Heart rate, HRV, sleep and activity from your connected device.
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          {/* Daily check-ins */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#3D2526"
-                      : "#784436"
-                    : "rgba(224, 115, 95, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="list.clipboard"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Daily check-ins</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                Your energy, body and the things you note each day.
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          {/* Conditions */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#3D2526"
-                      : "#784436"
-                    : "rgba(224, 115, 95, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="heart"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Conditions</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                {"What you're living with, to shape your patterns."}
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          {/* Period days */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#3D2526"
-                      : "#784436"
-                    : "rgba(224, 115, 95, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="moon"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#C97B60" : "#FFF0EB") : "#b0532f"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Period days</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                {"The cycle days you've logged, if you've added any."}
-              </Text>
-            </View>
-          </View>
+        <DataCard>
+          {KEEPS.map((keep, index) => (
+            <React.Fragment key={keep.title}>
+              {index > 0 && divider(styles.keepDividerInset)}
+              {/* .sx-keep */}
+              <View style={styles.keepRow}>
+                <Badge icon={keep.icon} tone="coral" />
+                <View style={styles.keepText}>
+                  <Text style={[styles.keepTitle, { color: c.rowTitle }]}>{keep.title}</Text>
+                  <Text style={[styles.keepDesc, { color: c.rowDesc }]}>{keep.desc}</Text>
+                </View>
+              </View>
+            </React.Fragment>
+          ))}
         </DataCard>
 
-        {/* ── 2. WHERE IT LIVES (.sx-sec) ────────────────────────────── */}
-        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHERE IT LIVES</Text>
+        {/* ── 2. WHERE IT LIVES (.sx-sec + .sx-lives) ────────────────── */}
+        <Text style={[styles.section, { color: c.section }]}>WHERE IT LIVES</Text>
 
-        <DataCard isDark={isDark} isTrueBlack={isTrueBlack}>
-          {/* On your device */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#2C4235"
-                      : "#3E5D47"
-                    : "rgba(126, 155, 106, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="iphone"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>On your device</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                Patterns are detected here, on your phone.
-              </Text>
-            </View>
-          </View>
+        <View style={styles.lives}>
+          {LIVES.map((live) => {
+            const content = (
+              <>
+                <Badge icon={live.icon} tone="sage" />
+                <View style={styles.keepText}>
+                  <Text style={[styles.liveTitle, { color: c.rowTitle }]}>{live.title}</Text>
+                  <Text style={[styles.liveDesc, { color: c.rowDesc }]}>{live.desc}</Text>
+                </View>
+              </>
+            );
+            return (
+              <DataCard key={live.title}>
+                {c.liveBg ? (
+                  <LinearGradient
+                    colors={c.liveBg}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.liveRow}>
+                    {content}
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.liveRow}>{content}</View>
+                )}
+              </DataCard>
+            );
+          })}
+        </View>
 
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+        {/* ── 3. WHO ELSE SEES IT (.sx-sec + .sx-card-pad) ───────────── */}
+        <Text style={[styles.section, { color: c.section }]}>WHO ELSE SEES IT</Text>
 
-          {/* Encrypted backup */}
-          <View style={styles.itemRow}>
-            <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#2C4235"
-                      : "#3E5D47"
-                    : "rgba(126, 155, 106, 0.18)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-              ]}
-            >
-              <SymbolView
-                name="lock"
-                size={17}
-                tintColor={isDark ? (isTrueBlack ? "#9FB8A6" : "#E0F2E6") : "#5d7a52"}
-              />
-            </View>
-            <View style={styles.itemTextContainer}>
-              <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Encrypted backup</Text>
-              <Text style={[styles.itemDescription, { color: itemDescColor }]}>
-                {"Kept on this phone. If you back up your iPhone, it's included — so it can come back when you restore to a new one."}
-              </Text>
-            </View>
-          </View>
-        </DataCard>
-
-        {/* ── 3. WHO ELSE SEES IT (.sx-sec) ──────────────────────────── */}
-        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>WHO ELSE SEES IT</Text>
-
-        <DataCard isDark={isDark} isTrueBlack={isTrueBlack} style={{ paddingVertical: 14 }}>
-          <Text style={[styles.itemTitle, { color: itemTitleColor }]}>Private by default.</Text>
-          <Text style={[styles.paragraphDescription, { color: itemDescColor }]}>
+        <DataCard style={styles.cardPad}>
+          <Text style={[styles.nobodyTitle, { color: c.rowTitle }]}>Private by default.</Text>
+          <Text style={[styles.nobodyBody, { color: c.rowDesc }]}>
             {/* Restore alongside the AI insights setting:
             {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
             */}
@@ -395,68 +363,54 @@ export default function YourDataScreen() {
           </Text>
         </DataCard>
 
-        {/* ── 4. ACTIONS ─────────────────────────────────────────────── */}
-        <DataCard isDark={isDark} isTrueBlack={isTrueBlack} style={{ marginTop: 18 }}>
-          {/* Export my data */}
+        {/* ── 4. ACTIONS (.sx-card + .sx-card: 24px apart) ───────────── */}
+        <DataCard style={styles.actionsCard}>
           <Pressable
             style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel="Export my data"
           >
-            <Text style={[styles.actionText, { color: itemTitleColor }]}>Export my data</Text>
-            <Text style={[styles.actionChevron, { color: chevronColor }]}>›</Text>
+            <Text style={[styles.actionText, { color: c.action }]}>Export my data</Text>
+            <SymbolView name="chevron.right" size={17} tintColor={c.chev} />
           </Pressable>
 
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+          {divider(styles.actionDividerInset)}
 
-          {/* Delete all my data */}
           <Pressable
             style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
             onPress={() => setIsDeleteModalVisible(true)}
             accessibilityRole="button"
             accessibilityLabel="Delete all my data"
           >
-            <Text style={[styles.actionDeleteText, { color: actionDeleteColor }]}>Delete all my data</Text>
+            <Text style={[styles.actionText, { color: c.danger }]}>Delete all my data</Text>
           </Pressable>
 
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+          {divider(styles.actionDividerInset)}
 
-          {/* Read full privacy policy */}
           <Pressable
             style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel="Read full privacy policy"
           >
-            <Text style={[styles.actionText, { color: itemTitleColor }]}>Read full privacy policy</Text>
-            <Text style={[styles.actionChevron, { color: chevronColor }]}>›</Text>
+            <Text style={[styles.actionText, { color: c.action }]}>Read full privacy policy</Text>
+            <SymbolView name="chevron.right" size={17} tintColor={c.chev} />
           </Pressable>
         </DataCard>
 
-        {/* Footnote */}
-        <Text style={[styles.footnoteText, { color: footnoteColor }]}>
+        {/* .sx-foot */}
+        <Text style={[styles.foot, { color: c.foot }]}>
           {"Deleting asks you to confirm first — it can't be undone."}
         </Text>
       </ScrollView>
 
-      {/* ── "Delete everything?" Bottom Sheet Modal ──────────────────── */}
+      {/* ── "Delete everything?" sheet (.ci-sheet + .sx-sheet-*) ──────── */}
       <Modal
         visible={isDeleteModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setIsDeleteModalVisible(false)}
       >
-        <View
-          style={[
-            styles.modalOverlay,
-            {
-              backgroundColor: isDark
-                ? isTrueBlack
-                  ? "rgba(0, 0, 0, 0.72)"
-                  : "rgba(18, 10, 20, 0.65)"
-                : "rgba(74, 58, 57, 0.34)",
-            },
-          ]}
-        >
+        <View style={[styles.modalOverlay, { backgroundColor: c.scrim }]}>
           <Pressable
             style={styles.modalDismissArea}
             onPress={() => setIsDeleteModalVisible(false)}
@@ -466,138 +420,68 @@ export default function YourDataScreen() {
             style={[
               styles.sheetContainer,
               {
-                backgroundColor: isDark ? (isTrueBlack ? "#16111B" : "#332538") : "#fbf3ec",
-                borderTopColor: isDark
-                  ? isTrueBlack
-                    ? "rgba(255, 255, 255, 0.07)"
-                    : "rgba(199, 180, 191, 0.14)"
-                  : "transparent",
-                borderTopWidth: isDark ? 1 : 0,
-                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 28,
+                backgroundColor: c.sheetBg,
+                borderColor: c.sheetBorder ?? "transparent",
+                borderWidth: c.sheetBorder ? 1 : 0,
+                shadowColor: c.sheetShadow,
+                shadowOpacity: c.sheetShadowOpacity,
+                paddingBottom: Math.max(30, insets.bottom + 16),
               },
             ]}
           >
-            <View
-              style={[
-                styles.handleBar,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "rgba(255, 255, 255, 0.18)"
-                      : "rgba(199, 180, 191, 0.28)"
-                    : "rgba(120, 90, 90, 0.2)",
-                },
-              ]}
-            />
+            <View style={[styles.grip, { backgroundColor: c.grip }]} />
 
-            <Text
-              style={[
-                styles.sheetTitle,
-                { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : theme.ink.display },
-              ]}
-            >
-              Delete everything?
-            </Text>
+            <Text style={[styles.sheetTitle, { color: c.sheetTitle }]}>Delete everything?</Text>
 
-            <Text
-              style={[
-                styles.sheetBodyText,
-                {
-                  color: isDark
-                    ? isTrueBlack
-                      ? "#9A8A91"
-                      : "rgba(199, 180, 191, 0.95)"
-                    : "rgba(74, 58, 57, 0.72)",
-                },
-              ]}
-            >
+            <Text style={[styles.sheetBody, { color: c.sheetBody }]}>
               {"This erases everything heedly keeps on this phone — every check-in and all your patterns. It can't be undone. Older iPhone backups may still hold a copy until they're replaced."}
             </Text>
 
-            <Text
-              style={[
-                styles.sheetHelperText,
-                {
-                  color: isDark
-                    ? isTrueBlack
-                      ? "#9A8A91"
-                      : "rgba(199, 180, 191, 0.68)"
-                    : "rgba(74, 58, 57, 0.55)",
-                },
-              ]}
-            >
+            <Text style={[styles.sheetNote, { color: c.sheetNote }]}>
               {"If you have a subscription, cancel it separately in the App Store. Deleting here won't stop billing."}
             </Text>
 
-            {/* Delete everything button (Destructive Outline) */}
+            {/* .sx-sheet-btn.danger */}
             <Pressable
               style={({ pressed }) => [
-                styles.deleteOutlineButton,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "rgba(190, 106, 92, 0.14)"
-                      : "rgba(51, 37, 56, 0.85)"
-                    : "#FCE4E6",
-                  borderColor: isDark
-                    ? isTrueBlack
-                      ? "rgba(255, 255, 255, 0.07)"
-                      : "rgba(226, 122, 108, 0.38)"
-                    : "#c0533c",
-                },
+                styles.sheetBtn,
+                styles.dangerBtn,
+                { backgroundColor: c.dangerBtnBg, borderColor: c.dangerBtnBorder },
                 pressed && styles.buttonPressed,
               ]}
               onPress={handleConfirmDelete}
               accessibilityRole="button"
               accessibilityLabel="Confirm delete everything"
             >
-              <Text
-                style={[
-                  styles.deleteOutlineButtonText,
-                  { color: isDark ? (isTrueBlack ? "#BE6A5C" : "#E8907A") : "#c0533c" },
-                ]}
-              >
-                Delete everything
-              </Text>
+              <Text style={[styles.sheetBtnText, { color: c.danger }]}>Delete everything</Text>
             </Pressable>
 
-            {/* Keep my data button (Solid Dark Mauve / Flat OLED) */}
+            {/* .sx-sheet-btn.keep */}
             <Pressable
-              style={({ pressed }) => [
-                styles.keepDataButton,
-                {
-                  backgroundColor: isDark
-                    ? isTrueBlack
-                      ? "#16111B"
-                      : "#5C3E50"
-                    : "rgba(120, 90, 80, 0.12)",
-                  borderColor: isDark && isTrueBlack ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                  borderWidth: isDark && isTrueBlack ? 1 : 0,
-                },
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.keepBtnShadow, pressed && styles.buttonPressed]}
               onPress={() => setIsDeleteModalVisible(false)}
               accessibilityRole="button"
               accessibilityLabel="Keep my data"
             >
-              <Text
-                style={[
-                  styles.keepDataButtonText,
-                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#FFF6F1") : "#4f3c3a" },
-                ]}
+              <LinearGradient
+                colors={c.keepBtn}
+                start={c.keepBtnDiagonal ? { x: 0, y: 0 } : { x: 0, y: 0.5 }}
+                end={c.keepBtnDiagonal ? { x: 1, y: 1 } : { x: 1, y: 0.5 }}
+                style={styles.sheetBtn}
               >
-                Keep my data
-              </Text>
+                <Text style={[styles.sheetBtnText, { color: c.keepBtnText }]}>Keep my data</Text>
+              </LinearGradient>
             </Pressable>
           </View>
         </View>
       </Modal>
-
     </View>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+// Values from .sx-data in the Aubade handoff. CSS blur radius B maps to RN
+// shadowRadius B / 2.
 
 const styles = StyleSheet.create({
   root: {
@@ -608,6 +492,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  // .sx: padding 0 22px
   scrollContent: {
     paddingHorizontal: 22,
   },
@@ -616,8 +501,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
 
+  // .sx-sheet-btn:active: scale 0.985
   buttonPressed: {
-    opacity: 0.88,
     transform: [{ scale: 0.985 }],
   },
 
@@ -627,168 +512,206 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
   },
 
+  // .sx-nav: height 30px, margin-bottom 13px
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
-    height: 36,
-    marginBottom: 12,
+    height: 30,
+    marginBottom: 13,
   },
 
+  // .sx-back: 30x30, margin-left -5px
   backButton: {
-    width: 36,
-    height: 36,
-    marginLeft: -6,
+    width: 30,
+    height: 30,
+    marginLeft: -5,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  backChevron: {
-    fontSize: 30,
-    lineHeight: 30,
-  },
-
-  // .sx-eyebrow: 11px, 600, 0.2em, uppercase
-  sectionLabel: {
+  // .sx-eyebrow: 11px, 600, letter-spacing 0.2em, margin-bottom 7px
+  eyebrow: {
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 2.2,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
-  // .sx-title: Comfortaa 400, 32px, lineHeight 38px
+  // .sx-title: Comfortaa 500, 30px, letter-spacing -0.01em
   mainHeading: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 32,
-    lineHeight: 38,
+    fontFamily: Fonts.display.medium,
+    fontSize: 30,
+    lineHeight: 34,
     letterSpacing: -0.3,
-    marginBottom: 6,
   },
 
-  // .sx-intro: 14.5px, 1.5
-  supportingSubtitle: {
+  // .sx-intro: 14.5px, line-height 1.5, margin-top 12px, max-width 30ch
+  intro: {
     fontSize: 14.5,
-    lineHeight: 21,
-    marginBottom: 16,
+    lineHeight: 22,
+    marginTop: 12,
+    maxWidth: 250,
   },
 
-  // .sx-sec: 11px, 600, letter-spacing 0.16em, uppercase
-  groupHeaderLabel: {
+  // .sx-sec: 11px, 600, letter-spacing 0.16em, margin 23px 0 10px
+  section: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 1.8,
+    letterSpacing: 1.76,
     textTransform: "uppercase",
-    marginTop: 18,
+    marginTop: 23,
     marginBottom: 10,
-    paddingLeft: 4,
   },
 
-  groupHeaderLabelSpacing: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 1.8,
-    textTransform: "uppercase",
-    marginTop: 22,
-    marginBottom: 10,
-    paddingLeft: 4,
-  },
+  // ── Cards (.sx-data .sx-card) ────────────────────────────────────────────
 
-  // ── Cards (.sx-card) ─────────────────────────────────────────────────────
-
+  // radius 22px, shadow 0 10px 26px
   card: {
     borderRadius: 22,
     borderWidth: 1,
-    paddingVertical: 4,
-    paddingHorizontal: 18,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 13,
   },
 
-  // .sx-keep: padding 14px 0
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-    paddingVertical: 14,
+  // .sx-card-pad: padding 16px 17px
+  cardPad: {
+    paddingVertical: 16,
+    paddingHorizontal: 17,
   },
 
-  iconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 2,
-  },
-
-  itemTextContainer: {
-    flex: 1,
-    gap: 4,
-  },
-
-  // .sx-row-title: 15.5px, 600
-  itemTitle: {
-    fontSize: 15.5,
-    fontWeight: "600",
-    letterSpacing: -0.15,
-    lineHeight: 21,
-  },
-
-  // .sx-row-desc: 13.5px, 400
-  itemDescription: {
-    fontSize: 13.5,
-    fontWeight: "400",
-    lineHeight: 19.5,
-  },
-
-  paragraphDescription: {
-    fontSize: 13.5,
-    fontWeight: "400",
-    lineHeight: 20,
-    marginTop: 8,
+  // .sx-data .sx-card + .sx-card: margin-top 24px
+  actionsCard: {
+    marginTop: 24,
   },
 
   divider: {
     height: 1,
   },
 
-  // ── Actions Card ─────────────────────────────────────────────────────────
+  // .sx-keep::before: left 63px, right 16px
+  keepDividerInset: {
+    marginLeft: 63,
+    marginRight: 16,
+  },
 
+  // .sx-action::before: left 17px, right 17px
+  actionDividerInset: {
+    marginHorizontal: 17,
+  },
+
+  // .sx-data .sx-keep: padding 15px 16px, min-height 64px, gap 13px
+  keepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 13,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    minHeight: 64,
+  },
+
+  // .sx-badge: 34x34 circle
+  badge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // .sx-keep-main / .sx-live-text: gap 3px
+  keepText: {
+    flex: 1,
+    gap: 3,
+  },
+
+  // .sx-row-title: 14.5px, 600, letter-spacing -0.01em, line-height 1.3
+  keepTitle: {
+    fontSize: 14.5,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    lineHeight: 19,
+  },
+
+  // .sx-row-desc: 12.5px, line-height 1.45
+  keepDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+
+  // ── Where it lives (.sx-data .sx-lives / .sx-live) ───────────────────────
+
+  // one column, gap 24px
+  lives: {
+    gap: 24,
+  },
+
+  // .sx-data .sx-live: row, padding 15px 16px, gap 13px
+  liveRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 13,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    // inside the card's 1px border, so the Dusk gradient follows its corners
+    borderRadius: 21,
+  },
+
+  // .sx-live-title: 13.5px, 600
+  liveTitle: {
+    fontSize: 13.5,
+    fontWeight: "600",
+    lineHeight: 18,
+  },
+
+  // .sx-live-desc: 12px, line-height 1.5
+  liveDesc: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // ── Who else sees it ─────────────────────────────────────────────────────
+
+  // .sx-nobody-title: 15px, 700, margin-bottom 6px
+  nobodyTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  // .sx-nobody-body: 13px, line-height 1.55
+  nobodyBody: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
+
+  // ── Actions (.sx-data .sx-action) ────────────────────────────────────────
+
+  // padding 15px 17px, min-height 54px
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 14,
+    paddingVertical: 15,
+    paddingHorizontal: 17,
+    minHeight: 54,
   },
 
+  // 14.5px, 600
   actionText: {
-    fontSize: 15.5,
+    fontSize: 14.5,
     fontWeight: "600",
-    letterSpacing: -0.15,
   },
 
-  actionDeleteText: {
-    fontSize: 15.5,
-    fontWeight: "600",
-    letterSpacing: -0.15,
-  },
-
-  actionChevron: {
-    fontSize: 18,
-    fontWeight: "600",
-    paddingLeft: 4,
-  },
-
-  footnoteText: {
-    fontSize: 12.5,
-    lineHeight: 18,
+  // .sx-foot: 12px, line-height 1.4, margin 14px 2px 0
+  foot: {
+    fontSize: 12,
+    lineHeight: 17,
     marginTop: 14,
-    textAlign: "center",
+    marginHorizontal: 2,
   },
 
-  // ── Modal Styles ─────────────────────────────────────────────────────────
+  // ── Sheet (.ci-sheet + .sx-sheet-*) ──────────────────────────────────────
 
   modalOverlay: {
     flex: 1,
@@ -799,68 +722,74 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  // .ci-sheet: radius 26px 26px 0 0, padding 14px 24px 30px, shadow 0 -12px 34px
   sheetContainer: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     paddingTop: 14,
     paddingHorizontal: 24,
-    shadowColor: "#000000",
     shadowOffset: { width: 0, height: -12 },
-    shadowOpacity: 0.35,
-    shadowRadius: 36,
+    shadowRadius: 17,
     elevation: 20,
   },
 
-  handleBar: {
-    width: 36,
+  // .ci-sheet-grip: 38x4, margin-bottom 18px
+  grip: {
+    width: 38,
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
+  // .sx-sheet-h: Comfortaa 500, 25px, letter-spacing -0.01em
   sheetTitle: {
-    fontFamily: Fonts.display.regular,
-    fontSize: 27,
-    lineHeight: 33,
-    letterSpacing: -0.3,
-    marginBottom: 12,
+    fontFamily: Fonts.display.medium,
+    fontSize: 25,
+    lineHeight: 29,
+    letterSpacing: -0.25,
   },
 
-  sheetBodyText: {
-    fontSize: 14.5,
-    lineHeight: 21,
-    marginBottom: 12,
+  // .sx-sheet-body: 13.5px, line-height 1.5, margin-top 12px
+  sheetBody: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    marginTop: 12,
   },
 
-  sheetHelperText: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    marginBottom: 24,
+  // .sx-sheet-note: 12px, line-height 1.45, margin-top 12px
+  sheetNote: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 12,
   },
 
-  deleteOutlineButton: {
-    height: 54,
-    borderRadius: 27,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-
-  deleteOutlineButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  keepDataButton: {
+  // .sx-sheet-btn: 54px tall, radius 27px, 12px apart
+  sheetBtn: {
     height: 54,
     borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  keepDataButtonText: {
+  // .sx-sheet-btn.danger: border 1.5px
+  dangerBtn: {
+    borderWidth: 1.5,
+    marginTop: 12,
+  },
+
+  // .sx-sheet-btn.keep: shadow 0 8px 20px rgba(110,86,86,0.16)
+  keepBtnShadow: {
+    marginTop: 12,
+    borderRadius: 27,
+    shadowColor: "#6E5656",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+  },
+
+  // .sx-sheet-btn: 16px, 600
+  sheetBtnText: {
     fontSize: 16,
     fontWeight: "600",
   },

@@ -201,9 +201,7 @@ export default function TodayScreen() {
   // Dynamic modal theme tokens (Dawn vs Dusk vs True Black / OLED)
   const modalTokens = {
     backdrop: isDark
-      ? isTrueBlack
-        ? "rgba(0, 0, 0, 0.72)"
-        : "rgba(18, 10, 20, 0.62)"
+      ? "rgba(18, 10, 20, 0.55)"
       : "rgba(74, 58, 57, 0.34)",
     sheetBg: isDark
       ? isTrueBlack
@@ -217,7 +215,7 @@ export default function TodayScreen() {
       : "transparent",
     handle: isDark
       ? isTrueBlack
-        ? "rgba(255, 255, 255, 0.18)"
+        ? "rgba(255, 255, 255, 0.07)"
         : "rgba(199, 180, 191, 0.28)"
       : "rgba(120, 90, 90, 0.2)",
     headingDark: isDark
@@ -232,72 +230,64 @@ export default function TodayScreen() {
       : theme.coral.terracottaDeep,
     subtitle: isDark
       ? isTrueBlack
-        ? "#9A8A91"
-        : "rgba(199, 180, 191, 0.95)"
-      : theme.ink.muted,
-    badgeBg:
-      whyModalType === "rest"
+        ? "#A8979E"
+        : "rgba(199, 180, 191, 1)"
+      : "rgba(74, 58, 57, 0.84)",
+    badgeBg: whyModalType === "rest"
         ? isDark
           ? isTrueBlack
             ? "rgba(190, 106, 92, 0.14)"
             : "rgba(226, 122, 140, 0.18)"
-          : "#FCE4E6"
+          : "rgba(218, 109, 130, 0.15)"
         : isDark
           ? isTrueBlack
             ? "rgba(194, 154, 95, 0.14)"
             : "rgba(232, 168, 124, 0.18)"
-          : "#F4E2C7",
-    badgeBorder:
-      whyModalType === "rest"
+          : "rgba(217, 152, 67, 0.16)",
+    badgeBorder: whyModalType === "rest"
         ? isDark
           ? isTrueBlack
-            ? "rgba(255, 255, 255, 0.07)"
-            : "rgba(226, 122, 140, 0.30)"
-          : "transparent"
+            ? "rgba(190, 106, 92, 0.3)"
+            : "rgba(226, 122, 140, 0.3)"
+          : "rgba(218, 109, 130, 0.3)"
         : isDark
           ? isTrueBlack
-            ? "rgba(255, 255, 255, 0.07)"
-            : "rgba(232, 168, 124, 0.30)"
-          : "transparent",
-    badgeDot:
-      whyModalType === "rest"
+            ? "rgba(194, 154, 95, 0.3)"
+            : "rgba(232, 168, 124, 0.3)"
+          : "rgba(217, 152, 67, 0.3)",
+    badgeDot: whyModalType === "rest"
         ? isDark
           ? isTrueBlack
             ? "#BE6A5C"
-            : "#E792A4"
-          : "#DC6B76"
+            : "#da6d82"
+          : "#da6d82"
         : isDark
           ? isTrueBlack
             ? "#C29A5F"
             : "#E8A87C"
-          : "#D4A545",
-    badgeText:
-      whyModalType === "rest"
+          : "#d99843",
+    badgeText: whyModalType === "rest"
         ? isDark
           ? isTrueBlack
             ? "#BE6A5C"
             : "#E792A4"
-          : "#DC6B76"
+          : "#b14a64"
         : isDark
           ? isTrueBlack
             ? "#C29A5F"
             : "#E8A87C"
-          : "#B57E32",
+          : "#9a6a2a",
     iconBg: isDark
       ? isTrueBlack
-        ? "#241A24"
-        : "rgba(138, 75, 60, 0.35)"
-      : "#F3E3D6",
-    iconBorder: isDark
-      ? isTrueBlack
-        ? "rgba(255, 255, 255, 0.07)"
-        : "rgba(232, 168, 124, 0.22)"
-      : "transparent",
+        ? "#5A3128"
+        : "#7A4234"
+      : "#f1bf95",
+    iconBorder: "transparent",
     iconTint: isDark
       ? isTrueBlack
-        ? "#C97B60"
+        ? "#D8BFB4"
         : "#F3D9CD"
-      : "#785344",
+      : "#8a4a25",
     itemTitle: isDark
       ? isTrueBlack
         ? "#E9DDD6"
@@ -305,14 +295,14 @@ export default function TodayScreen() {
       : theme.ink.display,
     itemDesc: isDark
       ? isTrueBlack
-        ? "#9A8A91"
-        : "rgba(199, 180, 191, 0.88)"
-      : "rgba(74, 58, 57, 0.66)",
+        ? "#A8979E"
+        : "rgba(199, 180, 191, 1)"
+      : "rgba(74, 58, 57, 0.74)",
     reassurance: isDark
       ? isTrueBlack
-        ? "#9A8A91"
-        : "rgba(199, 180, 191, 0.82)"
-      : "rgba(74, 58, 57, 0.6)",
+        ? "#A8979E"
+        : "rgba(199, 180, 191, 0.92)"
+      : "rgba(74, 58, 57, 0.68)",
   };
 
 
@@ -417,7 +407,6 @@ export default function TodayScreen() {
                 {
                   backgroundColor: modalTokens.badgeBg,
                   borderColor: modalTokens.badgeBorder,
-                  borderWidth: isDark ? 1 : 0,
                 },
               ]}
             >
@@ -464,13 +453,12 @@ export default function TodayScreen() {
                       {
                         backgroundColor: modalTokens.iconBg,
                         borderColor: modalTokens.iconBorder,
-                        borderWidth: isDark ? 1 : 0,
                       },
                     ]}
                   >
                     <SymbolView
                       name={item.icon as any}
-                      size={18}
+                      size={17}
                       tintColor={modalTokens.iconTint}
                     />
                   </View>
@@ -523,8 +511,8 @@ export default function TodayScreen() {
                       : ["#634256", "#8A5D7C", "#9E768E"]
                     : [theme.coral.light, theme.coral.mid, theme.coral.primary]
                 }
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                start={{ x: 0, y: isDark && !isTrueBlack ? 0.5 : 0 }}
+                end={{ x: 1, y: isDark && !isTrueBlack ? 0.5 : 1 }}
                 style={[
                   styles.modalOkayBtnGradient,
                   isDark && isTrueBlack && {
@@ -566,15 +554,14 @@ const styles = StyleSheet.create({
   },
 
   modalSheetContainer: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingTop: 14,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingTop: 16,
     paddingHorizontal: 24,
-    shadowColor: "#000000",
+    shadowColor: "#785A5A",
     shadowOffset: { width: 0, height: -12 },
-    shadowOpacity: 0.35,
-
-    shadowRadius: 34,
+    shadowOpacity: 0.22,
+    shadowRadius: 17,
     elevation: 16,
   },
 
@@ -583,65 +570,62 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 18,
   },
 
   modalBadge: {
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    paddingVertical: 5.5,
-    paddingHorizontal: 13,
-    borderRadius: 16,
-    marginBottom: 12,
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
   },
 
   modalBadgeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
   modalBadgeText: {
-    fontSize: 12.5,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   modalHeading: {
     fontFamily: Fonts.display.regular,
-    fontSize: 27,
-    lineHeight: 32,
+    fontSize: 25,
+    lineHeight: 30,
     letterSpacing: -0.25,
-    marginBottom: 8,
+    marginTop: 13,
   },
 
   modalSubtitle: {
-    fontSize: 17,
-    lineHeight: 25,
-    marginBottom: 20,
+    fontSize: 14.5,
+    lineHeight: 22,
+    marginTop: 12,
   },
 
   modalItemsList: {
-    gap: 16,
-    marginBottom: 20,
+    gap: 15,
+    marginTop: 18,
   },
 
   modalItemRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 13,
   },
 
   modalIconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
   },
 
   modalItemTextBlock: {
@@ -650,47 +634,45 @@ const styles = StyleSheet.create({
   },
 
   modalItemTitle: {
-    fontSize: 15.5,
+    fontSize: 14,
     fontWeight: "600",
-    lineHeight: 21,
+    lineHeight: 18,
   },
 
   modalItemDesc: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 19,
   },
 
   modalReassurance: {
-    fontSize: 14,
+    fontSize: 13.5,
     lineHeight: 20,
-    marginBottom: 22,
-    textAlign: "center",
+    fontWeight: "500",
+    marginTop: 17,
   },
 
   modalOkayBtnWrapper: {
     width: "100%",
-    height: 58,
-    borderRadius: 29,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 14,
+    height: 54,
+    borderRadius: 27,
+    marginTop: 20,
+    shadowColor: "#6E5656",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
     elevation: 5,
   },
 
   modalOkayBtnGradient: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.25)",
   },
 
   modalOkayBtnText: {
-    color: "#FFF6F1",
-    fontSize: 17,
+    color: "#FFF8F4",
+    fontSize: 16,
     fontWeight: "600",
-    letterSpacing: -0.15,
   },
 });

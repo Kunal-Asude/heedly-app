@@ -19,6 +19,7 @@ const MATERIAL: Record<string, string> = {
   'calendar': 'calendar_today',
   'checkmark.circle': 'check_circle',
   'checkmark': 'check',
+  'chevron.left': 'chevron_left',
   'chevron.right': 'chevron_right',
   'circle.circle': 'radio_button_checked',
   'clock.fill': 'schedule',
