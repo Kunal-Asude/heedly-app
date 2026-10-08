@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type { ForecastState, TankDirection } from "@heedly/native";
+import type { ForecastState } from "@heedly/native";
 
 import type { EnergyOrbState } from "@/components/core";
 import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
@@ -30,19 +30,6 @@ const ROW_DOT: Record<ForecastState, string> = {
   steady: STATE_DOT.greenDot,
   slowing: STATE_DOT.cautionDot,
   rest_day: STATE_DOT.restDot,
-};
-
-/** The badge is the direction; the orb is the band. They may differ. */
-const DIRECTION_DOT: Record<TankDirection, string> = {
-  building: STATE_DOT.greenDot,
-  holding: STATE_DOT.cautionDot,
-  draining: STATE_DOT.restDot,
-};
-
-const DIRECTION_TEXT: Record<TankDirection, string> = {
-  building: "building",
-  holding: "holding steady",
-  draining: "draining",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -76,7 +63,6 @@ export default function TodayScreen() {
 
   const {
     orbState: tankOrbState,
-    direction,
     isLoaded: isTankLoaded,
     refresh: refreshTank,
   } = useTankState();
@@ -148,16 +134,10 @@ export default function TodayScreen() {
   // a false reassurance (§2), and the orb is the one thing people read.
   const orbState: EnergyOrbState = tankOrbState ?? "empty";
 
-  // The engine already decides this; the screen only names it. Until a
-  // direction exists — no band, or a first recompute with no predecessor — the
-  // existing forecast copy stands rather than inventing a trend.
-  const indicatorText = direction
-    ? DIRECTION_TEXT[direction]
-    : currentConfig.indicatorText;
-
-  const indicatorDotColor = direction
-    ? DIRECTION_DOT[direction]
-    : currentConfig.indicatorDotColor;
+  // The status line names today's state, as the design does: "holding
+  // steady" / "caution today" / "resting today". The orb shows the tank.
+  const indicatorText = currentConfig.indicatorText;
+  const indicatorDotColor = currentConfig.indicatorDotColor;
 
   const cycleStatusMode = () => {
     if (showEmptyState) return;

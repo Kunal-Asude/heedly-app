@@ -129,17 +129,12 @@ Based on `statusMode`:
 
 `useTodayChrome(statusMode)` provides `statusConfigs` (all 5 modes) and `whyModalConfigs` (caution + rest only). It was `useForecast(statusMode)` until 2026-10-04, when `useForecast()` became the engine-backed hook and the mock chrome was renamed out of its way.
 
-⚠️ **The orb and the status indicator are engine-driven; the rest is not.** Both
-read `useTankState`, refreshed by the `onTankUpdated` event — the orb follows the
-tank band, and the indicator names the tank direction (`building` /
-`holding steady` / `draining`). With no band the orb is `"empty"`, and with no
-direction the indicator falls back to `statusConfigs`.
-
-The indicator's **dot colour follows the direction, not the band** — the orb
-answers "where are the reserves now", the badge answers "where are they
-heading". The two are allowed to disagree: `good_reserves` + `draining` is a
-real state and renders a green orb beside a red dot. Simulator-verified across
-all five band/direction combinations on 2026-09-28.
+⚠️ **The orb is engine-driven; the status indicator follows the forecast.** The
+orb reads `useTankState`, refreshed by the `onTankUpdated` event, and follows the
+tank band; with no band it is `"empty"`. The indicator names today's forecast
+state from `statusConfigs` — "holding steady" / "caution today" / "resting
+today", with the state's dot colour — as the design does. Changed on 2026-10-08
+to match the Aubade Today design; it used to name the tank direction.
 
 The primary CTA is read from the store like its routing already was
 (`isTodayCompleted` → "Review your check-in"; an unrated previous day →

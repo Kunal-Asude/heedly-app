@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTabBarInset } from "@/components/app-tabs";
 import { DawnBackground, EnergyOrbState } from "@/components/core";
@@ -57,6 +57,10 @@ export interface TodayScreenLayoutProps {
   onFooterPress?: () => void;
 }
 
+// Header (8 + 56 + 4) + orb gap 13 + headline block 103 + status line 44 +
+// outlook 9 + 66 + why link 30 + CTA gap 16 + CTA 60 + planning link 40.
+const MAIN_FIXED_HEIGHT = 450;
+
 export function TodayScreenLayout({
   dateText,
   greeting,
@@ -82,9 +86,16 @@ export function TodayScreenLayout({
   onFooterPress,
 }: TodayScreenLayoutProps) {
   const { height: windowHeight } = useWindowDimensions();
+  const { top: safeTop } = useSafeAreaInsets();
   const tabBarInset = useTabBarInset();
   const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
-  const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
+  // Everything but the orb takes MAIN_FIXED_HEIGHT, so the orb gets what is
+  // left: the full 254 on a 402x874 iPhone, smaller on shorter screens so the
+  // CTA and planning link stay above the tab bar without scrolling.
+  const actualOrbSize = Math.max(
+    152,
+    Math.min(requestedOrbSize, windowHeight - safeTop - tabBarInset - MAIN_FIXED_HEIGHT),
+  );
 
   return (
     <View style={styles.root}>
@@ -93,22 +104,25 @@ export function TodayScreenLayout({
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <ScrollView
           style={[styles.scrollArea, { marginBottom: tabBarInset }]}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[styles.contentContainer, styles.mainContentContainer]}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
           <TodayHeader
             dateText={dateText}
             greeting={greeting}
+            accentName
             onSettingsPress={onSettingsPress}
           />
 
+          {/* Gaps follow the mockup's absolute positions (402x874 frame). */}
+          <View style={styles.topSpacer} />
           <View style={styles.mainContentGroup}>
-            <View style={styles.orbSlot}>
+            <View style={[styles.orbSlot, styles.mainOrbSlot]}>
               <TodayOrbContainer state={orbState} size={actualOrbSize} />
             </View>
 
-            <View style={styles.headlineSlot}>
+            <View style={[styles.headlineSlot, styles.mainHeadlineSlot]}>
               <TodayHeadline
                 headline1={headline1}
                 headline2={headline2}
@@ -125,25 +139,32 @@ export function TodayScreenLayout({
               />
             </View>
 
-            <View style={styles.supportingSlot}>
-              <TodaySupportingText text={supportingText} />
-            </View>
+            {supportingText ? (
+              <View style={styles.supportingSlot}>
+                <TodaySupportingText text={supportingText} />
+              </View>
+            ) : null}
 
-            <View style={styles.forecastSlot}>
+            <View style={[styles.forecastSlot, styles.mainForecastSlot]}>
               <TodayForecastCard
                 forecast={forecast}
                 learningNote={learningNote}
               />
             </View>
+
+            {/* .qlink.why: text 12px under the outlook. The slot keeps its
+                height without a link, so the CTA sits at the same y in every
+                state, as in the design. */}
+            <View style={styles.whySlot}>
+              <TodaySecondaryLink
+                text={secondaryText}
+                isLink={isSecondaryLink}
+                onPress={onSecondaryPress}
+              />
+            </View>
           </View>
 
-          <View style={styles.secondaryCenterRegion}>
-            <TodaySecondaryLink
-              text={secondaryText}
-              isLink={isSecondaryLink}
-              onPress={onSecondaryPress}
-            />
-          </View>
+          <View style={styles.ctaSpacer} />
 
           <View style={styles.actionAreaGroup}>
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
@@ -390,6 +411,46 @@ const styles = StyleSheet.create({
   learningFlexibleSpacer: {
     flex: 1,
     minHeight: 0,
+  },
+
+  // Header text ends 22px above the orb (.head 72 → .orb-stage 150)
+  mainOrbSlot: {
+    marginTop: 13,
+    marginBottom: 0,
+  },
+
+  // .editorial starts 17px under the orb and the status line 13px under it
+  mainHeadlineSlot: {
+    marginTop: 17,
+    marginBottom: 4,
+  },
+
+  // .outlook starts 32px under the status line
+  mainForecastSlot: {
+    marginTop: 9,
+    marginBottom: 0,
+  },
+
+  whySlot: {
+    width: "100%",
+    height: 18,
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  // Every gap below is fixed to the design. Height a screen has beyond the
+  // 402x874 frame goes here, above the orb.
+  topSpacer: {
+    flex: 1,
+  },
+
+  // .cta sits 16px under the why link
+  ctaSpacer: {
+    height: 16,
+  },
+
+  mainContentContainer: {
+    paddingBottom: 0,
   },
 
   actionAreaGroup: {

@@ -41,9 +41,10 @@ const TABS: TabConfig[] = [
 
 // ─── Tab bar space ────────────────────────────────────────────────────────────
 
-const TAB_BAR_HEIGHT = 70;
+// .tabbar: 46px tabs + 9px padding top and bottom + 1px border each side
+const TAB_BAR_HEIGHT = 66;
 // Gap between the end of scrolled content and the top of the floating bar.
-const TAB_BAR_CONTENT_GAP = 12;
+const TAB_BAR_CONTENT_GAP = 10;
 
 function useTabBarBottom() {
   const insets = useSafeAreaInsets();
@@ -147,7 +148,7 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
             >
               <SymbolView
                 name={isFocused ? tabConfig.iconFocused : tabConfig.icon}
-                size={20}
+                size={21}
                 tintColor={
                   isFocused
                     ? theme.components.tabBar.selectedText
@@ -236,34 +237,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  // .tabbar: sized to its tabs, padding 9px 12px, gap 6px, radius 28px
   tabBarContainer: {
-    width: "100%",
-    maxWidth: 390,
     height: TAB_BAR_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     alignSelf: "center",
-    borderRadius: 24,
+    gap: 6,
+    borderRadius: 28,
     borderWidth: 1,
-    paddingHorizontal: 6,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
     shadowRadius: 24,
     elevation: 12,
   },
 
+  // .tab: min-width 78px, height 46px, padding 0 16px, gap 7px, radius 20px
   tabItem: {
-    flex: 1,
-    height: 50,
+    minWidth: 78,
+    height: 46,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
-    paddingHorizontal: 8,
-    borderRadius: 18,
-    margin: 4
+    gap: 7,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
 
   tabItemFocused: {
@@ -274,10 +274,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
+  // .tab: 13.5px, 600, letter-spacing -0.01em
   tabLabel: {
-    fontSize: 16,
+    fontSize: 13.5,
     fontWeight: "600",
-    letterSpacing: -0.15,
+    letterSpacing: -0.14,
   },
 
   tabLabelFocused: {

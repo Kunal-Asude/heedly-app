@@ -85,8 +85,7 @@ export function TodayForecastCard({
                 style={[
                   styles.dotHaloRing,
                   {
-                    backgroundColor: stateObj.bg || `${stateObj.color}24`,
-                    borderColor: stateObj.ring || `${stateObj.color}38`,
+                    backgroundColor: `${stateObj.color}29`,
                   },
                 ]}
               >
@@ -170,11 +169,7 @@ export function TodayForecastCard({
 
 const styles = StyleSheet.create({
   forecastSlot: {
-    height: 80,
-    justifyContent: "center",
     alignSelf: "stretch",
-    marginTop: 0,
-    marginBottom: 2,
   },
 
   learningNoteSlot: {
@@ -186,7 +181,6 @@ const styles = StyleSheet.create({
   },
 
   forecastCardShadow: {
-    flex: 1,
     borderRadius: 22,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 24,
@@ -195,7 +189,6 @@ const styles = StyleSheet.create({
 
   // .outlook: border-radius 22px, padding 14px 6px
   forecastCard: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 22,
@@ -238,21 +231,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
 
-  // State dot outer translucent halo + subtle ring
+  // .ddot glow: 9px dot + 3px ring each side, rgba(dot, 0.16)
   dotHaloRing: {
     width: 15,
     height: 15,
     borderRadius: 7.5,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  // State dot inner solid center
+  // .ddot: 9x9
   dotCenter: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
   },
 
   // .day .dword: 13.5px, 600, letter-spacing -0.01em
