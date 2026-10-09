@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     lineHeight: 22,
     marginTop: 12,
-    maxWidth: 250,
+    maxWidth: 268, // 30ch at 14.5px
   },
 
   // .sx-sec: 11px, 600, letter-spacing 0.16em, margin 23px 0 10px

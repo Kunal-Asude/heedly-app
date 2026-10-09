@@ -73,8 +73,8 @@ test("high confidence asserts the state", () => {
 
 test("medium confidence also asserts it", () => {
   assert.deepEqual(headline(day({ state: "slowing", confidence: "medium" })), {
-    headline1: "Today asks for\n",
-    headline2: "a slower pace.",
+    headline1: "Today asks for\na ",
+    headline2: "slower pace.",
   });
 });
 

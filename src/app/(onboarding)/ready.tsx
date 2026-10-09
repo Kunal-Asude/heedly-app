@@ -11,6 +11,7 @@ import { BackButton } from '@/components/ui/back-button';
 import { Fonts } from '@/constants/theme';
 import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import { useFirstName } from '@/contexts/NameContext';
 import { syncTrackingStartDate } from '@/services/trackingStart';
 import { appStorage } from '@/utils/storage';
@@ -18,6 +19,7 @@ import { ONBOARDING_COMPLETE_KEY, START_DATE_KEY } from '@/utils/storageKeys';
 
 export default function ReadyScreen() {
   const router = useRouter();
+  const { isTrueBlack } = useThemeMode();
   const theme = useTheme();
   const ci = useCheckInPalette();
   const ctaTokens = theme.components.cta;
@@ -76,7 +78,8 @@ export default function ReadyScreen() {
           <View style={styles.headingRow}>
             <Image
               source={require('@/assets/images/heedly-warm-ink.png')}
-              style={[styles.wordmarkInline, { tintColor: theme.ink.display }]}
+              // OLED: the wordmark's invert/hue-rotate filter renders the ink as #CBC2C2
+              style={[styles.wordmarkInline, { tintColor: isTrueBlack ? '#CBC2C2' : theme.ink.display }]}
               contentFit="contain"
             />
             <Text style={[styles.headingIs, { color: theme.ink.display }]}>is</Text>

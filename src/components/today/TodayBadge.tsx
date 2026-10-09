@@ -1,5 +1,6 @@
 import { GlowDot } from "@/components/core";
 import { useTheme } from "@/constants/themes";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodayBadgeProps {
@@ -16,7 +17,11 @@ export function TodayBadge({
   onPress,
 }: TodayBadgeProps) {
   const theme = useTheme();
+  const { isTrueBlack } = useThemeMode();
   const badgeTokens = theme.components.badge;
+  // OLED: chip fill, chip border and dot ring are all the state colour at 0.14.
+  const ringAlpha = isTrueBlack ? "24" : "29";
+  const chipBorderAlpha = isTrueBlack ? "24" : "5C";
 
   // Resolve state dot color to theme-specific state palette
   const dotColorLower = indicatorDotColor.toLowerCase();
@@ -50,8 +55,8 @@ export function TodayBadge({
           style={[
             styles.learningChip,
             {
-              backgroundColor: `${resolvedDotColor}29`,
-              borderColor: `${resolvedDotColor}5C`,
+              backgroundColor: `${resolvedDotColor}${ringAlpha}`,
+              borderColor: `${resolvedDotColor}${chipBorderAlpha}`,
             },
           ]}
         >
@@ -72,7 +77,7 @@ export function TodayBadge({
             style={[
               styles.statusDotHalo,
               {
-                backgroundColor: `${resolvedDotColor}29`,
+                backgroundColor: `${resolvedDotColor}${ringAlpha}`,
               },
             ]}
           >

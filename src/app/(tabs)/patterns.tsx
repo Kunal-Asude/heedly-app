@@ -16,7 +16,7 @@ import { DawnBackground, EmptyState } from "@/components/core";
 import { Fonts } from "@/constants/theme";
 import { useCheckIn } from "@/contexts/CheckInContext";
 import { useAppTheme, useThemeMode } from "@/contexts/ThemeContext";
-import { ENERGY_LEGEND } from "@/copy/weekDots";
+import { ENERGY_LEGEND, oledDotColor } from "@/copy/weekDots";
 import { usePatterns } from "@/hooks/data";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -227,14 +227,16 @@ export default function PatternsScreen() {
                   {
                     borderColor: isDark
                       ? isTankTooltipVisible
-                        ? "rgba(226, 122, 108, 0.6)"
+                        ? isTrueBlack
+                          ? "rgba(190, 106, 92, 0.6)" // OLED .pt-info.active
+                          : "rgba(226, 122, 108, 0.6)"
                         : isTrueBlack
-                        ? "rgba(255, 255, 255, 0.18)"
+                        ? "rgba(255, 255, 255, 0.07)" // OLED .pt-info
                         : "rgba(199, 180, 191, 0.35)"
                       : isTankTooltipVisible
                       ? "rgba(224, 115, 95, 0.6)"
                       : "rgba(74, 58, 57, 0.28)",
-                    backgroundColor: isTankTooltipVisible
+                    backgroundColor: isTankTooltipVisible && !isTrueBlack
                       ? isDark
                         ? "rgba(226, 122, 108, 0.15)"
                         : "rgba(224, 115, 95, 0.1)"
@@ -252,7 +254,9 @@ export default function PatternsScreen() {
                     {
                       color: isTankTooltipVisible
                         ? isDark
-                          ? "#E8907A"
+                          ? isTrueBlack
+                            ? "#C97B60"
+                            : "#E8907A"
                           : "#c9603f"
                         : isDark
                         ? isTrueBlack
@@ -287,7 +291,7 @@ export default function PatternsScreen() {
                 <Text
                   style={[
                     styles.tankTooltipTitle,
-                    { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.75)") : "rgba(74, 58, 57, 0.7)" },
+                    { color: isDark ? (isTrueBlack ? "#A8979E" : "rgba(199, 180, 191, 0.75)") : "rgba(74, 58, 57, 0.7)" }, // OLED .pt-popover-title
                   ]}
                 >
                   {tankTooltipTitle}
@@ -311,7 +315,7 @@ export default function PatternsScreen() {
               <Text
                 style={[
                   styles.tankTooltipBody,
-                  { color: isDark ? (isTrueBlack ? "#E9DDD6" : "rgba(199, 180, 191, 0.92)") : "rgba(74, 58, 57, 0.8)" },
+                  { color: isDark ? (isTrueBlack ? "#A8979E" : "rgba(199, 180, 191, 0.92)") : "rgba(74, 58, 57, 0.8)" }, // OLED .pt-popover-body
                 ]}
               >
                 {tankTooltipBody}
@@ -322,7 +326,7 @@ export default function PatternsScreen() {
           {/* 7-Day Circles Row (.pt-chart) */}
           <View style={styles.daysRow}>
             {thisWeekDays.map((dayItem, index) => {
-              const dotColor = dayItem.color;
+              const dotColor = isTrueBlack ? oledDotColor(dayItem.color) : dayItem.color;
 
               return (
                 <View key={dayItem.date ?? index} style={styles.dayColumn}>
@@ -351,7 +355,7 @@ export default function PatternsScreen() {
           <View style={styles.legendRow}>
             {ENERGY_LEGEND.map((item) => (
               <View key={item.label} style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                <View style={[styles.legendDot, { backgroundColor: isTrueBlack ? oledDotColor(item.color) : item.color }]} />
                 <Text style={[styles.legendText, { color: legendTextColor }]}>{item.label}</Text>
               </View>
             ))}

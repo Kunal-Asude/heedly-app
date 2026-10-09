@@ -447,7 +447,8 @@ function DuskGlassSphere({
             id="duskGlassCore"
             cx="127"
             cy="116.84" // 46% of 254
-            r="137"     // Exact circle radius from center to farthest boundary
+            // OLED: CSS "circle at 50% 46%" runs to the farthest corner (186.9)
+            r={isOled ? "186.9" : "137"}
             gradientUnits="userSpaceOnUse"
           >
             <Stop offset="0%" stopColor={glass.coreInner} stopOpacity={glass.coreInnerAlpha} />
@@ -503,8 +504,9 @@ function DuskGlassSphere({
           <SvgRadialGradient
             id="duskGlassVeil"
             cx="127"
-            cy="76.2" // 30% of 254
-            r="139.7" // 55% of 254
+            // OLED: circle at 50% 32%, sized to the farthest corner (214.4) like CSS
+            cy={isOled ? "81.28" : "76.2"} // 32% / 30% of 254
+            r={isOled ? "214.4" : "139.7"}
             gradientUnits="userSpaceOnUse"
           >
             <Stop offset="0%" stopColor="#ffffff" stopOpacity={glass.veilAlpha} />
@@ -520,8 +522,9 @@ function DuskGlassSphere({
             r="140"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.26} />
-            <Stop offset="50%" stopColor={glass.rimColor} stopOpacity={isOled ? 0.05 : glass.rimTopAlpha} />
+            {/* OLED --orb-rim: inset 0 10px 24px rgba(255,255,255,0.03) — a faint top lift only */}
+            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.03 : 0.26} />
+            <Stop offset="50%" stopColor={glass.rimColor} stopOpacity={isOled ? 0 : glass.rimTopAlpha} />
             <Stop offset="100%" stopColor={glass.rimColor} stopOpacity={0} />
           </SvgRadialGradient>
 
@@ -556,10 +559,9 @@ function DuskGlassSphere({
           {/* 7. Luminous Gradient Hairline Rim Stroke */}
           <SvgLinearGradient id="duskRimStroke" x1="0%" y1="0%" x2="0%" y2="100%">
             {isOled ? [
-              <Stop key="0" offset="0%" stopColor="#ffffff" stopOpacity={0.24} />,
-              <Stop key="1" offset="25%" stopColor="#ffffff" stopOpacity={0.16} />,
-              <Stop key="2" offset="65%" stopColor="#ffffff" stopOpacity={0.10} />,
-              <Stop key="3" offset="100%" stopColor={isEmber ? "rgb(180,110,80)" : "rgb(255,255,255)"} stopOpacity={0.18} />,
+              // OLED --orb-rim: inset 0 0 0 1px rgba(255,255,255,0.07) — one even hairline
+              <Stop key="0" offset="0%" stopColor="#ffffff" stopOpacity={0.07} />,
+              <Stop key="1" offset="100%" stopColor="#ffffff" stopOpacity={0.07} />,
             ] : [
               <Stop key="0" offset="0%" stopColor="#ffffff" stopOpacity={0.52} />,
               <Stop key="1" offset="25%" stopColor={glass.rimColor} stopOpacity={0.36} />,
@@ -608,10 +610,10 @@ function DuskGlassSphere({
           <Circle
             cx="127"
             cy="127"
-            r={isOled ? 126.4 : 126.2}
+            r={isOled ? 126.5 : 126.2}
             fill="none"
             stroke="url(#duskRimStroke)"
-            strokeWidth={isOled ? 1.2 : 1.5}
+            strokeWidth={isOled ? 1 : 1.5}
           />
         </G>
 
@@ -665,13 +667,17 @@ function WaterWave({
     );
 
     // Bob motion: 0 -> 2.5 -> 0 over 7s with spline easing (0.4 0 0.6 1)
+    // OLED: bob('1.1', '7s') — a symmetric -1.1 → +1.1 there-and-back.
+    const bobLow = isOled ? -1.1 : 0;
+    const bobHigh = isOled ? 1.1 : 1.8;
+    bobAnim.value = bobLow;
     bobAnim.value = withRepeat(
       withSequence(
-        withTiming(1.8, {
+        withTiming(bobHigh, {
           duration: 3500,
           easing: Easing.bezier(0.4, 0, 0.6, 1),
         }),
-        withTiming(0, {
+        withTiming(bobLow, {
           duration: 3500,
           easing: Easing.bezier(0.4, 0, 0.6, 1),
         }),
@@ -679,7 +685,7 @@ function WaterWave({
       -1,
       false,
     );
-  }, [bobAnim, fgDrift, reduceMotion]);
+  }, [bobAnim, fgDrift, isOled, reduceMotion]);
 
   const waveAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -957,45 +963,72 @@ function BloomsLayer({ size, isOled = false }: { size: number; isOled?: boolean 
   return (
     <View style={styles.clippedLayer} pointerEvents="none">
       <Svg width={size} height={size} viewBox="0 0 254 254">
-        <Defs>
-          {/* b1 gradient — Soft 3D spherical bloom */}
-          <SvgRadialGradient id="bloomGrad1" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.80} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.06 : 0.65} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.34} />
-            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.20} />
-            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
-            <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-          </SvgRadialGradient>
+        {isOled ? (
+          /* OLED .blooms span: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.12),
+             rgba(255,255,255,0.02) 60%, transparent 72%). A CSS circle gradient runs to the
+             farthest corner (88.5% of the span's width), so the bloom fills the whole disc.
+             b2 and b3 carry element opacity 0.85 and 0.7. */
+          <Defs>
+            {([["bloomGrad1", 1], ["bloomGrad2", 0.85], ["bloomGrad3", 0.7]] as const).map(([id, k]) => (
+              <SvgRadialGradient key={id} id={id} cx="40%" cy="35%" fx="40%" fy="35%" r="88.5%">
+                <Stop offset="0%" stopColor="#ffffff" stopOpacity={0.12 * k} />
+                <Stop offset="60%" stopColor="#ffffff" stopOpacity={0.02 * k} />
+                <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
+                <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+              </SvgRadialGradient>
+            ))}
+          </Defs>
+        ) : (
+          <Defs>
+            {/* b1 gradient — Soft 3D spherical bloom */}
+            <SvgRadialGradient id="bloomGrad1" cx="38%" cy="32%" r="65%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.12 : 0.80} />
+              <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.06 : 0.65} />
+              <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.34} />
+              <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.20} />
+              <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
+              <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+            </SvgRadialGradient>
 
-          {/* b2 gradient — Medium spherical bloom */}
-          <SvgRadialGradient id="bloomGrad2" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.09 : 0.75} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.05 : 0.58} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.28} />
-            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.15} />
-            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
-            <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-          </SvgRadialGradient>
+            {/* b2 gradient — Medium spherical bloom */}
+            <SvgRadialGradient id="bloomGrad2" cx="38%" cy="32%" r="65%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.09 : 0.75} />
+              <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.05 : 0.58} />
+              <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.02 : 0.28} />
+              <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.01 : 0.15} />
+              <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
+              <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+            </SvgRadialGradient>
 
-          {/* b3 gradient — Top-left spherical bloom */}
-          <SvgRadialGradient id="bloomGrad3" cx="38%" cy="32%" r="65%">
-            <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.07 : 0.72} />
-            <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.04 : 0.52} />
-            <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.015 : 0.24} />
-            <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.005 : 0.12} />
-            <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
-            <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-          </SvgRadialGradient>
-        </Defs>
+            {/* b3 gradient — Top-left spherical bloom */}
+            <SvgRadialGradient id="bloomGrad3" cx="38%" cy="32%" r="65%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity={isOled ? 0.07 : 0.72} />
+              <Stop offset="25%" stopColor="#ffffff" stopOpacity={isOled ? 0.04 : 0.52} />
+              <Stop offset="50%" stopColor="#ffffff" stopOpacity={isOled ? 0.015 : 0.24} />
+              <Stop offset="60%" stopColor="#ffffff" stopOpacity={isOled ? 0.005 : 0.12} />
+              <Stop offset="72%" stopColor="#ffffff" stopOpacity={0} />
+              <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+            </SvgRadialGradient>
+          </Defs>
+        )}
 
         {isSmall ? (
           /* Small orb (e.g. 152px onboarding / learning): keep configured sizes and positions */
-          <G>
-            <Circle cx={186} cy={120} r={46} fill="url(#bloomGrad1)" />
-            <Circle cx={84} cy={186} r={26} fill="url(#bloomGrad2)" />
-            <Circle cx={88} cy={76} r={17} fill="url(#bloomGrad3)" />
-          </G>
+          isOled ? (
+            /* OLED: the .blooms spans keep their px size (54/30/18) at % offsets of the
+               152px orb — b1 55%/30%, b2 30%/62%, b3 34%/24% — mapped into the 254 viewBox. */
+            <G>
+              <Circle cx={184.8} cy={121.3} r={45.1} fill="url(#bloomGrad1)" />
+              <Circle cx={101.3} cy={182.5} r={25.1} fill="url(#bloomGrad2)" />
+              <Circle cx={101.4} cy={76} r={15} fill="url(#bloomGrad3)" />
+            </G>
+          ) : (
+            <G>
+              <Circle cx={186} cy={120} r={46} fill="url(#bloomGrad1)" />
+              <Circle cx={84} cy={186} r={26} fill="url(#bloomGrad2)" />
+              <Circle cx={88} cy={76} r={17} fill="url(#bloomGrad3)" />
+            </G>
+          )
         ) : (
           /* Bigger orb (e.g. 254px Today screen): exact sizes and positions (.b1: 54x54 -> r=27, .b2: 30x30 -> r=15, .b3: 18x18 -> r=9) */
           <G>
@@ -1068,18 +1101,21 @@ export function EnergyOrb({
     }
 
     // 8.5-second breathing cycle: 0% / 100% -> scale(1) | 50% -> scale(1.025)
+    // OLED: @keyframes breathe 6s, 50% -> scale(1.015)
+    const breathePeak = isOled ? 1.015 : 1.025;
+    const breatheHalf = isOled ? 3000 : 4250;
     breatheScale.value = withRepeat(
       withSequence(
-        withTiming(1.025, {
-          duration: 4250,
+        withTiming(breathePeak, {
+          duration: breatheHalf,
           easing: Easing.inOut(Easing.ease),
         }),
-        withTiming(1.0, { duration: 4250, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0, { duration: breatheHalf, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
       true,
     );
-  }, [animated, breatheScale, reduceMotion]);
+  }, [animated, breatheScale, isOled, reduceMotion]);
 
   const breatheStyle = useAnimatedStyle(() => ({
     transform: [{ scale: breatheScale.value }],

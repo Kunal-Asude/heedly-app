@@ -9,12 +9,14 @@ import { DawnBackground, EnergyOrb } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useCheckInPalette } from '@/constants/checkInPalette';
 import { useTheme } from '@/constants/themes';
+import { useThemeMode } from '@/contexts/ThemeContext';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const theme = useTheme();
   const ci = useCheckInPalette();
   const ctaTokens = theme.components.cta;
+  const { isTrueBlack } = useThemeMode();
 
   return (
     <View style={styles.root}>
@@ -31,7 +33,13 @@ export default function WelcomeScreen() {
           {/* ── Brand Wordmark Asset (.wordmark: height 58px) ──── */}
           <Image
             source={require('../../../assets/images/heedly-warm-ink.png')}
-            style={[styles.brandLogo, { tintColor: theme.ink.display }]}
+            style={[
+              styles.brandLogo,
+              // OLED: the wordmark grows with the centred column (flexGrow 0.05) to ~71.5px,
+              // and its invert/hue-rotate filter renders the ink as #CBC2C2.
+              isTrueBlack && styles.brandLogoOled,
+              { tintColor: isTrueBlack ? '#CBC2C2' : theme.ink.display },
+            ]}
             contentFit="contain"
           />
 
@@ -124,6 +132,11 @@ const styles = StyleSheet.create({
   brandLogo: {
     width: 148,
     height: 58,
+  },
+
+  brandLogoOled: {
+    width: 167,
+    height: 71.5,
   },
 
   // ── Tagline (.tagline: Comfortaa, 22px, margin-top 6px) ──────────────────

@@ -154,14 +154,14 @@ export const trueBlackTheme: DesignTokens = {
       greetingColor: "#E9DDD6",
       settingsBg: "#16111B",
       settingsBorder: "rgba(255, 255, 255, 0.07)",
-      settingsIconColor: "#9A8A91",
+      settingsIconColor: "#A8979E", // .settings color
       settingsShadowColor: "#000000",
     },
     cta: {
       // Source: oled.css — --grad-cta: linear-gradient(135deg, #574049 0%, #241A20 100%)
       gradient: ["#574049", "#241A20"],
       textColor: "#EADCD4", // --grad-cta-ink: #EADCD4
-      borderColor: "rgba(255, 255, 255, 0.06)",
+      borderColor: "transparent", // .screen .cta: border none
       shadowColor: "#000000",
       shadowOpacity: 0,
     },
@@ -172,18 +172,18 @@ export const trueBlackTheme: DesignTokens = {
         dot: "#6E9678",                         // --steady: #6E9678
         text: "#6E9678",                        // --steady: #6E9678
       },
-      statusText: "#E9DDD6",
+      statusText: "#A8979E", // .state .label / .trend: #A8979E
     },
     supportingText: {
-      color: "#9A8A91",
-      noteColor: "#9A8A91",
+      color: "#A8979E", // .fd-micro / .ob-sub
+      noteColor: "#A8979E", // .fd-note / .nd-body / .lead
     },
     tabBar: {
       background: "#16111B",
       border: "rgba(255, 255, 255, 0.07)",
       selectedPill: "rgba(190, 106, 92, 0.14)", // --surface-selected
-      selectedText: "#E9DDD6",
-      unselectedText: "#9A8A91",
+      selectedText: "#A8979E", // .tab.active color
+      unselectedText: "#A8979E", // .tab color
       shadowColor: "#000000",
     },
     forecastCard: {
@@ -350,17 +350,17 @@ export const trueBlackTheme: DesignTokens = {
         border: "rgba(255, 255, 255, 0.07)",
         shadowColor: "#000000",
         shadowOpacity: 0,
-        iconBackground: "#241A24",
+        iconBackground: "#16111B", // .ob-card .ic
         iconColor: "#A8979E",
         selectedBackground: "rgba(190, 106, 92, 0.14)", // --surface-selected
         selectedBorder: "rgba(255, 255, 255, 0.07)",
-        selectedIconBackground: "#241A24",
-        selectedIconColor: "#C97B60",
+        selectedIconBackground: "#16111B", // .ob-card.connected keeps .ic
+        selectedIconColor: "#A8979E", // .ob-card.connected keeps .ic colour
         selectedTextColor: "#E9DDD6",
         selectedActionColor: "#C97B60",
         waitingBackground: "#16111B",
         waitingBorder: "rgba(255, 255, 255, 0.07)",
-        waitingIconBackground: "#241A24",
+        waitingIconBackground: "#16111B", // .ob-card.waiting .ic
         waitingIconColor: "#9A8A91",
         waitingActionColor: "#9A8A91",
       },
@@ -368,7 +368,7 @@ export const trueBlackTheme: DesignTokens = {
         background: "#16111B",
         border: "rgba(255, 255, 255, 0.07)",
         textColor: "#E9DDD6",
-        checkboxBorder: "rgba(255, 255, 255, 0.18)",
+        checkboxBorder: "rgba(255, 255, 255, 0.07)", // .ob-chip .ring
         selectedBackground: "rgba(190, 106, 92, 0.14)",
         selectedBorder: "rgba(255, 255, 255, 0.07)",
         selectedGradient: ["#B85F47", "#B85F47"] as const,

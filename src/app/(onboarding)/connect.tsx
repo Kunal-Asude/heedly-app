@@ -129,6 +129,7 @@ export default function ConnectWearableScreen() {
             <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
             <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
             <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
           </View>
         </View>
 
@@ -277,7 +278,7 @@ export default function ConnectWearableScreen() {
         animationType="slide"
         transparent={true}
         onRequestClose={handleDismissSheet}>
-        <View style={[styles.modalBackdrop, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(0, 0, 0, 0.72)' : 'rgba(18, 10, 20, 0.58)') : 'rgba(74, 58, 57, 0.34)' }]}>
+        <View style={[styles.modalBackdrop, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(0, 0, 0, 0.66)' : 'rgba(18, 10, 20, 0.58)') : 'rgba(74, 58, 57, 0.34)' }]}>
           <Pressable
             style={styles.modalOverlayDismiss}
             onPress={handleDismissSheet}
@@ -294,7 +295,7 @@ export default function ConnectWearableScreen() {
               },
             ]}>
             {/* Grip Handle (.nd-grip) */}
-            <View style={[styles.modalHandle, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.18)' : 'rgba(199, 180, 191, 0.28)') : 'rgba(120, 90, 90, 0.2)' }]} />
+            <View style={[styles.modalHandle, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(255, 255, 255, 0.07)' : 'rgba(199, 180, 191, 0.28)') : 'rgba(120, 90, 90, 0.2)' }]} />
 
             {/* Title: Comfortaa 400, 27px */}
             <Text style={styles.sheetTitle}>
@@ -336,7 +337,7 @@ export default function ConnectWearableScreen() {
                 <View style={[styles.stepBadge, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(190, 106, 92, 0.14)' : 'rgba(226, 122, 108, 0.18)') : 'rgba(244, 164, 126, 0.20)' }]}>
                   <Text style={[styles.stepBadgeText, { color: theme.coral.terracotta }]}>1</Text>
                 </View>
-                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
+                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#A8979E' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'In '}
                   <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>
                     Apple Health → Sharing → Apps → heedly
@@ -350,7 +351,7 @@ export default function ConnectWearableScreen() {
                 <View style={[styles.stepBadge, { backgroundColor: isDark ? (isTrueBlack ? 'rgba(190, 106, 92, 0.14)' : 'rgba(226, 122, 108, 0.18)') : 'rgba(244, 164, 126, 0.20)' }]}>
                   <Text style={[styles.stepBadgeText, { color: theme.coral.terracotta }]}>2</Text>
                 </View>
-                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#E9DDD6' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
+                <Text style={[styles.stepText, { color: isDark ? (isTrueBlack ? '#A8979E' : 'rgba(199, 180, 191, 0.90)') : 'rgba(74, 58, 57, 0.78)' }]}>
                   {'Open the '}
                   <Text style={[styles.stepTextBold, { color: theme.ink.display }]}>{deviceName ? `${deviceName} app` : 'app for your device'}</Text>
                   {' once so it writes today\'s data across.'}

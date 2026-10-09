@@ -105,7 +105,7 @@ function NotifyToggle({
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.toggleTrack}>
-          <View style={[styles.toggleThumb, styles.toggleThumbOn]} />
+          <View style={[styles.toggleThumb, styles.toggleThumbOn, isTrueBlack && styles.toggleThumbOled]} />
         </LinearGradient>
       ) : (
         <View
@@ -113,11 +113,9 @@ function NotifyToggle({
             styles.toggleTrack,
             {
               backgroundColor: palette.toggleOff,
-              borderWidth: isTrueBlack ? 1 : 0,
-              borderColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : 'transparent',
             },
           ]}>
-          <View style={[styles.toggleThumb, styles.toggleThumbOff]} />
+          <View style={[styles.toggleThumb, styles.toggleThumbOff, isTrueBlack && styles.toggleThumbOled]} />
         </View>
       )}
     </Pressable>
@@ -338,7 +336,7 @@ const styles = StyleSheet.create({
     lineHeight: 21.75,
     fontWeight: '500',
     marginTop: 12,
-    maxWidth: 300,
+    maxWidth: 290, // .ob-sub max-width: 31ch at 14.5px
   },
 
   secondSupporting: {
@@ -412,6 +410,13 @@ const styles = StyleSheet.create({
 
   toggleThumbOn: {
     alignSelf: 'flex-end',
+  },
+
+  // OLED .sx-toggle .knob: #E9DDD6, no shadow
+  toggleThumbOled: {
+    backgroundColor: '#E9DDD6',
+    shadowOpacity: 0,
+    elevation: 0,
   },
 
   bottom: {

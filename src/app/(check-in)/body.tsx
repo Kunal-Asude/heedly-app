@@ -11,12 +11,14 @@ import { useCheckIn } from '@/contexts/CheckInContext';
 import { useCheckInConfig } from '@/hooks/data';
 import { SymbolView } from '@/components/ui/symbol';
 import { useCheckInPalette } from '@/constants/checkInPalette';
+import { useThemeMode } from '@/contexts/ThemeContext';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function BodyScreen() {
   const router = useRouter();
   const ci = useCheckInPalette();
+  const { isTrueBlack } = useThemeMode();
   const { bodyLevels } = useCheckInConfig();
   const {
     currentEntry: activeEntry,
@@ -198,6 +200,7 @@ export default function BodyScreen() {
                     key={level.id}
                     onPress={() => handleSelectLevel(idx)}
                     style={styles.circleTouchArea}
+                    hitSlop={7}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: isSelected }}
                     accessibilityLabel={`Body feel ${level.label}`}
@@ -208,7 +211,10 @@ export default function BodyScreen() {
                         <View
                           style={[
                             styles.selectedRing,
-                            { backgroundColor: ci.scaleGlow[idx] },
+                            // OLED .ci-dot.sel: a 2px rgba(255,255,255,0.22) ring, no tinted halo
+                            isTrueBlack
+                              ? styles.selectedRingOled
+                              : { backgroundColor: ci.scaleGlow[idx] },
                           ]}
                         />
                       )}
@@ -217,6 +223,7 @@ export default function BodyScreen() {
                         style={[
                           styles.circle,
                           { backgroundColor: ci.scale[idx] },
+                          isSelected && isTrueBlack && styles.circleSelectedOled,
                         ]}
                       />
                     </View>
@@ -243,7 +250,7 @@ export default function BodyScreen() {
                   { backgroundColor: ci.pillBg, borderColor: ci.pillBorder },
                 ]}
               >
-                <GlowDot color={ci.pillDot} />
+                <GlowDot color={ci.pillDot} ring={isTrueBlack ? 0 : undefined} />
                 <Text
                   style={[
                     styles.pillText,
@@ -257,6 +264,7 @@ export default function BodyScreen() {
               <Text
                 style={[
                   styles.endpointLabel,
+                  styles.endpointLabelEnd,
                   { color: ci.lab },
                 ]}
               >
@@ -448,8 +456,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  // .ci-dot is 30px and the row spreads dot edges to the padding; the 44px tap
+  // target comes from hitSlop so the outer dots sit flush like the design.
   circleWrapper: {
-    width: 44,
+    width: 30,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
@@ -468,12 +478,28 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
 
+  // OLED: dot scaled 1.06 (31.8px) plus a 2px white ring at 0.22
+  selectedRingOled: {
+    width: 35.8,
+    height: 35.8,
+    borderRadius: 17.9,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+
+  circleSelectedOled: {
+    transform: [{ scale: 1.06 }],
+  },
+
   labelsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 22,
     width: '100%',
+  },
+
+  endpointLabelEnd: {
+    textAlign: 'right',
   },
 
   endpointLabel: {

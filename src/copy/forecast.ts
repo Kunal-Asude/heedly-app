@@ -21,14 +21,14 @@ export interface ForecastHeadline {
 
 const CONFIDENT_HEADLINE: Record<ForecastState, ForecastHeadline> = {
   steady: { headline1: "Today, you have\n", headline2: "good reserves." },
-  slowing: { headline1: "Today asks for\n", headline2: "a slower pace." },
+  slowing: { headline1: "Today asks for\na ", headline2: "slower pace." },
   rest_day: { headline1: "Today is\n", headline2: "one for resting." },
 };
 
 /** Below medium, §6 hedges rather than asserts. */
 const HEDGED_HEADLINE: Record<ForecastState, ForecastHeadline> = {
   steady: { headline1: "Today looks\n", headline2: "steady so far." },
-  slowing: { headline1: "Today may ask for\n", headline2: "a slower pace." },
+  slowing: { headline1: "Today may ask for\na ", headline2: "slower pace." },
   rest_day: { headline1: "Today may be\n", headline2: "one for resting." },
 };
 

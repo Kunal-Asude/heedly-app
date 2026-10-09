@@ -117,7 +117,8 @@ export default function NotesScreen() {
 
   // Metric tiles (.nt-tile)
   const metricBoxBg = isDark ? (isOled ? "#16111B" : "rgba(112, 72, 94, 0.65)") : "#f8d9bf";
-  const metricBoxBorder = "transparent";
+  // OLED .screen .nt-tile: #16111B with a 1px rgba(255,255,255,0.07) border
+  const metricBoxBorder = isOled ? "rgba(255, 255, 255, 0.07)" : "transparent";
   const metricLabelColor = isDark ? (isOled ? "#9A8A91" : "#F3E7E1") : "rgba(120, 72, 48, 0.72)";
   const metricValueColor = isDark ? (isOled ? "#E9DDD6" : "#F3E7E1") : "#463130";
   const metricSubtextColor = isDark ? (isOled ? "#9A8A91" : "#F3E7E1") : "rgba(74, 58, 57, 0.6)";
@@ -231,6 +232,7 @@ export default function NotesScreen() {
                   {
                     backgroundColor: metricBoxBg,
                     borderColor: metricBoxBorder,
+                    borderWidth: isOled ? 1 : 0,
                   },
                 ]}
               >
@@ -561,10 +563,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  // .nt-tile-label: 9.5px, 600, letter-spacing 0.13em
   metricLabel: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: "600",
-    letterSpacing: 1.17,
+    letterSpacing: 1.24,
     textTransform: "uppercase",
     marginBottom: 8,
   },

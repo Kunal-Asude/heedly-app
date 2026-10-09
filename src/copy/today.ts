@@ -54,8 +54,8 @@ export const TODAY_STATUS_COPY: Record<TodayStatusMode, StatusConfig> = {
     waterState: "steady",
   },
   caution: {
-    headline1: "Today asks for\n",
-    headline2: "a slower pace.",
+    headline1: "Today asks for\na ",
+    headline2: "slower pace.",
     indicatorText: "caution today",
     indicatorDotColor: "#D99843",
     whyText: "Why caution today?",

@@ -1,4 +1,5 @@
 import { useTheme } from "@/constants/themes";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -18,6 +19,7 @@ export function TodayForecastCard({
   learningNote,
 }: TodayForecastCardProps) {
   const theme = useTheme();
+  const { isTrueBlack } = useThemeMode();
   const cardTokens = theme.components.forecastCard;
 
   if (!forecast && !learningNote) {
@@ -85,7 +87,8 @@ export function TodayForecastCard({
                 style={[
                   styles.dotHaloRing,
                   {
-                    backgroundColor: `${stateObj.color}29`,
+                    // OLED .ddot ring: the state colour at 0.14
+                    backgroundColor: isTrueBlack ? stateObj.ring : `${stateObj.color}29`,
                   },
                 ]}
               >

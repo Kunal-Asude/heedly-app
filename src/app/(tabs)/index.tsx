@@ -357,7 +357,8 @@ export default function TodayScreen() {
           orbSize={currentConfig.orbSize}
           headline1={currentConfig.headline1}
           headline2={currentConfig.headline2}
-          isHeadlineAccent={false}
+          // OLED: "Still learning you." carries the coral accent (.s-firstday .editorial em).
+          isHeadlineAccent={isTrueBlack}
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={indicatorText}
           indicatorDotColor={indicatorDotColor}

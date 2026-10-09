@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SymbolView } from '@/components/ui/symbol';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -19,6 +19,9 @@ export default function ConditionsScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
+  // .ob-chips: two equal 1fr columns with a 16px gap inside 26px side padding.
+  const { width: windowWidth } = useWindowDimensions();
+  const chipWidth = (windowWidth - 26 * 2 - CHIP_GAP) / 2;
   const ctaTokens = theme.components.cta;
   const { conditions } = useUserSettings();
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -49,6 +52,7 @@ export default function ConditionsScreen() {
             <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
             <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
             <View style={[styles.progressActive, { backgroundColor: isTrueBlack ? '#B85F47' : theme.coral.primary }]} />
+            <View style={[styles.progressDot, { backgroundColor: isTrueBlack ? 'rgba(255,255,255,0.07)' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(120,90,80,0.18)' }]} />
           </View>
         </View>
 
@@ -80,6 +84,7 @@ export default function ConditionsScreen() {
                   key={condition}
                   style={({ pressed }) => [
                     styles.chip,
+                    { width: chipWidth },
                     {
                       backgroundColor: chipTokens.background,
                       borderColor: chipTokens.border,
@@ -244,7 +249,7 @@ const styles = StyleSheet.create({
     lineHeight: 21.75,
     fontWeight: '500',
     marginTop: 12,
-    maxWidth: 268,
+    maxWidth: 290, // .ob-sub max-width: 31ch at 14.5px
   },
 
   // ── Chip grid (.ob-chips) ────
@@ -256,12 +261,14 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    width: '47%',
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
     paddingVertical: 15,
-    paddingHorizontal: 18,
+    paddingLeft: 18,
+    // 2px short of the design's 18 so "Dysautonomia" fits iOS's slightly wider
+    // semibold metrics on one line, as it does in the design.
+    paddingRight: 16,
     borderWidth: 1,
     gap: 10,
     shadowOffset: { width: 0, height: 4 },

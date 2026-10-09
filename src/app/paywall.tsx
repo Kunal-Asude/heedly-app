@@ -186,7 +186,8 @@ export default function PaywallScreen() {
             >
               {isOled && selectedPlan === "annual" ? (
                 <LinearGradient
-                  colors={["#291D26", "#4A2A30"]}
+                  // OLED .pw-plan.sel: linear-gradient(90deg, #16111B 0%, rgba(190,106,92,0.14) 100%)
+                  colors={["#16111B", "rgba(190, 106, 92, 0.14)"]}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={[styles.planBox, { borderColor: planSelectedBorder }]}
@@ -197,8 +198,8 @@ export default function PaywallScreen() {
                     </View>
                     <View>
                       <View style={styles.planTitleRow}>
-                        <Text style={[styles.planName, { color: planNameColor }]}>Annual </Text>
-                        <Text style={[styles.planPrice, { color: planPriceColor }]}> $79.99/yr</Text>
+                        <Text style={[styles.planName, { color: planNameColor }]}>Annual</Text>
+                        <Text style={[styles.planPrice, { color: planPriceColor }]}>$79.99/yr</Text>
                       </View>
                       <Text style={[styles.planSub, { color: planSubColor }]}>about $6.67/mo</Text>
                     </View>
@@ -247,8 +248,8 @@ export default function PaywallScreen() {
                     </View>
                     <View>
                       <View style={styles.planTitleRow}>
-                        <Text style={[styles.planName, { color: planNameColor }]}>Annual </Text>
-                        <Text style={[styles.planPrice, { color: planPriceColor }]}> $79.99/yr</Text>
+                        <Text style={[styles.planName, { color: planNameColor }]}>Annual</Text>
+                        <Text style={[styles.planPrice, { color: planPriceColor }]}>$79.99/yr</Text>
                       </View>
                       <Text style={[styles.planSub, { color: planSubColor }]}>about $6.67/mo</Text>
                     </View>
@@ -279,7 +280,8 @@ export default function PaywallScreen() {
             >
               {isOled && selectedPlan === "monthly" ? (
                 <LinearGradient
-                  colors={["#291D26", "#4A2A30"]}
+                  // OLED .pw-plan.sel: linear-gradient(90deg, #16111B 0%, rgba(190,106,92,0.14) 100%)
+                  colors={["#16111B", "rgba(190, 106, 92, 0.14)"]}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={[styles.planBox, { borderColor: planSelectedBorder }]}
@@ -289,8 +291,8 @@ export default function PaywallScreen() {
                       <Text style={styles.radioCheck}>✓</Text>
                     </View>
                     <View style={styles.planTitleRow}>
-                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly </Text>
-                      <Text style={[styles.planPrice, { color: planPriceColor }]}> $9.99/mo</Text>
+                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly</Text>
+                      <Text style={[styles.planPrice, { color: planPriceColor }]}>$9.99/mo</Text>
                     </View>
                   </View>
                 </LinearGradient>
@@ -324,8 +326,8 @@ export default function PaywallScreen() {
                       )}
                     </View>
                     <View style={styles.planTitleRow}>
-                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly </Text>
-                      <Text style={[styles.planPrice, { color: planPriceColor }]}> $9.99/mo</Text>
+                      <Text style={[styles.planName, { color: planNameColor }]}>Monthly</Text>
+                      <Text style={[styles.planPrice, { color: planPriceColor }]}>$9.99/mo</Text>
                     </View>
                   </View>
                 </View>

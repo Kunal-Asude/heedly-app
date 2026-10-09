@@ -303,7 +303,7 @@ export default function PlanScreen() {
           <View style={styles.sectionBlock}>
             <Text style={[styles.groupLabel, { color: groupLabelColor }]}>
               WHAT KIND OF THING?
-              <Text style={[styles.optionalLabel, { color: optionalLabelColor }]}> (optional)</Text>
+              <Text style={[styles.optionalLabel, { color: optionalLabelColor }]}>{"  "}(optional)</Text>
             </Text>
 
             {/* Activity Type Chips Wrap (.pl-kinds) */}

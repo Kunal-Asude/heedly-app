@@ -1,4 +1,5 @@
 import { useTheme } from "@/constants/themes";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface TodaySecondaryLinkProps {
@@ -13,6 +14,10 @@ export function TodaySecondaryLink({
   onPress,
 }: TodaySecondaryLinkProps) {
   const theme = useTheme();
+  const { isTrueBlack } = useThemeMode();
+  // OLED .qlink: terracotta at 0.9, underline at 0.37
+  const linkAlpha = isTrueBlack ? "E6" : "C7";
+  const lineAlpha = isTrueBlack ? "5E" : "52";
 
   return (
     <View style={styles.secondarySlot}>
@@ -30,13 +35,13 @@ export function TodaySecondaryLink({
             <View
               style={[
                 styles.linkUnderlineWrapper,
-                { borderBottomColor: `${theme.coral.terracotta}52` },
+                { borderBottomColor: `${theme.coral.terracotta}${lineAlpha}` },
               ]}
             >
               <Text
                 style={[
                   styles.linkText,
-                  { color: `${theme.coral.terracotta}C7` },
+                  { color: `${theme.coral.terracotta}${linkAlpha}` },
                 ]}
               >
                 {text}

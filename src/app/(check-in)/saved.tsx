@@ -163,6 +163,8 @@ export default function CheckInSavedScreen() {
               <SymbolView
                 name={isCrash ? "moon" : "checkmark"}
                 size={27}
+                // .ci-done-icon check: stroke-width 2.6 on a 24 grid
+                weight={isCrash ? undefined : "semibold"}
                 tintColor={isCrash ? ci.doneMoonIcon : ci.doneCheckIcon}
               />
             </LinearGradient>
@@ -485,7 +487,7 @@ const styles = StyleSheet.create({
     lineHeight: 23.25,
     textAlign: 'center',
     marginTop: 16,
-    maxWidth: 320,
+    maxWidth: 276, // .lead max-width: 30ch
   },
 
   summaryCard: {

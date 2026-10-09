@@ -13,6 +13,18 @@ const EMPTY_COLOR = "rgba(140, 120, 130, 0.18)";
 
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
+/** OLED (patterns-oled.jsx): the same states in the dimmed True Black palette. */
+const OLED_STATE_COLOR: Record<string, string> = {
+  [STATE_COLOR.steady]: "#6E9678",
+  [STATE_COLOR.caution]: "#C29A5F",
+  [STATE_COLOR.rest]: "#BE6A5C",
+};
+
+/** A week-dot or legend colour as True Black shows it; other colours pass through. */
+export function oledDotColor(color: string): string {
+  return OLED_STATE_COLOR[color] ?? color;
+}
+
 export const ENERGY_LEGEND = [
   { label: "Steady", color: STATE_COLOR.steady },
   { label: "Caution", color: STATE_COLOR.caution },
