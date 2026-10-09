@@ -7,6 +7,7 @@
     "@heedly/native": "file:heedly-native-0.1.0.tgz",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.12",
+    "expo-blur": "~57.0.3",
     "expo-constants": "~57.0.10",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.1",
@@ -47,7 +48,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "date:check": "tsc src/services/checkinDate.ts src/services/checkinDate.spec.ts --ignoreConfig --ignoreDeprecations 6.0 --outDir node_modules/.cache/heedly-date-check --module commonjs --target es2022 --moduleResolution node --types node --strict --skipLibCheck && node node_modules/.cache/heedly-date-check/checkinDate.spec.js"
   },
   "private": true
 }
