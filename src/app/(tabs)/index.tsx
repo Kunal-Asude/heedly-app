@@ -1,3 +1,4 @@
+import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "@/components/ui/symbol";
@@ -7,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { ForecastState } from "@heedly/native";
 
+import { DawnBackground } from "@/components/core";
 import type { EnergyOrbState } from "@/components/core";
 import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
 import { Fonts } from "@/constants/theme";
@@ -15,6 +17,7 @@ import { useCheckIn } from "@/contexts/CheckInContext";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { greetingWithName, useFirstName } from "@/contexts/NameContext";
 import { forecastRow, headline, reasonItem, whyText } from "@/copy/forecast";
+import { LEARNING_SHEET_COPY } from "@/copy/today";
 import { formatHeaderDate } from "@/services/checkinStorage";
 import { useForecast, useTankState, useTodayChrome } from "@/hooks/data";
 import type { TodayStatusMode, WhyModalItem } from "@/types/forecast";
@@ -95,7 +98,9 @@ export default function TodayScreen() {
   const statusMode = showEmptyState
     ? "fd-empty"
     : customMode ?? forecastMode ?? validParamMode ?? "fd-empty";
+
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
+  const [isLearningSheetOpen, setIsLearningSheetOpen] = useState(false);
   const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
     "caution",
   );
@@ -180,8 +185,8 @@ export default function TodayScreen() {
 
   const ctaLabel = isTodayCompleted
     ? "Review your check-in"
-    : hasEverCheckedIn && unratedDay
-      ? "Check in for yesterday"
+    : hasEverCheckedIn
+      ? "How is it going?"
       : currentConfig.ctaText;
 
   const handleOpenWhyModal = () => {
@@ -197,6 +202,33 @@ export default function TodayScreen() {
 
   const isLearningState =
     statusMode === "fd-empty" || statusMode === "fd-wearable";
+
+  const learningTokens = {
+    badgeBg: isDark
+      ? isTrueBlack
+        ? "rgba(110, 150, 120, 0.14)"
+        : "rgba(134, 196, 180, 0.18)"
+      : "rgba(126, 155, 106, 0.15)",
+    badgeBorder: isDark
+      ? isTrueBlack
+        ? "rgba(110, 150, 120, 0.14)"
+        : "rgba(134, 196, 180, 0.26)"
+      : "rgba(126, 155, 106, 0.26)",
+    badgeDot: isDark ? (isTrueBlack ? "#6E9678" : "#86C4B4") : "#7e9b6a",
+    badgeText: isDark ? (isTrueBlack ? "#6E9678" : "#86C4B4") : "#5d7a52",
+    heading: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : "#463332",
+    headingAccent: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : "#b0532f",
+    lead: isDark
+      ? isTrueBlack
+        ? "#A8979E"
+        : "rgba(199, 180, 191, 1)"
+      : "rgba(74, 58, 57, 0.84)",
+    soft: isDark
+      ? isTrueBlack
+        ? "#A8979E"
+        : "rgba(199, 180, 191, 0.92)"
+      : "rgba(74, 58, 57, 0.68)",
+  };
 
   // Dynamic modal theme tokens (Dawn vs Dusk vs True Black / OLED)
   const modalTokens = {
@@ -306,6 +338,14 @@ export default function TodayScreen() {
   };
 
 
+  if (!showEmptyState && !isTodayReady) {
+    return (
+      <View style={styles.root}>
+        <DawnBackground />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.root}>
       {isLearningState ? (
@@ -317,11 +357,11 @@ export default function TodayScreen() {
           orbSize={currentConfig.orbSize}
           headline1={currentConfig.headline1}
           headline2={currentConfig.headline2}
-          isHeadlineAccent={true}
+          isHeadlineAccent={false}
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={indicatorText}
           indicatorDotColor={indicatorDotColor}
-          onBadgePress={__DEV__ ? cycleStatusMode : undefined}
+          onBadgePress={() => setIsLearningSheetOpen(true)}
           supportingText={currentConfig.microText}
           forecast={
             statusMode === "fd-wearable" ? currentConfig.forecast : undefined
@@ -527,6 +567,129 @@ export default function TodayScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={isLearningSheetOpen}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsLearningSheetOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <BlurView
+            intensity={12}
+            tint={isDark ? "dark" : "light"}
+            style={styles.sheetBlur}
+          />
+          <View
+            style={[
+              styles.sheetScrim,
+              { backgroundColor: modalTokens.backdrop },
+            ]}
+          />
+          <Pressable
+            style={styles.modalOverlayDismiss}
+            onPress={() => setIsLearningSheetOpen(false)}
+          />
+
+          <View
+            style={[
+              styles.modalSheetContainer,
+              {
+                backgroundColor: modalTokens.sheetBg,
+                borderTopColor: modalTokens.sheetBorder,
+                borderTopWidth: isDark ? 1 : 0,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
+              },
+            ]}
+          >
+            <View
+              style={[styles.modalHandle, { backgroundColor: modalTokens.handle }]}
+            />
+
+            <View
+              style={[
+                styles.modalBadge,
+                {
+                  backgroundColor: learningTokens.badgeBg,
+                  borderColor: learningTokens.badgeBorder,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.modalBadgeDot,
+                  { backgroundColor: learningTokens.badgeDot },
+                ]}
+              />
+              <Text
+                style={[styles.sheetBadgeText, { color: learningTokens.badgeText }]}
+              >
+                {LEARNING_SHEET_COPY.badgeLabel}
+              </Text>
+            </View>
+
+            <Text style={styles.modalHeading}>
+              <Text style={{ color: learningTokens.heading }}>
+                {LEARNING_SHEET_COPY.headingPrefix}
+              </Text>
+              <Text style={{ color: learningTokens.headingAccent }}>
+                {LEARNING_SHEET_COPY.headingAccent}
+              </Text>
+            </Text>
+
+            <Text style={[styles.modalSubtitle, { color: learningTokens.lead }]}>
+              {LEARNING_SHEET_COPY.leadText}
+            </Text>
+
+            <Text style={[styles.sheetBody, { color: learningTokens.lead }]}>
+              {LEARNING_SHEET_COPY.bodyText}
+            </Text>
+
+            <Text style={[styles.modalReassurance, { color: learningTokens.soft }]}>
+              {LEARNING_SHEET_COPY.softText}
+            </Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.modalOkayBtnWrapper,
+                pressed && styles.pressed,
+                isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
+              ]}
+              onPress={() => setIsLearningSheetOpen(false)}
+              accessibilityRole="button"
+              accessibilityLabel={LEARNING_SHEET_COPY.ctaLabel}
+            >
+              <LinearGradient
+                colors={
+                  isDark
+                    ? isTrueBlack
+                      ? ["#574049", "#241A20"]
+                      : ["#634256", "#8A5D7C", "#9E768E"]
+                    : [theme.coral.light, theme.coral.mid, theme.coral.primary]
+                }
+                start={{ x: 0, y: isDark && !isTrueBlack ? 0.5 : 0 }}
+                end={{ x: 1, y: isDark && !isTrueBlack ? 0.5 : 1 }}
+                style={[
+                  styles.modalOkayBtnGradient,
+                  isDark && isTrueBlack && {
+                    borderColor: "rgba(255, 255, 255, 0.06)",
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.modalOkayBtnText,
+                    isDark && isTrueBlack && { color: "#EADCD4" },
+                  ]}
+                >
+                  {LEARNING_SHEET_COPY.ctaLabel}
+                </Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -551,6 +714,34 @@ const styles = StyleSheet.create({
 
   modalOverlayDismiss: {
     flex: 1,
+  },
+
+  sheetBlur: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+
+  sheetScrim: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+
+  sheetBadgeText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  sheetBody: {
+    fontSize: 14,
+    lineHeight: 21.8,
+    fontWeight: "500",
+    marginTop: 13,
   },
 
   modalSheetContainer: {

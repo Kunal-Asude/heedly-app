@@ -4,16 +4,28 @@ import type {
   WhyModalData,
 } from "@/types/forecast";
 
+export const LEARNING_SHEET_COPY = {
+  badgeLabel: "Learning",
+  headingPrefix: "Still ",
+  headingAccent: "learning you.",
+  leadText:
+    "There's not quite enough yet to call the days ahead — and that's completely okay.",
+  bodyText:
+    "A forecast arrives once we've seen your rhythm across a few days of check-ins — usually three or four. Until then, we're just quietly getting to know you.",
+  softText: "No rush. Check in whenever it's easy — even lying down.",
+  ctaLabel: "Got it",
+};
+
 /** The chrome around the forecast. Nothing here describes the person's data. */
 export const TODAY_STATUS_COPY: Record<TodayStatusMode, StatusConfig> = {
   "fd-empty": {
-    headline1: "Early days ",
-    headline2: "yet.",
-    indicatorText: "EARLY DAYS",
+    headline1: "Still learning ",
+    headline2: "you.",
+    indicatorText: "LEARNING",
     indicatorDotColor: "#7E9B6A",
-    microText: "Tracking your patterns.",
+    microText: "Getting to know your patterns.",
     noteText:
-      "Your forecast appears once your personal pattern takes shape — usually a few days.",
+      "Your forecast appears once I've learned your rhythm — usually a few days.",
     ctaText: "Start your first check-in",
     footerNote: "You can do this lying down.",
     isFirstDay: true,
@@ -23,11 +35,11 @@ export const TODAY_STATUS_COPY: Record<TodayStatusMode, StatusConfig> = {
   "fd-wearable": {
     headline1: "An early ",
     headline2: "read.",
-    indicatorText: "EARLY DAYS",
+    indicatorText: "LEARNING",
     indicatorDotColor: "#7E9B6A",
     microText: "A first read from your wearable.",
     noteText: "These get sharper as your baseline fills in.",
-    ctaText: "What's going on",
+    ctaText: "How is it going?",
     isFirstDay: true,
     orbSize: 254,
     waterState: "wearableRead",
