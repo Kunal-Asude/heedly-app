@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SymbolView } from '@/components/ui/symbol';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DawnBackground } from '@/components/core';
@@ -14,7 +14,7 @@ import { useThemeMode } from '@/contexts/ThemeContext';
 import { useCheckIn } from '@/contexts/CheckInContext';
 import { greetingWithName, useFirstName } from '@/contexts/NameContext';
 import { dayLabel, editableEarlierDate, hasCheckIn } from '@/services/checkinHistory';
-import { getRecordedCheckInDate } from '@/services/checkinStorage';
+
 import { useTagCatalogue } from '@/hooks/data';
 
 // ─── Dot Rating Indicator Component ────────────────────────────────────────────
@@ -43,15 +43,17 @@ export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, saveCheckIn, beginEdit, editingDate, loadExistingCheckIn } = useCheckIn();
+  const { activeEntry, saveCheckIn, beginEdit, editingDate, loadExistingCheckIn, recordedDate } =
+    useCheckIn();
   const { allTags } = useTagCatalogue();
   const { firstName } = useFirstName();
 
-  const isEarlierDay = editingDate !== null && editingDate !== getRecordedCheckInDate();
+  const isEarlierDay = editingDate !== null && editingDate !== recordedDate;
   const earlierDayLabel = isEarlierDay ? dayLabel(editingDate) : null;
 
-  const earlierDate = useMemo(() => editableEarlierDate(), []);
+  const earlierDate = useMemo(() => editableEarlierDate(recordedDate), [recordedDate]);
   const [canEditEarlier, setCanEditEarlier] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -118,7 +120,21 @@ export default function CheckInSavedScreen() {
   };
 
   const handleBackToToday = async () => {
-    await saveCheckIn();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveCheckIn();
+    } catch (error) {
+      console.warn('[Saved] Check-in save failed:', error);
+      Alert.alert(
+        'Could not save your check-in',
+        'Something went wrong saving it. Your answers are still here — please try again.',
+        [{ text: 'OK' }]
+      );
+      return;
+    } finally {
+      setIsSaving(false);
+    }
     router.replace('/(tabs)' as any);
   };
 
@@ -212,7 +228,7 @@ export default function CheckInSavedScreen() {
                 { color: ci.lead },
               ]}
             >
-              {"We'll quietly watch for patterns and only\nping you if something matters."}
+              {"We'll quietly watch for patterns and only ping you if something matters."}
             </Text>
           )}
 
@@ -393,8 +409,10 @@ export default function CheckInSavedScreen() {
               isDark && isTrueBlack && { shadowOpacity: 0, elevation: 0 },
             ]}
             onPress={handleBackToToday}
+            disabled={isSaving}
             accessibilityRole="button"
             accessibilityLabel="Back to today"
+            accessibilityState={{ disabled: isSaving, busy: isSaving }}
           >
             <LinearGradient
               colors={ci.secondary}
@@ -408,7 +426,7 @@ export default function CheckInSavedScreen() {
                   { color: ci.secondaryText },
                 ]}
               >
-                Back to today
+                {isSaving ? 'Saving…' : 'Back to today'}
               </Text>
             </LinearGradient>
           </Pressable>
@@ -464,10 +482,10 @@ const styles = StyleSheet.create({
 
   description: {
     fontSize: 15,
-    lineHeight: 23,
+    lineHeight: 23.25,
     textAlign: 'center',
     marginTop: 16,
-    maxWidth: 270,
+    maxWidth: 320,
   },
 
   summaryCard: {
