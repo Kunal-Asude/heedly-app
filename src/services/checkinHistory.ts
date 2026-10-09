@@ -1,14 +1,7 @@
 import HeedlyNative from "@/services/heedlyNative";
 
-import { formatDateString, getRecordedCheckInDate } from "./checkinStorage";
 
-/** The one editable day: the day before the normal check-in's date. */
-export function editableEarlierDate(
-  recorded: string = getRecordedCheckInDate(),
-): string {
-  const [y, m, d] = recorded.split("-").map(Number);
-  return formatDateString(new Date(y, m - 1, d - 1));
-}
+export { editableEarlierDate } from "./checkinDate";
 
 export function dayLabel(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);

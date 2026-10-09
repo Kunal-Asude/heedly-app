@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { AppState } from "react-native";
 
 import HeedlyNative from "@/services/heedlyNative";
 
@@ -18,7 +19,8 @@ import {
 // the native contract has no concept of one — only completed records cross.
 import {
   clearDraft,
-  getRecordedCheckInDate,
+  getCheckInDate,
+  verdictDateFor,
   loadDraft,
   saveDraft,
 } from "@/services/checkinStorage";
@@ -59,7 +61,7 @@ export interface CheckInContextValue {
   isEditing: boolean;
   /** Date (YYYY-MM-DD) currently being edited, if in edit mode */
   editingDate: string | null;
-  /** True if the target recorded date (yesterday) already has a completed check-in */
+  /** True if the day this check-in records already has a completed check-in */
   isTodayCompleted: boolean;
   /** The completed check-in record for the target recorded date, if completed */
   todayEntry: CheckInEntry | null;
@@ -69,6 +71,8 @@ export interface CheckInContextValue {
    * would otherwise be mistaken for a first-time user.
    */
   hasEverCheckedIn: boolean;
+  /** The local day a normal check-in records. Refreshed when the app activates. */
+  recordedDate: string;
   /** The day still awaiting a verdict, or null when none is. Only ever yesterday. */
   unratedDay: string | null;
   /**
@@ -101,7 +105,7 @@ export interface CheckInContextValue {
 }
 
 const defaultEntry: Partial<CheckInEntry> = {
-  date: getRecordedCheckInDate(),
+  date: getCheckInDate(),
   yesterdayId: null,
   yesterdayLabel: null,
   yesterdayIndex: null,
@@ -142,7 +146,16 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const [unratedDay, setUnratedDay] = useState<string | null>(null);
   const { clearFirstName } = useFirstName();
 
-  const targetDate = useMemo(() => getRecordedCheckInDate(), []);
+  const [targetDate, setTargetDate] = useState(() => getCheckInDate());
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (status) => {
+      if (status !== "active") return;
+      const current = getCheckInDate();
+      setTargetDate((previous) => (previous === current ? previous : current));
+    });
+    return () => subscription.remove();
+  }, []);
 
   // ── Initial Hydration from Storage ──────────────────────────────────────────
   useEffect(() => {
@@ -308,7 +321,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
 
     const verdictValue = toVerdictValue(completedEntry.yesterdayId);
     if (verdictValue) {
-      await HeedlyNative.saveVerdict(checkInDate, verdictValue);
+      await HeedlyNative.saveVerdict(verdictDateFor(checkInDate), verdictValue);
       // That day is rated now, so it must stop being offered. Skipping writes
       // no verdict and deliberately leaves this alone — a skip is a
       // postponement that runs out at midnight, not a refusal.
@@ -401,6 +414,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       isTodayCompleted: todayCompleted,
       todayEntry,
       hasEverCheckedIn,
+      recordedDate: targetDate,
       unratedDay,
       updateEntry,
       startNewCheckIn,
@@ -422,6 +436,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       todayCompleted,
       todayEntry,
       hasEverCheckedIn,
+      targetDate,
       unratedDay,
       updateEntry,
       startNewCheckIn,

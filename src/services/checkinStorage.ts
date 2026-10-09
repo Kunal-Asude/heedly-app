@@ -15,28 +15,12 @@ export const STORAGE_KEYS = {
 
 // ─── Date Helpers ─────────────────────────────────────────────────────────────
 
-/** Formats a Date object to local YYYY-MM-DD string */
-export function formatDateString(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Returns the target date for a standard daily check-in ("Check in for yesterday").
- * Retrospective by definition: calendar date minus 1 day.
- */
-export function getRecordedCheckInDate(referenceDate: Date = new Date()): string {
-  const target = new Date(referenceDate);
-  target.setDate(target.getDate() - 1);
-  return formatDateString(target);
-}
-
-/** Returns today's calendar date string (YYYY-MM-DD) */
-export function getTodayDateString(referenceDate: Date = new Date()): string {
-  return formatDateString(referenceDate);
-}
+export {
+  formatDateString,
+  getCheckInDate,
+  getTodayDateString,
+  verdictDateFor,
+} from "./checkinDate";
 
 /** Today's date for the header, e.g. "Sunday · 14 September". en-GB pins the
  *  day-before-month order the design uses; the style uppercases it. */
