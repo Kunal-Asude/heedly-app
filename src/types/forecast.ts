@@ -55,5 +55,5 @@ export interface WhyModalData {
 
 export interface ForecastData {
   statusConfigs: Record<TodayStatusMode, StatusConfig>;
-  whyModalConfigs: Record<"caution" | "rest", WhyModalData>;
+  whyModalConfigs: Record<"caution" | "rest" | "steady", WhyModalData>;
 }

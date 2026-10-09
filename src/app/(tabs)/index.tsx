@@ -56,13 +56,6 @@ export default function TodayScreen() {
       ? (params.mode as TodayStatusMode)
       : null;
 
-  const [customMode, setCustomMode] = useState<TodayStatusMode | null>(null);
-  const [prevParamMode, setPrevParamMode] = useState<TodayStatusMode | null>(validParamMode);
-
-  if (validParamMode !== prevParamMode) {
-    setPrevParamMode(validParamMode);
-    setCustomMode(null);
-  }
 
   const {
     orbState: tankOrbState,
@@ -97,11 +90,11 @@ export default function TodayScreen() {
 
   const statusMode = showEmptyState
     ? "fd-empty"
-    : customMode ?? forecastMode ?? validParamMode ?? "fd-empty";
+    : forecastMode ?? validParamMode ?? "fd-empty";
 
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [isLearningSheetOpen, setIsLearningSheetOpen] = useState(false);
-  const [whyModalType, setWhyModalType] = useState<"caution" | "rest">(
+  const [whyModalType, setWhyModalType] = useState<"caution" | "rest" | "steady">(
     "caution",
   );
 
@@ -144,20 +137,6 @@ export default function TodayScreen() {
   const indicatorText = currentConfig.indicatorText;
   const indicatorDotColor = currentConfig.indicatorDotColor;
 
-  const cycleStatusMode = () => {
-    if (showEmptyState) return;
-    const modes: TodayStatusMode[] = [
-      "fd-empty",
-      "fd-wearable",
-      "steady",
-      "caution",
-      "rest",
-    ];
-    const idx = modes.indexOf(statusMode);
-    const nextMode = modes[(idx + 1) % modes.length];
-    setCustomMode(nextMode);
-  };
-
   const handleCtaPress = () => {
     if (isTodayCompleted) {
       router.push('/(check-in)/saved');
@@ -190,7 +169,13 @@ export default function TodayScreen() {
       : currentConfig.ctaText;
 
   const handleOpenWhyModal = () => {
-    setWhyModalType(todayForecast?.state === "rest_day" ? "rest" : "caution");
+    setWhyModalType(
+      todayForecast?.state === "rest_day"
+        ? "rest"
+        : todayForecast?.state === "steady"
+          ? "steady"
+          : "caution",
+    );
     setIsWhyModalOpen(true);
   };
 
@@ -271,7 +256,13 @@ export default function TodayScreen() {
             ? "rgba(190, 106, 92, 0.14)"
             : "rgba(226, 122, 140, 0.18)"
           : "rgba(218, 109, 130, 0.15)"
-        : isDark
+        : whyModalType === "steady"
+          ? isDark
+            ? isTrueBlack
+              ? "rgba(110, 150, 120, 0.14)"
+              : "rgba(134, 196, 180, 0.18)"
+            : "rgba(126, 155, 106, 0.15)"
+          : isDark
           ? isTrueBlack
             ? "rgba(194, 154, 95, 0.14)"
             : "rgba(232, 168, 124, 0.18)"
@@ -282,7 +273,13 @@ export default function TodayScreen() {
             ? "rgba(190, 106, 92, 0.3)"
             : "rgba(226, 122, 140, 0.3)"
           : "rgba(218, 109, 130, 0.3)"
-        : isDark
+        : whyModalType === "steady"
+          ? isDark
+            ? isTrueBlack
+              ? "rgba(110, 150, 120, 0.14)"
+              : "rgba(134, 196, 180, 0.26)"
+            : "rgba(126, 155, 106, 0.26)"
+          : isDark
           ? isTrueBlack
             ? "rgba(194, 154, 95, 0.3)"
             : "rgba(232, 168, 124, 0.3)"
@@ -293,7 +290,13 @@ export default function TodayScreen() {
             ? "#BE6A5C"
             : "#da6d82"
           : "#da6d82"
-        : isDark
+        : whyModalType === "steady"
+          ? isDark
+            ? isTrueBlack
+              ? "#6E9678"
+              : "#86C4B4"
+            : "#7e9b6a"
+          : isDark
           ? isTrueBlack
             ? "#C29A5F"
             : "#E8A87C"
@@ -304,7 +307,13 @@ export default function TodayScreen() {
             ? "#BE6A5C"
             : "#E792A4"
           : "#b14a64"
-        : isDark
+        : whyModalType === "steady"
+          ? isDark
+            ? isTrueBlack
+              ? "#6E9678"
+              : "#86C4B4"
+            : "#5d7a52"
+          : isDark
           ? isTrueBlack
             ? "#C29A5F"
             : "#E8A87C"
@@ -392,7 +401,6 @@ export default function TodayScreen() {
           isFirstDay={currentConfig.isFirstDay}
           indicatorText={indicatorText}
           indicatorDotColor={indicatorDotColor}
-          onBadgePress={__DEV__ ? cycleStatusMode : undefined}
           supportingText={currentConfig.microText}
           forecast={forecastRowItems.length > 0 ? forecastRowItems : undefined}
           learningNote={undefined}
@@ -464,7 +472,7 @@ export default function TodayScreen() {
 
             <Text style={styles.modalHeading}>
               <Text style={{ color: modalTokens.headingDark }}>
-                {activeWhyData.headingPrefix}{" "}
+                {activeWhyData.headingPrefix}
               </Text>
               <Text style={{ color: modalTokens.headingAccent }}>
                 {activeWhyData.headingAccent}

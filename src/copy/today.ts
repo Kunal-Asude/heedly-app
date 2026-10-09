@@ -76,7 +76,20 @@ export const TODAY_STATUS_COPY: Record<TodayStatusMode, StatusConfig> = {
 };
 
 /** The modal's frame. Its reasons come from the engine via `reasonItem`. */
-export const WHY_MODAL_COPY: Record<"caution" | "rest", WhyModalData> = {
+export const WHY_MODAL_COPY: Record<"caution" | "rest" | "steady", WhyModalData> = {
+  steady: {
+    badgeLabel: "Steady",
+    badgeBg: "#E4EFE4",
+    badgeDotColor: "#7e9b6a",
+    badgeTextColor: "#5d7a52",
+    headingPrefix: "Why is today ",
+    headingAccent: "steady?",
+    subtitleText:
+      "Today looks like a steadier one. Here's what we've been seeing:",
+    reassuranceText:
+      "Steady doesn't mean spend it all — it just means today looks kinder than most.",
+    items: [],
+  },
   caution: {
     badgeLabel: "Caution",
     badgeBg: "#F4E2C7",

@@ -33,7 +33,7 @@ const HEDGED_HEADLINE: Record<ForecastState, ForecastHeadline> = {
 };
 
 const WHY_TEXT: Record<ForecastState, string | null> = {
-  steady: null,
+  steady: "Why is today steady?",
   slowing: "Why caution today?",
   rest_day: "Why a rest day?",
 };

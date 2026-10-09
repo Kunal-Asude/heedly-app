@@ -84,7 +84,20 @@ export const MOCK_STATUS_CONFIGS: Record<TodayStatusMode, StatusConfig> = {
   },
 };
 
-export const MOCK_WHY_MODAL_CONFIGS: Record<"caution" | "rest", WhyModalData> = {
+export const MOCK_WHY_MODAL_CONFIGS: Record<"caution" | "rest" | "steady", WhyModalData> = {
+  steady: {
+    badgeLabel: "Steady",
+    badgeBg: "#E4EFE4",
+    badgeDotColor: "#7e9b6a",
+    badgeTextColor: "#5d7a52",
+    headingPrefix: "Why is today ",
+    headingAccent: "steady?",
+    subtitleText:
+      "Today looks like a steadier one. Here's what we've been seeing:",
+    reassuranceText:
+      "Steady doesn't mean spend it all — it just means today looks kinder than most.",
+    items: [],
+  },
   caution: {
     badgeLabel: "Caution",
     badgeBg: "#F4E2C7",

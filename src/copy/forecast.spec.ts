@@ -120,9 +120,15 @@ test("only today offers a why link", () => {
   assert.equal(whyText(day({ horizon: 2, state: "rest_day" })), null);
 });
 
-test("a steady day has nothing to explain away", () => {
-  assert.equal(whyText(day({ state: "steady" })), null);
+test("every forecast state offers its own explanation", () => {
+  assert.equal(whyText(day({ state: "steady" })), "Why is today steady?");
   assert.equal(whyText(day({ state: "slowing" })), "Why caution today?");
+  assert.equal(whyText(day({ state: "rest_day" })), "Why a rest day?");
+});
+
+test("only today is explained, whatever the state", () => {
+  assert.equal(whyText(day({ horizon: 1, state: "steady" })), null);
+  assert.equal(whyText(day({ horizon: 2, state: "steady" })), null);
 });
 
 test("a crash names when it was", () => {
