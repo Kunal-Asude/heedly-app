@@ -5,7 +5,6 @@ import { SymbolView } from '@/components/ui/symbol';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
 
 import HeedlyNative from '@/services/heedlyNative';
 
@@ -52,8 +51,12 @@ export default function ConnectWearableScreen() {
   const selectedDeviceObj = wearables.find((w) => w.id === selectedDevice);
   const deviceName = selectedDeviceObj?.label ?? null;
 
+  // Choosing a card is the commitment: there is no separate Continue step.
+  // Tapping again (e.g. after the no-data sheet) retries the connection.
   const handleCardPress = (id: DeviceId) => {
-    setSelectedDevice((current) => (current === id ? null : id));
+    if (isConnecting) return;
+    setSelectedDevice(id);
+    void connectAppleHealth();
   };
 
   // Connect Apple Health, then decide what the person is told based on whether
@@ -67,8 +70,7 @@ export default function ConnectWearableScreen() {
   // A throw lands in the same place. `ERR_HEALTH_DATA_UNAVAILABLE` and
   // `ERR_HEALTH_AUTHORIZATION` are diagnostics, not something to put in front of
   // someone mid-onboarding, and connecting is optional either way.
-  const handleContinue = async () => {
-    if (isConnecting) return;
+  const connectAppleHealth = async () => {
     setIsConnecting(true);
     try {
       const rowsWritten = await HeedlyNative.connectHealthKit();
@@ -264,41 +266,6 @@ export default function ConnectWearableScreen() {
                 </Text>
               </View>
             </View>
-          </Pressable>
-
-          {/* ── Continue button (Theme-aware CTA) ── */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.continueWrapper,
-              {
-                shadowColor: ctaTokens.shadowColor,
-                shadowOpacity: ctaTokens.shadowOpacity,
-              },
-              selectedDevice === null && styles.continueButtonHidden,
-              pressed && selectedDevice !== null && styles.continueButtonPressed,
-            ]}
-            onPress={selectedDevice !== null && !isConnecting ? handleContinue : undefined}
-            pointerEvents={selectedDevice !== null && !isConnecting ? 'auto' : 'none'}
-            accessibilityRole="button"
-            accessibilityLabel="Continue">
-            <LinearGradient
-              colors={ctaTokens.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.continueGradient, { borderColor: ctaTokens.borderColor }]}>
-              <Text style={[styles.continueButtonText, { color: ctaTokens.textColor }]}>Continue</Text>
-              <View style={styles.continueArrowContainer}>
-                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M8 5l7 7-7 7"
-                    stroke={ctaTokens.textColor}
-                    strokeWidth={2.4}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
-              </View>
-            </LinearGradient>
           </Pressable>
 
         </ScrollView>
@@ -619,41 +586,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
-  // ── Continue CTA (height 62px, radius 31px) ──
-  continueWrapper: {
-    width: '100%',
-    height: 58,
-    borderRadius: 29,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 10,
-    elevation: 5,
-  },
-
-  continueGradient: {
-    flex: 1,
-    borderRadius: 29,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    borderWidth: 1,
-  },
-
-  continueButtonHidden: {
-    opacity: 0,
-  },
-
-  continueButtonPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.94,
-  },
-
-  continueButtonText: {
-    fontSize: 16.5,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-
   // .ob-card.waiting: bg rgba(255,252,248,0.6), border-color rgba(74,58,57,0.14)
   cardWaiting: {
     backgroundColor: 'rgba(255, 252, 248, 0.6)',
@@ -801,14 +733,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
-  },
-
-  continueArrowContainer: {
-    position: 'absolute',
-    right: 20,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
