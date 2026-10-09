@@ -24,7 +24,8 @@ export function TodayHeadline({
         </Text>
         <Text
           style={{
-            color: isAccent ? theme.coral.terracotta : theme.ink.display,
+            color: isAccent ? theme.coral.terracottaDeep : theme.ink.display,
+            fontFamily: Fonts.display.medium,
           }}
         >
           {headline2}

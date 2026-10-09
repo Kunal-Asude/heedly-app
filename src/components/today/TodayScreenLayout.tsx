@@ -229,7 +229,7 @@ export function LearningScreenLayout({
   const tabBarInset = useTabBarInset();
   const requestedOrbSize = orbSize ?? (orbState === "empty" ? 152 : TODAY_ORB_SIZE);
   const actualOrbSize = Math.min(requestedOrbSize, Math.round(windowHeight * 0.27));
-  const isSmallOrb = orbState === "empty";
+  const isSmallOrb = requestedOrbSize <= 152;
 
   return (
     <View style={styles.root}>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
 
   smallOrbSlot: {
-    marginTop: 64,
+    marginTop: 71,
     marginBottom: 0,
   },
 
