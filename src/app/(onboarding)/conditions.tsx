@@ -66,7 +66,7 @@ export default function ConditionsScreen() {
 
           {/* ── Supporting text (.ob-sub) ──────────────────────────────── */}
           <Text style={[styles.supportingText, { color: theme.components.supportingText.noteColor }]}>
-            Select all that apply. You can change this{'\n'}later.
+            Select all that apply. You can change this later.
           </Text>
 
           {/* ── 2-Column Condition Chips (.ob-chips) ──────────────────── */}
@@ -128,8 +128,8 @@ export default function ConditionsScreen() {
 
           {/* ── Information note (.ob-help) ── */}
           <Text style={[styles.infoText, { color: theme.ink.muted }]}>
-            This helps heedly understand your experience and personalize{'\n'}
-            your patterns. You can update this any time.
+            This helps heedly understand your experience and personalize your
+            patterns. You can update this any time.
           </Text>
 
           {/* ── Continue Button (Theme-aware CTA) ────────────────────── */}
@@ -241,10 +241,10 @@ const styles = StyleSheet.create({
   // ── Supporting text (17px, line-height 25px) ──────
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    fontWeight: '400',
+    lineHeight: 21.75,
+    fontWeight: '500',
     marginTop: 12,
-    maxWidth: 260,
+    maxWidth: 268,
   },
 
   // ── Chip grid (.ob-chips) ────

@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    fontWeight: '400',
+    lineHeight: 21.75,
+    fontWeight: '500',
     marginTop: 12,
-    maxWidth: 260,
+    maxWidth: 300,
     textAlign: 'left',
   },
 

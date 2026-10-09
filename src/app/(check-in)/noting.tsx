@@ -773,9 +773,9 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    fontWeight: "400",
-    maxWidth: 260,
+    lineHeight: 21.75,
+    fontWeight: '500',
+    maxWidth: 300,
     marginBottom: 18,
   },
 

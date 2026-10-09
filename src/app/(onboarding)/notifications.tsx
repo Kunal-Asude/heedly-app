@@ -175,7 +175,7 @@ export default function NotificationsScreen() {
           </View>
 
           <Text style={styles.heading}>
-            <Text style={{ color: theme.ink.display }}>A heads-up </Text>
+            <Text style={{ color: theme.ink.display }}>A heads-up{'\n'}</Text>
             <Text style={{ color: theme.coral.terracottaDeep }}>when it matters</Text>
           </Text>
 
@@ -335,10 +335,10 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
+    lineHeight: 21.75,
     fontWeight: '500',
     marginTop: 12,
-    maxWidth: 248,
+    maxWidth: 300,
   },
 
   secondSupporting: {

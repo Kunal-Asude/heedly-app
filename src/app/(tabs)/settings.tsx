@@ -330,9 +330,9 @@ export default function SettingsScreen() {
     : connection.backfill.status === 'in_progress'
       ? 'Importing your history.'
       : connection.activeSources.length === 0
-        ? 'Heedly reads what your devices write to Apple Health.'
+        ? ''
         : connection.connected
-          ? ''
+          ? 'Connected · syncing in the background'
           : 'No readings yet.';
 
   const isWearableActive = Boolean(connection?.connected);

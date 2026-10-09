@@ -279,10 +279,10 @@ const styles = StyleSheet.create({
   // ── Lead description (17px, line-height 25px, max-width 320px) ──
   description: {
     fontSize: 15,
-    lineHeight: 23,
+    lineHeight: 23.25,
     textAlign: 'center',
     marginTop: 18,
-    maxWidth: 260,
+    maxWidth: 292,
   },
 
   // ── Primary CTA (height 62px, radius 31px) ──

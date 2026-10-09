@@ -138,13 +138,13 @@ export default function ConnectWearableScreen() {
 
           {/* ── Heading (.ob-h) ── */}
           <Text style={styles.heading}>
-            <Text style={[styles.headingDark, { color: theme.ink.display }]}>Connect your{'\n'}</Text>
+            <Text style={[styles.headingDark, { color: theme.ink.display }]}>Connect your </Text>
             <Text style={[styles.headingAccent, { color: theme.coral.terracotta }]}>wearable.</Text>
           </Text>
 
           {/* ── Supporting text (.ob-sub) ──── */}
           <Text style={[styles.supportingText, { color: theme.components.supportingText.noteColor }]}>
-            heedly reads your data quietly in the{'\n'}background.
+            heedly reads your data quietly in the background.
           </Text>
 
           {/* ── Card grid (.ob-grid: gap 11px, margin-top 26px) ─────────── */}

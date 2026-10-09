@@ -1,3 +1,4 @@
+import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "@/components/ui/symbol";
@@ -187,7 +188,7 @@ const LIVES = [
   {
     icon: "lock",
     title: "Encrypted backup",
-    desc: "Kept on this phone. If you back up your iPhone, it's included — so it can come back when you restore to a new one.",
+    desc: "Stored privately in iCloud, so it's there when you change phones.",
   },
 ] as const;
 
@@ -242,6 +243,7 @@ export default function YourDataScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const c = useDataPalette();
+  const { isDark } = useThemeMode();
   const { resetAllData } = useCheckIn();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
@@ -356,10 +358,7 @@ export default function YourDataScreen() {
         <DataCard style={styles.cardPad}>
           <Text style={[styles.nobodyTitle, { color: c.rowTitle }]}>Private by default.</Text>
           <Text style={[styles.nobodyBody, { color: c.rowDesc }]}>
-            {/* Restore alongside the AI insights setting:
-            {"We don't sell your data. Everything is worked out on your phone — the only thing that leaves it is the optional AI insights: anonymized patterns (no name, no raw data) used to write your insights in plainer language. You can turn that off anytime in settings."}
-            */}
-            {"We don't sell your data. Everything is worked out on your phone, and none of it leaves your device."}
+            {"We don't sell your data. Everything is worked out on your phone."}
           </Text>
         </DataCard>
 
@@ -410,7 +409,13 @@ export default function YourDataScreen() {
         animationType="slide"
         onRequestClose={() => setIsDeleteModalVisible(false)}
       >
-        <View style={[styles.modalOverlay, { backgroundColor: c.scrim }]}>
+        <View style={styles.modalOverlay}>
+          <BlurView
+            intensity={12}
+            tint={isDark ? "dark" : "light"}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: c.scrim }]} />
           <Pressable
             style={styles.modalDismissArea}
             onPress={() => setIsDeleteModalVisible(false)}
@@ -434,7 +439,7 @@ export default function YourDataScreen() {
             <Text style={[styles.sheetTitle, { color: c.sheetTitle }]}>Delete everything?</Text>
 
             <Text style={[styles.sheetBody, { color: c.sheetBody }]}>
-              {"This erases everything heedly keeps on this phone — every check-in and all your patterns. It can't be undone. Older iPhone backups may still hold a copy until they're replaced."}
+              {"This erases everything heedly keeps — every check-in and all your patterns, on this phone and in your iCloud backup. It can't be undone."}
             </Text>
 
             <Text style={[styles.sheetNote, { color: c.sheetNote }]}>
