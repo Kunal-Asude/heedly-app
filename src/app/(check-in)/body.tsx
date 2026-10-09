@@ -24,6 +24,7 @@ export default function BodyScreen() {
     currentEntry: activeEntry,
     updateEntry,
     isEditing: contextIsEditing,
+    isEarlierDay,
     cancelEdit,
     commitEdit,
   } = useCheckIn();
@@ -176,7 +177,9 @@ export default function BodyScreen() {
 
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: ci.heading }}>{'How does your\n'}</Text>
+            <Text style={{ color: ci.heading }}>
+              {isEarlierDay ? 'How did your\n' : 'How does your\n'}
+            </Text>
             <Text style={{ color: ci.accent }}>body feel?</Text>
           </Text>
 
@@ -278,7 +281,7 @@ export default function BodyScreen() {
             onPress={handleCrashPress}
             style={({ pressed }) => [styles.crashContainer, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="I'm in a crash"
+            accessibilityLabel={isEarlierDay ? "I was in a crash" : "I'm in a crash"}
           >
             <Text
               style={[
@@ -286,7 +289,7 @@ export default function BodyScreen() {
                 { color: ci.crash, borderColor: ci.crashLine },
               ]}
             >
-              {"I'm in a crash"}
+              {isEarlierDay ? "I was in a crash" : "I'm in a crash"}
             </Text>
           </Pressable>
         </View>

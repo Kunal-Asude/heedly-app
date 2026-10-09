@@ -58,6 +58,7 @@ export default function NotingScreen() {
     currentEntry: activeEntry,
     updateEntry,
     isEditing: contextIsEditing,
+    isEarlierDay,
     cancelEdit,
     commitEdit,
   } = useCheckIn();
@@ -269,7 +270,9 @@ export default function NotingScreen() {
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
             <Text style={{ color: ci.heading }}>Anything from{"\n"}</Text>
-            <Text style={{ color: ci.accent }}>today worth noting?</Text>
+            <Text style={{ color: ci.accent }}>
+              {isEarlierDay ? 'yesterday to note?' : 'today worth noting?'}
+            </Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
@@ -549,7 +552,7 @@ export default function NotingScreen() {
                   { color: ci.accent },
                 ]}
               >
-                period?
+                {isEarlierDay ? 'period was it?' : 'period?'}
               </Text>
             </Text>
 

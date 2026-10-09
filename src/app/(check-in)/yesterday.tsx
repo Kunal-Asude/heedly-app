@@ -26,6 +26,7 @@ export default function YesterdayScreen() {
     currentEntry: activeEntry,
     updateEntry,
     isEditing: contextIsEditing,
+    isEarlierDay,
     cancelEdit,
     commitEdit,
   } = useCheckIn();
@@ -183,8 +184,13 @@ export default function YesterdayScreen() {
         <View style={styles.contentArea}>
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: ci.heading }}>{'How did\n'}</Text>
-            <Text style={{ color: ci.accent }}>yesterday land?</Text>
+            {/* Rates the day before the check-in: for yesterday's, the day before that. */}
+            <Text style={{ color: ci.heading }}>
+              {isEarlierDay ? 'How did the\n' : 'How did\n'}
+            </Text>
+            <Text style={{ color: ci.accent }}>
+              {isEarlierDay ? 'day before land?' : 'yesterday land?'}
+            </Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}

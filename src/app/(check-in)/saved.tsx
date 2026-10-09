@@ -43,13 +43,19 @@ export default function CheckInSavedScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, saveCheckIn, beginEdit, editingDate, loadExistingCheckIn, recordedDate } =
-    useCheckIn();
+  const {
+    activeEntry,
+    saveCheckIn,
+    beginEdit,
+    editingDate,
+    isEarlierDay,
+    loadExistingCheckIn,
+    recordedDate,
+  } = useCheckIn();
   const { allTags } = useTagCatalogue();
   const { firstName } = useFirstName();
 
-  const isEarlierDay = editingDate !== null && editingDate !== recordedDate;
-  const earlierDayLabel = isEarlierDay ? dayLabel(editingDate) : null;
+  const earlierDayLabel = isEarlierDay && editingDate ? dayLabel(editingDate) : null;
 
   const earlierDate = useMemo(() => editableEarlierDate(recordedDate), [recordedDate]);
   const [canEditEarlier, setCanEditEarlier] = useState(false);

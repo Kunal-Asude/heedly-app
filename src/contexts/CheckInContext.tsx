@@ -61,6 +61,11 @@ export interface CheckInContextValue {
   isEditing: boolean;
   /** Date (YYYY-MM-DD) currently being edited, if in edit mode */
   editingDate: string | null;
+  /**
+   * True while the check-in open is an earlier day's, not the one being made
+   * now. The question screens ask in the past tense when it is.
+   */
+  isEarlierDay: boolean;
   /** True if the day this check-in records already has a completed check-in */
   isTodayCompleted: boolean;
   /** The completed check-in record for the target recorded date, if completed */
@@ -419,6 +424,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
       isHydrating,
       isEditing,
       editingDate,
+      isEarlierDay: editingDate !== null && editingDate !== targetDate,
       isTodayCompleted: todayCompleted,
       todayEntry,
       hasEverCheckedIn,

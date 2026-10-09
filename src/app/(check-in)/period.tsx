@@ -27,7 +27,7 @@ export default function PeriodScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const { isDark, isTrueBlack } = useThemeMode();
-  const { activeEntry, updateEntry } = useCheckIn();
+  const { activeEntry, updateEntry, isEarlierDay } = useCheckIn();
 
   const [selectedDay, setSelectedDay] = useState<string | null>(() => {
     if (activeEntry.periodInfo?.startsWith('Day ')) {
@@ -157,7 +157,7 @@ export default function PeriodScreen() {
           {/* ── Question Heading ───────────────────────────────────────── */}
           <Text style={styles.questionHeading}>
             <Text style={[styles.headingDark, { color: isDark ? (isTrueBlack ? "#E9DDD6" : "#F3E7E1") : theme.ink.display }]}>{'What day of your\n'}</Text>
-            <Text style={[styles.headingAccent, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracottaDeep }]}>period?</Text>
+            <Text style={[styles.headingAccent, { color: isDark ? (isTrueBlack ? "#C97B60" : "#E8907A") : theme.coral.terracottaDeep }]}>{isEarlierDay ? 'period was it?' : 'period?'}</Text>
           </Text>
 
           {/* ── Supporting Text ────────────────────────────────────────── */}

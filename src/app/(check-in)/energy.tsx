@@ -24,6 +24,7 @@ export default function EnergyScreen() {
     currentEntry: activeEntry,
     updateEntry,
     isEditing: contextIsEditing,
+    isEarlierDay,
     cancelEdit,
     commitEdit,
   } = useCheckIn();
@@ -203,13 +204,19 @@ export default function EnergyScreen() {
           <Text style={styles.questionHeading}>
             {isFirstTime ? (
               <>
-                <Text style={{ color: ci.heading }}>{'How are you\n'}</Text>
+                <Text style={{ color: ci.heading }}>
+                  {isEarlierDay ? 'How were you\n' : 'How are you\n'}
+                </Text>
                 <Text style={{ color: ci.accent }}>feeling?</Text>
               </>
             ) : (
               <>
-                <Text style={{ color: ci.heading }}>{"How's your\n"}</Text>
-                <Text style={{ color: ci.accent }}>energy right now?</Text>
+                <Text style={{ color: ci.heading }}>
+                  {isEarlierDay ? 'How was your\n' : "How's your\n"}
+                </Text>
+                <Text style={{ color: ci.accent }}>
+                  {isEarlierDay ? 'energy yesterday?' : 'energy right now?'}
+                </Text>
               </>
             )}
           </Text>
@@ -312,7 +319,7 @@ export default function EnergyScreen() {
             onPress={handleCrashPress}
             style={({ pressed }) => [styles.crashContainer, pressed && styles.pressed]}
             accessibilityRole="button"
-            accessibilityLabel="I'm in a crash"
+            accessibilityLabel={isEarlierDay ? "I was in a crash" : "I'm in a crash"}
           >
             <Text
               style={[
@@ -320,7 +327,7 @@ export default function EnergyScreen() {
                 { color: ci.crash, borderColor: ci.crashLine },
               ]}
             >
-              {"I'm in a crash"}
+              {isEarlierDay ? "I was in a crash" : "I'm in a crash"}
             </Text>
           </Pressable>
         </View>
