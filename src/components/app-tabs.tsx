@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
 import { SymbolView } from "@/components/ui/symbol";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -180,13 +180,29 @@ function HeedlyTabBar({ state, descriptors, navigation }: any) {
 
 /**
  * Tab screens stay mounted when you leave them, so scroll position, open
- * modals and half-typed input would still be there on return. Remount the
- * screen as it loses focus so every visit starts fresh, from the top.
- * Anything that must survive lives in context or storage, not screen state.
+ * modals and half-typed input would still be there on return. Remount on the
+ * way back in, not on the way out: blur fires while this screen is still
+ * visible under the incoming one, so resetting there blanks it mid-animation.
  */
-function ResetOnBlur({ navigation, children }: { navigation: any; children: ReactNode }) {
+function ResetOnRevisit({ navigation, children }: { navigation: any; children: ReactNode }) {
   const [visit, setVisit] = useState(0);
-  useEffect(() => navigation.addListener("blur", () => setVisit((v) => v + 1)), [navigation]);
+  const left = useRef(false);
+
+  useEffect(() => {
+    const onBlur = navigation.addListener("blur", () => {
+      left.current = true;
+    });
+    const onFocus = navigation.addListener("focus", () => {
+      if (!left.current) return;
+      left.current = false;
+      setVisit((v) => v + 1);
+    });
+    return () => {
+      onBlur();
+      onFocus();
+    };
+  }, [navigation]);
+
   return <View key={visit} style={{ flex: 1 }}>{children}</View>;
 }
 
@@ -199,7 +215,7 @@ export default function AppTabs() {
       // not to the first tab. Covers router.back() and the Android back button.
       backBehavior="history"
       screenLayout={({ navigation, children }: any) => (
-        <ResetOnBlur navigation={navigation}>{children}</ResetOnBlur>
+        <ResetOnRevisit navigation={navigation}>{children}</ResetOnRevisit>
       )}
       screenOptions={{ headerShown: false }}
       tabBar={(props: any) => <HeedlyTabBar {...props} />}
