@@ -86,9 +86,11 @@ export default function BodyScreen() {
   };
 
   const handleNext = () => {
-    // Writes nothing — see energy.tsx for the reasoning. Advancing past an
-    // untouched picker is not an answer, and handleSelectLevel has already
-    // recorded (and drafted) a real choice by the time this runs.
+    // Records the highlighted option even when untouched — see energy.tsx.
+    updateEntry({
+      bodyIndex: selectedIndex,
+      bodyLabel: selectedLevel.label,
+    });
 
     if (isEditing) {
       commitEdit();
@@ -421,10 +423,10 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    fontWeight: '400',
+    lineHeight: 21.75,
+    fontWeight: '500',
     marginTop: 12,
-    maxWidth: 260,
+    maxWidth: 300,
     textAlign: 'left',
   },
 

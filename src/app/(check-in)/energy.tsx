@@ -102,12 +102,13 @@ export default function EnergyScreen() {
   };
 
   const handleNext = () => {
-    // Like handleCrashPress, this does not write energyIndex/energyLabel.
-    // selectedIndex is the highlighted option, which falls back to the middle
-    // when nothing has been chosen — advancing past an untouched picker is not
-    // an answer, and a skipped answer is NULL rather than a middling one.
-    // handleSelectLevel records a real choice as it is made.
+    // The highlighted option is recorded even when it was never tapped, so the
+    // picker reads as pre-selected and behaves that way. The cost is that a
+    // middle answer and an unanswered question become indistinguishable to the
+    // engine; "Skip" remains the only way to record nothing.
     updateEntry({
+      energyIndex: selectedIndex,
+      energyLabel: selectedLevel.label,
       isFirstTime,
       isCrash: false,
     });
@@ -456,10 +457,10 @@ const styles = StyleSheet.create({
 
   supportingText: {
     fontSize: 14.5,
-    lineHeight: 22,
-    fontWeight: '400',
+    lineHeight: 21.75,
+    fontWeight: '500',
     marginTop: 12,
-    maxWidth: 260,
+    maxWidth: 300,
     textAlign: 'left',
   },
 
