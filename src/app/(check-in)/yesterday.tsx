@@ -49,9 +49,8 @@ export default function YesterdayScreen() {
   const options: YesterdayOption[] = [
     {
       id: 'lighter',
-      value: 'Better than usual',
-      prefix: 'Better than ',
-      emphasis: 'usual',
+      value: 'Lighter than usual',
+      label: 'Lighter than usual',
       dotColor: isDark && isTrueBlack ? '#6E9678' : '#86C4B4',
       cardBg: isDark
         ? isTrueBlack
@@ -66,9 +65,8 @@ export default function YesterdayScreen() {
     },
     {
       id: 'usual',
-      value: 'A normal day',
-      prefix: 'A ',
-      emphasis: 'normal day',
+      value: 'About the same',
+      label: 'About the same',
       dotColor: isDark ? (isTrueBlack ? '#C29A5F' : '#cdb488') : '#B88A58',
       cardBg: isDark
         ? isTrueBlack
@@ -83,9 +81,8 @@ export default function YesterdayScreen() {
     },
     {
       id: 'heavier',
-      value: 'Worse than usual',
-      prefix: 'Worse than ',
-      emphasis: 'usual',
+      value: 'Heavier than usual',
+      label: 'Heavier than usual',
       dotColor: isDark && isTrueBlack ? '#BE6A5C' : '#E27A6C',
       cardBg: isDark
         ? isTrueBlack
@@ -186,13 +183,13 @@ export default function YesterdayScreen() {
         <View style={styles.contentArea}>
           {/* ── Question Heading (.ob-h) ───────────────────────────────── */}
           <Text style={styles.questionHeading}>
-            <Text style={{ color: ci.heading }}>{'How was\n'}</Text>
-            <Text style={{ color: ci.accent }}>yesterday?</Text>
+            <Text style={{ color: ci.heading }}>{'How did\n'}</Text>
+            <Text style={{ color: ci.accent }}>yesterday land?</Text>
           </Text>
 
           {/* ── Supporting Subtitle (.ob-sub) ──────────────────────────── */}
           <Text style={[styles.supportingText, { color: ci.sub }]}>
-            {'This helps heedly learn how accurate its predictions are for you.'}
+            {'Just a quick look back — it helps the patterns make sense.'}
           </Text>
 
           {/* ── 3 Option Cards (.ci-yp) ────────────────────────────────── */}
@@ -218,8 +215,7 @@ export default function YesterdayScreen() {
                 >
                   <View style={[styles.dot, { backgroundColor: ci.ypTones[YP_TONE[option.id] ?? "oat"][2] }]} />
                   <Text style={[styles.cardText, { color: ci.ypText }]}>
-                    <Text style={styles.cardTextRegular}>{option.prefix}</Text>
-                    <Text style={styles.cardTextBold}>{option.emphasis}</Text>
+                    {option.label}
                   </Text>
                 </Pressable>
               );
@@ -374,14 +370,6 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 16,
     lineHeight: 21,
-    fontWeight: '600',
-  },
-
-  cardTextRegular: {
-    fontWeight: '600',
-  },
-
-  cardTextBold: {
     fontWeight: '600',
   },
 
