@@ -1,13 +1,16 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+import { getCheckInDate } from "@/services/checkinDate";
+import HeedlyNative from "@/services/heedlyNative";
 import { hasNotificationPermission } from "@/services/notifications";
 import { appStorage } from "@/utils/storage";
 import {
   DEFAULT_REMINDER_TIME,
+  REMINDER_HORIZON_DAYS,
   isValidReminderTime,
-  parseReminderTime,
   reminderAction,
+  reminderOccurrences,
 } from "@/utils/reminderTime";
 import { DAILY_REMINDER_KEY, DAILY_REMINDER_TIME_KEY } from "@/utils/storageKeys";
 
@@ -15,8 +18,8 @@ export const DAILY_REMINDER_DEFAULT = false;
 
 export const DAILY_REMINDER_IDENTIFIER = "heedly.checkin.reminder";
 
-const TITLE = "How did yesterday land?";
-const BODY = "A gentle check-in whenever you're ready — even lying down.";
+export const DAILY_REMINDER_TITLE = "A quick check-in?";
+export const DAILY_REMINDER_BODY = "Three questions, under a minute.";
 
 export async function readDailyReminderEnabled(): Promise<boolean> {
   try {
@@ -35,33 +38,60 @@ export async function readDailyReminderTime(): Promise<string> {
   }
 }
 
+function occurrenceIdentifier(index: number): string {
+  return `${DAILY_REMINDER_IDENTIFIER}.${index}`;
+}
+
 export async function cancelDailyReminder(): Promise<void> {
   if (Platform.OS === "web") return;
-  try {
-    await Notifications.cancelScheduledNotificationAsync(DAILY_REMINDER_IDENTIFIER);
-  } catch {
-    // Nothing scheduled under that identifier.
+  // The bare identifier is the repeating request earlier builds scheduled. It
+  // is cancelled too, or an upgraded install keeps delivering the old copy.
+  const identifiers = [
+    DAILY_REMINDER_IDENTIFIER,
+    ...Array.from({ length: REMINDER_HORIZON_DAYS }, (_, index) => occurrenceIdentifier(index)),
+  ];
+  for (const identifier of identifiers) {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(identifier);
+    } catch {
+      // Nothing scheduled under that identifier.
+    }
   }
 }
 
-async function scheduleDailyReminder(time: string): Promise<void> {
+/** True when today already holds a check-in — a completed one or a crash, which
+ *  is the same row with its flag set. A read failure is not an absent day, so
+ *  it leaves the reminder alone rather than suppressing it. */
+export async function hasRecordForToday(): Promise<boolean> {
+  try {
+    return (await HeedlyNative.getCheckIn(getCheckInDate())) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** One request per upcoming day rather than a repeating one: a repeating
+ *  trigger cannot skip the day the person has already recorded. */
+async function scheduleDailyReminder(time: string, recordedToday: boolean): Promise<void> {
   if (Platform.OS === "web") return;
-  const { hour, minute } = parseReminderTime(time);
   await cancelDailyReminder();
-  await Notifications.scheduleNotificationAsync({
-    identifier: DAILY_REMINDER_IDENTIFIER,
-    content: {
-      title: TITLE,
-      body: BODY,
-      sound: true,
-      data: { screen: "check-in" },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour,
-      minute,
-    },
-  });
+
+  const occurrences = reminderOccurrences(time, new Date(), recordedToday);
+  for (const [index, at] of occurrences.entries()) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: occurrenceIdentifier(index),
+      content: {
+        title: DAILY_REMINDER_TITLE,
+        body: DAILY_REMINDER_BODY,
+        sound: true,
+        data: { screen: "check-in" },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: at,
+      },
+    });
+  }
 }
 
 export async function reconcileDailyReminder(): Promise<"scheduled" | "cancelled"> {
@@ -74,9 +104,11 @@ export async function reconcileDailyReminder(): Promise<"scheduled" | "cancelled
   }
 
   try {
-    await scheduleDailyReminder(await readDailyReminderTime());
+    await scheduleDailyReminder(await readDailyReminderTime(), await hasRecordForToday());
     return "scheduled";
   } catch {
+    // Leaves nothing half-scheduled. The preference is untouched, so the next
+    // reconciliation can still put it back.
     await cancelDailyReminder();
     return "cancelled";
   }
@@ -105,7 +137,9 @@ export async function scheduledDailyReminderCount(): Promise<number> {
   if (Platform.OS === "web") return 0;
   try {
     const pending = await Notifications.getAllScheduledNotificationsAsync();
-    return pending.filter((request) => request.identifier === DAILY_REMINDER_IDENTIFIER).length;
+    return pending.filter((request) =>
+      request.identifier.startsWith(DAILY_REMINDER_IDENTIFIER),
+    ).length;
   } catch {
     return 0;
   }

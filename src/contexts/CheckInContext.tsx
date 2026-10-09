@@ -24,7 +24,7 @@ import {
   loadDraft,
   saveDraft,
 } from "@/services/checkinStorage";
-import { cancelDailyReminder } from "@/services/dailyReminder";
+import { cancelDailyReminder, reconcileDailyReminder } from "@/services/dailyReminder";
 import type { CheckInEntry } from "@/types/checkin";
 import { clearErasableStorage } from "@/utils/storageKeys";
 import { useFirstName } from "@/contexts/NameContext";
@@ -336,6 +336,14 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     // 2. Clear draft if not in edit mode
     if (!isEditing) {
       await clearDraft();
+    }
+
+    // Today now holds a record, so today's reminder has nothing left to ask
+    // for. Reconciling drops it and leaves the following days scheduled.
+    // After the save, never around it: a reminder is not worth failing a
+    // check-in over.
+    if (checkInDate === targetDate) {
+      await reconcileDailyReminder();
     }
 
     // 3. Update local state
