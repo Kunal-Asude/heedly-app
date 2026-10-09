@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { ForecastState } from "@heedly/native";
 
-import { DawnBackground } from "@/components/core";
+import { DawnBackground, GlowDot } from "@/components/core";
 import type { EnergyOrbState } from "@/components/core";
 import { LearningScreenLayout, TODAY_ORB_SIZE, TodayScreenLayout } from "@/components/today";
 import { Fonts } from "@/constants/theme";
@@ -450,12 +450,7 @@ export default function TodayScreen() {
                 },
               ]}
             >
-              <View
-                style={[
-                  styles.modalBadgeDot,
-                  { backgroundColor: modalTokens.badgeDot },
-                ]}
-              />
+              <GlowDot color={modalTokens.badgeDot} size={8} ring={3} />
               <Text
                 style={[
                   styles.modalBadgeText,
@@ -615,12 +610,7 @@ export default function TodayScreen() {
                 },
               ]}
             >
-              <View
-                style={[
-                  styles.modalBadgeDot,
-                  { backgroundColor: learningTokens.badgeDot },
-                ]}
-              />
+              <GlowDot color={learningTokens.badgeDot} size={8} ring={3} />
               <Text
                 style={[styles.sheetBadgeText, { color: learningTokens.badgeText }]}
               >
@@ -773,12 +763,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
-  },
-
-  modalBadgeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
 
   modalBadgeText: {

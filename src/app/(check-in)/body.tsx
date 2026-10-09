@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { DawnBackground } from '@/components/core';
+import { DawnBackground, GlowDot } from '@/components/core';
 import { Fonts } from '@/constants/theme';
 import { useCheckIn } from '@/contexts/CheckInContext';
 import { useCheckInConfig } from '@/hooks/data';
@@ -243,7 +243,7 @@ export default function BodyScreen() {
                   { backgroundColor: ci.pillBg, borderColor: ci.pillBorder },
                 ]}
               >
-                <View style={[styles.pillDot, { backgroundColor: ci.pillDot }]} />
+                <GlowDot color={ci.pillDot} />
                 <Text
                   style={[
                     styles.pillText,
@@ -490,12 +490,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 999,
     borderWidth: 1,
-  },
-
-  pillDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
   },
 
   pillText: {

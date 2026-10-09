@@ -238,7 +238,7 @@ export function LearningScreenLayout({
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <ScrollView
           style={[styles.scrollArea, { marginBottom: tabBarInset }]}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[styles.contentContainer, styles.learningContentContainer]}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
@@ -290,7 +290,7 @@ export function LearningScreenLayout({
             />
           </View>
 
-          <View style={styles.actionAreaGroup}>
+          <View style={[styles.actionAreaGroup, styles.learningActionAreaGroup]}>
             <TodayCtaButton label={ctaLabel} onPress={onCtaPress} />
             <TodayFooterNote text={footerNote} onPress={onFooterPress} />
           </View>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
 
   smallOrbSlot: {
-    marginTop: 71,
+    marginTop: 60,
     marginBottom: 0,
   },
 
@@ -467,5 +467,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2,
+  },
+
+  // Brings the footer note closer to the tab bar.
+  learningContentContainer: {
+    paddingBottom: 0,
+  },
+
+  // Gap between the learning note and the first check-in button.
+  learningActionAreaGroup: {
+    marginTop: 32,
   },
 });
