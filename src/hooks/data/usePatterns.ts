@@ -96,7 +96,7 @@ export function usePatterns() {
 
   const data: PatternsData = {
     learningSinceText: trackingSince,
-    subtitleLeftText: "A few small things we're\nseeing in your patterns.",
+    subtitleLeftText: "A few small things we're\nlearning about you.",
     tankTooltipTitle: "HOW IS THE TANK MEASURED?",
     tankTooltipBody:
       "Your tank is measured against your own recent weeks, not a fixed target — so as your baseline shifts, what a 'full tank' means shifts with it.",

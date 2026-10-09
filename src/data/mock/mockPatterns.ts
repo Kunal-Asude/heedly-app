@@ -1,21 +1,21 @@
 import type { DayPattern, PatternCardData, PatternsData } from "@/types/patterns";
 
 const COLORS = {
-  steadyGreen: "#85B58E",
-  cautionYellow: "#E5B87E",
-  restPink: "#DC6B76",
+  steadyGreen: "#94b094",
+  cautionYellow: "#f0c59e",
+  restPink: "#da6d82",
   helpBadge: "#A8C7A5",
   costBadge: "#E08568",
 };
 
 export const MOCK_THIS_WEEK_DAYS: DayPattern[] = [
-  { day: "M", type: "steady", size: 36, color: COLORS.steadyGreen },
-  { day: "T", type: "steady", size: 36, color: COLORS.steadyGreen },
-  { day: "W", type: "caution", size: 32, color: COLORS.cautionYellow },
-  { day: "T", type: "caution", size: 32, color: COLORS.cautionYellow },
-  { day: "F", type: "caution", size: 28, color: COLORS.cautionYellow },
-  { day: "S", type: "rest", size: 26, color: COLORS.restPink },
-  { day: "S", type: "rest", size: 26, color: COLORS.restPink },
+  { day: "M", type: "steady", size: 34.48, color: COLORS.steadyGreen },
+  { day: "T", type: "steady", size: 32.96, color: COLORS.steadyGreen },
+  { day: "W", type: "caution", size: 28.78, color: COLORS.cautionYellow },
+  { day: "T", type: "caution", size: 26.5, color: COLORS.cautionYellow },
+  { day: "F", type: "caution", size: 24.6, color: COLORS.cautionYellow },
+  { day: "S", type: "rest", size: 21.56, color: COLORS.restPink },
+  { day: "S", type: "rest", size: 19.66, color: COLORS.restPink },
 ];
 
 export const MOCK_HELP_PATTERNS: PatternCardData[] = [
@@ -65,8 +65,8 @@ export const MOCK_COST_PATTERNS: PatternCardData[] = [
 ];
 
 export const MOCK_PATTERNS_DATA: PatternsData = {
-  learningSinceText: "TRACKING SINCE\nMARCH 14",
-  subtitleLeftText: "A few small things we're\nseeing in your patterns.",
+  learningSinceText: "MARCH 14",
+  subtitleLeftText: "A few small things we're\nlearning about you.",
   tankTooltipTitle: "HOW IS THE TANK MEASURED?",
   tankTooltipBody:
     "Your tank is measured against your own recent weeks, not a fixed target — so as your baseline shifts, what a 'full tank' means shifts with it.",

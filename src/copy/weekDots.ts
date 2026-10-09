@@ -1,14 +1,12 @@
 /** Reported check-in energy for the Patterns week strip. Not tank, not forecast. */
 
-const ENERGY_SIZE: Record<number, number> = { 1: 20, 2: 24, 3: 28, 4: 32, 5: 36 };
+const STATE_COLOR = {
+  steady: "#94b094",
+  caution: "#f0c59e",
+  rest: "#da6d82",
+} as const;
 
-const ENERGY_COLOR: Record<number, string> = {
-  1: "#DC6B76",
-  2: "#E08568",
-  3: "#E7B874",
-  4: "#A5C49F",
-  5: "#7BA98B",
-};
+type EnergyState = keyof typeof STATE_COLOR;
 
 const EMPTY_SIZE = 12;
 const EMPTY_COLOR = "rgba(140, 120, 130, 0.18)";
@@ -16,9 +14,9 @@ const EMPTY_COLOR = "rgba(140, 120, 130, 0.18)";
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export const ENERGY_LEGEND = [
-  { label: "Drained", color: ENERGY_COLOR[1] },
-  { label: "Middling", color: ENERGY_COLOR[3] },
-  { label: "High", color: ENERGY_COLOR[5] },
+  { label: "Steady", color: STATE_COLOR.steady },
+  { label: "Caution", color: STATE_COLOR.caution },
+  { label: "Rest day", color: STATE_COLOR.rest },
 ];
 
 export interface DotStyle {
@@ -31,20 +29,31 @@ export interface WeekDay {
   day: string;
 }
 
-export function energyDot(energy: number | null | undefined): DotStyle {
-  if (energy == null || !(energy in ENERGY_SIZE)) {
-    return { size: EMPTY_SIZE, color: EMPTY_COLOR };
-  }
-  return { size: ENERGY_SIZE[energy], color: ENERGY_COLOR[energy] };
+/** Smallest dot stays legible at 17px, largest fills the 36px zone. */
+function dotSize(energy: number): number {
+  return 17 + ((energy - 1) / 4) * 19;
 }
 
-/** Seven days ending yesterday — the newest day a check-in can record. */
+function dotState(energy: number): EnergyState {
+  if (energy >= 4) return "steady";
+  if (energy === 3) return "caution";
+  return "rest";
+}
+
+export function energyDot(energy: number | null | undefined): DotStyle {
+  if (energy == null || !Number.isInteger(energy) || energy < 1 || energy > 5) {
+    return { size: EMPTY_SIZE, color: EMPTY_COLOR };
+  }
+  return { size: dotSize(energy), color: STATE_COLOR[dotState(energy)] };
+}
+
+/** Seven days ending today — the newest day a check-in can record. */
 export function weekDays(today: Date): WeekDay[] {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate() - 7 + index,
+      today.getDate() - 6 + index,
     );
     return { date, day: DAY_LETTERS[date.getDay()] };
   });

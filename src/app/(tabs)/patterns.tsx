@@ -21,12 +21,6 @@ import { usePatterns } from "@/hooks/data";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
-const STATE_COLORS = {
-  steady: "#8FB996",
-  caution: "#ECC880",
-  rest: "#E27A6C",
-};
-
 // .sx-badge.sage / .sx-badge.coral: [from, to, icon] for light, Dusk, OLED
 const BADGE = {
   help: {
@@ -125,62 +119,44 @@ export default function PatternsScreen() {
   );
 
   // Dynamic Theme Colors (Dawn vs Dusk vs True Black / OLED)
-  const eyebrowColor = isDark
+  const badgeTheme = isDark ? (isTrueBlack ? "oled" : "dusk") : "light";
+
+  // .sx-eyebrow / .pt-since / .pt-week-days / .pt-day / .pt-sec
+  const mutedLabelColor = isDark
     ? isTrueBlack
       ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.55)";
-  const mainHeadingColor = isDark
+      : "rgba(199, 180, 191, 0.68)"
+    : "rgba(74, 58, 57, 0.5)";
+  // .sx-title / .pt-week-title / .pt-card3-text
+  const inkColor = isDark
     ? isTrueBlack
       ? "#E9DDD6"
       : "#F3E7E1"
     : theme.ink.display;
-  const badgeTheme = isDark ? (isTrueBlack ? "oled" : "dusk") : "light";
+  // .pt-sub-text
   const subtitleColor = isDark
     ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.72)"
+      ? "#A8979E"
+      : "rgba(199, 180, 191, 1)"
     : "rgba(74, 58, 57, 0.8)";
-  const learningSinceLabelColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.55)"
-    : "rgba(74, 58, 57, 0.5)";
-  const learningSinceDateColor = isDark
-    ? isTrueBlack
-      ? "#E9DDD6"
-      : "#F3E7E1"
-    : "#4F3C3A";
-  const groupHeaderColor = isDark
-    ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.55)";
-  const cardTitleColor = isDark
-    ? isTrueBlack
-      ? "#E9DDD6"
-      : "#F3E7E1"
-    : "#4F3C3A";
-  const bodyTextColor = isDark
-    ? isTrueBlack
-      ? "#E9DDD6"
-      : "#F3E7E1"
-    : "#463332";
+  // .pt-card3-ev
   const subtextColor = isDark
     ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.68)"
+      ? "#A8979E"
+      : "rgba(199, 180, 191, 0.89)"
     : "rgba(74, 58, 57, 0.66)";
+  // .pt-legend span
   const legendTextColor = isDark
     ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.8)"
+      ? "#A8979E"
+      : "rgba(199, 180, 191, 0.95)"
     : "rgba(74, 58, 57, 0.7)";
+  // .pt-foot
   const footnoteColor = isDark
     ? isTrueBlack
-      ? "#9A8A91"
-      : "rgba(199, 180, 191, 0.65)"
-    : "rgba(74, 58, 57, 0.6)";
+      ? "#A8979E"
+      : "rgba(199, 180, 191, 1)"
+    : "rgba(74, 58, 57, 0.78)";
 
 
   return (
@@ -212,9 +188,9 @@ export default function PatternsScreen() {
         bounces={true}
       >
         {/* ── Section Label & Heading (.sx-eyebrow & .sx-title) ────────── */}
-        <Text style={[styles.sectionLabel, { color: eyebrowColor }]}>PATTERNS</Text>
+        <Text style={[styles.sectionLabel, { color: mutedLabelColor }]}>PATTERNS</Text>
 
-        <Text style={[styles.mainHeading, { color: mainHeadingColor }]}>
+        <Text style={[styles.mainHeading, { color: inkColor }]}>
           {"What we've noticed"}
         </Text>
 
@@ -228,25 +204,22 @@ export default function PatternsScreen() {
         {/* ── Subtitle Block (.pt-sub) ─────────────────────────────────── */}
         <View style={styles.subtitleRow}>
           <Text style={[styles.subtitleLeft, { color: subtitleColor }]}>
-            {"A few small things we're\nseeing in your patterns."}
+            {"A few small things we're\nlearning about you."}
           </Text>
-          <View style={styles.subtitleRightContainer}>
-            <Text style={[styles.subtitleRightLabel, { color: learningSinceLabelColor }]}>
-              TRACKING SINCE
+          {learningSinceText ? (
+            <Text style={[styles.learningSince, { color: mutedLabelColor }]}>
+              {`LEARNING SINCE ${learningSinceText}`}
             </Text>
-            <Text style={[styles.subtitleRightDate, { color: learningSinceDateColor }]}>
-              {learningSinceText}
-            </Text>
-          </View>
+          ) : null}
         </View>
 
         {/* ── "This week" 7-Day Card (.pt-week) ────────────────────────── */}
         <PatternCard isDark={isDark} isTrueBlack={isTrueBlack} style={styles.thisWeekCard}>
           {/* Card Header */}
           <View style={styles.cardHeaderRow}>
-            <Text style={[styles.thisWeekTitle, { color: cardTitleColor }]}>This week</Text>
+            <Text style={[styles.thisWeekTitle, { color: inkColor }]}>This week</Text>
             <View style={styles.thisWeekRightHeader}>
-              <Text style={[styles.sevenDaysText, { color: eyebrowColor }]}>7 DAYS</Text>
+              <Text style={[styles.sevenDaysText, { color: mutedLabelColor }]}>7 DAYS</Text>
               <Pressable
                 onPress={() => setIsTankTooltipVisible(!isTankTooltipVisible)}
                 style={({ pressed }) => [
@@ -366,7 +339,7 @@ export default function PatternsScreen() {
                       ]}
                     />
                   </View>
-                  <Text style={[styles.dayLabel, { color: isDark ? (isTrueBlack ? "#9A8A91" : "rgba(199, 180, 191, 0.65)") : "rgba(74, 58, 57, 0.5)" }]}>
+                  <Text style={[styles.dayLabel, { color: mutedLabelColor }]}>
                     {dayItem.day}
                   </Text>
                 </View>
@@ -384,18 +357,21 @@ export default function PatternsScreen() {
             ))}
           </View>
 
-          {/* Card Footer Note */}
-          <Text style={[styles.cardFooterNote, { color: subtextColor }]}>
-            The energy you reported. Bigger dot = more energy.{"\n"}Days without a
-            check-in stay empty.
-          </Text>
-          <Text style={[styles.cardFooterSecondary, { color: subtextColor }]}>
+          {/* Second .pt-legend row */}
+          <View style={styles.legendRow}>
+            <Text style={[styles.legendText, { color: legendTextColor }]}>
+              Bigger dot = more energy.
+            </Text>
+          </View>
+
+          {/* .pt-foot */}
+          <Text style={[styles.cardFooterNote, { color: footnoteColor }]}>
             Your tank reflects your recent weeks, not a fixed ceiling.
           </Text>
         </PatternCard>
 
         {/* ── "WHAT SEEMS TO HELP" Section (.pt-sec) ───────────────────── */}
-        <Text style={[styles.groupHeaderLabel, { color: groupHeaderColor }]}>
+        <Text style={[styles.groupHeaderLabel, { color: mutedLabelColor }]}>
           WHAT SEEMS TO HELP
         </Text>
 
@@ -419,7 +395,7 @@ export default function PatternsScreen() {
               />
             </LinearGradient>
             <View style={styles.cardTextBlock}>
-              <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
+              <Text style={[styles.cardBodyText, { color: inkColor }]}>
                 {pattern.bodyText}
               </Text>
               <Text style={[styles.cardSubtitleText, { color: subtextColor }]}>
@@ -430,7 +406,7 @@ export default function PatternsScreen() {
         ))}
 
         {/* ── "WHAT SEEMS TO COST YOU" Section (.pt-sec) ───────────────── */}
-        <Text style={[styles.groupHeaderLabelSpacing, { color: groupHeaderColor }]}>
+        <Text style={[styles.groupHeaderLabelSpacing, { color: mutedLabelColor }]}>
           WHAT SEEMS TO COST YOU
         </Text>
 
@@ -454,7 +430,7 @@ export default function PatternsScreen() {
               />
             </LinearGradient>
             <View style={styles.cardTextBlock}>
-              <Text style={[styles.cardBodyText, { color: bodyTextColor }]}>
+              <Text style={[styles.cardBodyText, { color: inkColor }]}>
                 {pattern.bodyText}
               </Text>
               <Text style={[styles.cardSubtitleText, { color: subtextColor }]}>
@@ -551,32 +527,20 @@ const styles = StyleSheet.create({
   subtitleLeft: {
     fontSize: 14.5,
     lineHeight: 21,
+    fontWeight: "500",
     flex: 1,
     maxWidth: 190,
   },
 
-  subtitleRightContainer: {
-    alignItems: "flex-end",
+  learningSince: {
+    fontSize: 10.5,
+    fontWeight: "600",
+    letterSpacing: 1.37,
+    lineHeight: 14.7,
+    textTransform: "uppercase",
+    textAlign: "right",
     maxWidth: 118,
     marginTop: 2,
-  },
-
-  subtitleRightLabel: {
-    fontSize: 10.5,
-    fontWeight: "600",
-    letterSpacing: 1.37,
-    lineHeight: 15,
-    textTransform: "uppercase",
-    textAlign: "right",
-  },
-
-  subtitleRightDate: {
-    fontSize: 10.5,
-    fontWeight: "600",
-    letterSpacing: 1.37,
-    lineHeight: 15,
-    textTransform: "uppercase",
-    textAlign: "right",
   },
 
   // ── Cards (.sx-card) ─────────────────────────────────────────────────────
@@ -753,17 +717,10 @@ const styles = StyleSheet.create({
 
   cardFooterNote: {
     fontSize: 13,
-    fontWeight: "400",
+    fontWeight: "500",
     lineHeight: 19.5,
     marginTop: 11,
     marginHorizontal: 2,
-  },
-
-  cardFooterSecondary: {
-    fontSize: 12,
-    fontWeight: "600",
-    lineHeight: 17,
-    marginTop: 18,
   },
 
   // ── Pattern Cards (.pt-sec) ──────────────────────────────────────────────
@@ -830,6 +787,7 @@ const styles = StyleSheet.create({
 
   bottomExplanatoryText: {
     fontSize: 13,
+    fontWeight: "500",
     lineHeight: 19.5,
     marginTop: 11,
     marginHorizontal: 2,
