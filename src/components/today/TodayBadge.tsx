@@ -1,3 +1,4 @@
+import { GlowDot } from "@/components/core";
 import { useTheme } from "@/constants/themes";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -43,7 +44,7 @@ export function TodayBadge({
   return (
     <View style={styles.badgeSlot}>
       {isFirstDay ? (
-        /* .fd-chip: padding 5px 12px 5px 11px, radius 20, solid 6px dot */
+        /* .fd-chip: padding 5px 12px 5px 11px, radius 20, 6px dot with halo ring */
         <Pressable
           onPress={onPress}
           style={[
@@ -54,12 +55,7 @@ export function TodayBadge({
             },
           ]}
         >
-          <View
-            style={[
-              styles.learningDotCenter,
-              { backgroundColor: resolvedDotColor },
-            ]}
-          />
+          <GlowDot color={resolvedDotColor} size={6} ring={3} />
           <Text
             style={[
               styles.learningText,
@@ -122,13 +118,6 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     borderRadius: 20,
     borderWidth: 1,
-  },
-
-  // .fd-chip i: 6x6 solid dot, border-radius 50%
-  learningDotCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
 
   // .fd-chip span: 10.5px, 700, letter-spacing 0.16em (1.68), uppercase
